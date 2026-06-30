@@ -1,0 +1,536 @@
+{
+  "config": {
+    "trim_layer_max": 32,
+    "sink": 128,
+    "window": 4096,
+    "new_tokens": 64
+  },
+  "summary": [
+    {
+      "dataset": "hotpotqa",
+      "task": "multi-hop QA",
+      "n": 8,
+      "avg_ctx": 15366,
+      "exact_match_rate": 0.0,
+      "avg_token_match": 0.38671875,
+      "avg_norm_edit": 0.3594611664464144
+    },
+    {
+      "dataset": "multifieldqa_en",
+      "task": "multi-field QA",
+      "n": 8,
+      "avg_ctx": 10337,
+      "exact_match_rate": 0.375,
+      "avg_token_match": 0.69921875,
+      "avg_norm_edit": 0.22636887080616808
+    },
+    {
+      "dataset": "triviaqa",
+      "task": "few-shot QA",
+      "n": 8,
+      "avg_ctx": 12527,
+      "exact_match_rate": 0.75,
+      "avg_token_match": 0.82421875,
+      "avg_norm_edit": 0.09581171803478791
+    },
+    {
+      "dataset": "gov_report",
+      "task": "summarization",
+      "n": 8,
+      "avg_ctx": 12295,
+      "exact_match_rate": 0.5,
+      "avg_token_match": 0.65625,
+      "avg_norm_edit": 0.2736648278849987
+    },
+    {
+      "dataset": "lcc",
+      "task": "code completion",
+      "n": 8,
+      "avg_ctx": 9208,
+      "exact_match_rate": 0.875,
+      "avg_token_match": 0.921875,
+      "avg_norm_edit": 0.04572147651006712
+    },
+    {
+      "dataset": "wikitext",
+      "task": "language modeling",
+      "n": 8,
+      "avg_ctx": 5091,
+      "exact_match_rate": 0.125,
+      "avg_token_match": 0.55859375,
+      "avg_norm_edit": 0.2851379442876702
+    }
+  ],
+  "rows": [
+    {
+      "ctx_len": 11706,
+      "bucket": "6-12K",
+      "exact_match": false,
+      "token_match": 0.234375,
+      "norm_edit": 0.4013840830449827,
+      "dataset": "hotpotqa"
+    },
+    {
+      "ctx_len": 17241,
+      "bucket": "12-18K",
+      "exact_match": false,
+      "token_match": 0.953125,
+      "norm_edit": 0.04219409282700422,
+      "dataset": "hotpotqa"
+    },
+    {
+      "ctx_len": 17308,
+      "bucket": "12-18K",
+      "exact_match": false,
+      "token_match": 0.1875,
+      "norm_edit": 0.4576271186440678,
+      "dataset": "hotpotqa"
+    },
+    {
+      "ctx_len": 16683,
+      "bucket": "12-18K",
+      "exact_match": false,
+      "token_match": 0.953125,
+      "norm_edit": 0.045774647887323945,
+      "dataset": "hotpotqa"
+    },
+    {
+      "ctx_len": 15089,
+      "bucket": "12-18K",
+      "exact_match": false,
+      "token_match": 0.125,
+      "norm_edit": 0.5724137931034483,
+      "dataset": "hotpotqa"
+    },
+    {
+      "ctx_len": 15670,
+      "bucket": "12-18K",
+      "exact_match": false,
+      "token_match": 0.171875,
+      "norm_edit": 0.2553846153846154,
+      "dataset": "hotpotqa"
+    },
+    {
+      "ctx_len": 16048,
+      "bucket": "12-18K",
+      "exact_match": false,
+      "token_match": 0.359375,
+      "norm_edit": 0.34913793103448276,
+      "dataset": "hotpotqa"
+    },
+    {
+      "ctx_len": 13188,
+      "bucket": "12-18K",
+      "exact_match": false,
+      "token_match": 0.109375,
+      "norm_edit": 0.75177304964539,
+      "dataset": "hotpotqa"
+    },
+    {
+      "ctx_len": 11401,
+      "bucket": "6-12K",
+      "exact_match": false,
+      "token_match": 0.21875,
+      "norm_edit": 0.5959595959595959,
+      "dataset": "multifieldqa_en"
+    },
+    {
+      "ctx_len": 8295,
+      "bucket": "6-12K",
+      "exact_match": true,
+      "token_match": 1.0,
+      "norm_edit": 0.0,
+      "dataset": "multifieldqa_en"
+    },
+    {
+      "ctx_len": 12016,
+      "bucket": "12-18K",
+      "exact_match": true,
+      "token_match": 1.0,
+      "norm_edit": 0.0,
+      "dataset": "multifieldqa_en"
+    },
+    {
+      "ctx_len": 7600,
+      "bucket": "6-12K",
+      "exact_match": false,
+      "token_match": 0.53125,
+      "norm_edit": 0.3790849673202614,
+      "dataset": "multifieldqa_en"
+    },
+    {
+      "ctx_len": 10809,
+      "bucket": "6-12K",
+      "exact_match": false,
+      "token_match": 0.640625,
+      "norm_edit": 0.10679611650485436,
+      "dataset": "multifieldqa_en"
+    },
+    {
+      "ctx_len": 8199,
+      "bucket": "6-12K",
+      "exact_match": true,
+      "token_match": 1.0,
+      "norm_edit": 0.0,
+      "dataset": "multifieldqa_en"
+    },
+    {
+      "ctx_len": 14864,
+      "bucket": "12-18K",
+      "exact_match": false,
+      "token_match": 0.453125,
+      "norm_edit": 0.4723127035830619,
+      "dataset": "multifieldqa_en"
+    },
+    {
+      "ctx_len": 9515,
+      "bucket": "6-12K",
+      "exact_match": false,
+      "token_match": 0.75,
+      "norm_edit": 0.256797583081571,
+      "dataset": "multifieldqa_en"
+    },
+    {
+      "ctx_len": 5651,
+      "bucket": "<=6K",
+      "exact_match": true,
+      "token_match": 1.0,
+      "norm_edit": 0.0,
+      "dataset": "triviaqa"
+    },
+    {
+      "ctx_len": 16852,
+      "bucket": "12-18K",
+      "exact_match": true,
+      "token_match": 1.0,
+      "norm_edit": 0.0,
+      "dataset": "triviaqa"
+    },
+    {
+      "ctx_len": 13762,
+      "bucket": "12-18K",
+      "exact_match": true,
+      "token_match": 1.0,
+      "norm_edit": 0.0,
+      "dataset": "triviaqa"
+    },
+    {
+      "ctx_len": 21708,
+      "bucket": "18-24K",
+      "exact_match": true,
+      "token_match": 1.0,
+      "norm_edit": 0.0,
+      "dataset": "triviaqa"
+    },
+    {
+      "ctx_len": 12286,
+      "bucket": "12-18K",
+      "exact_match": false,
+      "token_match": 0.171875,
+      "norm_edit": 0.2620689655172414,
+      "dataset": "triviaqa"
+    },
+    {
+      "ctx_len": 11997,
+      "bucket": "6-12K",
+      "exact_match": true,
+      "token_match": 1.0,
+      "norm_edit": 0.0,
+      "dataset": "triviaqa"
+    },
+    {
+      "ctx_len": 8238,
+      "bucket": "6-12K",
+      "exact_match": true,
+      "token_match": 1.0,
+      "norm_edit": 0.0,
+      "dataset": "triviaqa"
+    },
+    {
+      "ctx_len": 9724,
+      "bucket": "6-12K",
+      "exact_match": false,
+      "token_match": 0.421875,
+      "norm_edit": 0.504424778761062,
+      "dataset": "triviaqa"
+    },
+    {
+      "ctx_len": 11006,
+      "bucket": "6-12K",
+      "exact_match": true,
+      "token_match": 1.0,
+      "norm_edit": 0.0,
+      "dataset": "gov_report"
+    },
+    {
+      "ctx_len": 16799,
+      "bucket": "12-18K",
+      "exact_match": true,
+      "token_match": 1.0,
+      "norm_edit": 0.0,
+      "dataset": "gov_report"
+    },
+    {
+      "ctx_len": 9741,
+      "bucket": "6-12K",
+      "exact_match": true,
+      "token_match": 1.0,
+      "norm_edit": 0.0,
+      "dataset": "gov_report"
+    },
+    {
+      "ctx_len": 8722,
+      "bucket": "6-12K",
+      "exact_match": false,
+      "token_match": 0.15625,
+      "norm_edit": 0.5263157894736842,
+      "dataset": "gov_report"
+    },
+    {
+      "ctx_len": 12909,
+      "bucket": "12-18K",
+      "exact_match": false,
+      "token_match": 0.59375,
+      "norm_edit": 0.4578313253012048,
+      "dataset": "gov_report"
+    },
+    {
+      "ctx_len": 8102,
+      "bucket": "6-12K",
+      "exact_match": true,
+      "token_match": 1.0,
+      "norm_edit": 0.0,
+      "dataset": "gov_report"
+    },
+    {
+      "ctx_len": 15801,
+      "bucket": "12-18K",
+      "exact_match": false,
+      "token_match": 0.015625,
+      "norm_edit": 0.7479224376731302,
+      "dataset": "gov_report"
+    },
+    {
+      "ctx_len": 15280,
+      "bucket": "12-18K",
+      "exact_match": false,
+      "token_match": 0.484375,
+      "norm_edit": 0.45724907063197023,
+      "dataset": "gov_report"
+    },
+    {
+      "ctx_len": 11468,
+      "bucket": "6-12K",
+      "exact_match": true,
+      "token_match": 1.0,
+      "norm_edit": 0.0,
+      "dataset": "lcc"
+    },
+    {
+      "ctx_len": 9267,
+      "bucket": "6-12K",
+      "exact_match": false,
+      "token_match": 0.375,
+      "norm_edit": 0.36577181208053694,
+      "dataset": "lcc"
+    },
+    {
+      "ctx_len": 13802,
+      "bucket": "12-18K",
+      "exact_match": true,
+      "token_match": 1.0,
+      "norm_edit": 0.0,
+      "dataset": "lcc"
+    },
+    {
+      "ctx_len": 5983,
+      "bucket": "<=6K",
+      "exact_match": true,
+      "token_match": 1.0,
+      "norm_edit": 0.0,
+      "dataset": "lcc"
+    },
+    {
+      "ctx_len": 7825,
+      "bucket": "6-12K",
+      "exact_match": true,
+      "token_match": 1.0,
+      "norm_edit": 0.0,
+      "dataset": "lcc"
+    },
+    {
+      "ctx_len": 6053,
+      "bucket": "6-12K",
+      "exact_match": true,
+      "token_match": 1.0,
+      "norm_edit": 0.0,
+      "dataset": "lcc"
+    },
+    {
+      "ctx_len": 14208,
+      "bucket": "12-18K",
+      "exact_match": true,
+      "token_match": 1.0,
+      "norm_edit": 0.0,
+      "dataset": "lcc"
+    },
+    {
+      "ctx_len": 5061,
+      "bucket": "<=6K",
+      "exact_match": true,
+      "token_match": 1.0,
+      "norm_edit": 0.0,
+      "dataset": "lcc"
+    },
+    {
+      "ctx_len": 5221,
+      "bucket": "<=6K",
+      "exact_match": false,
+      "token_match": 0.109375,
+      "norm_edit": 0.6050156739811913,
+      "dataset": "wikitext"
+    },
+    {
+      "ctx_len": 5188,
+      "bucket": "<=6K",
+      "exact_match": false,
+      "token_match": 0.953125,
+      "norm_edit": 0.04746835443037975,
+      "dataset": "wikitext"
+    },
+    {
+      "ctx_len": 5007,
+      "bucket": "<=6K",
+      "exact_match": false,
+      "token_match": 0.453125,
+      "norm_edit": 0.09448818897637795,
+      "dataset": "wikitext"
+    },
+    {
+      "ctx_len": 5061,
+      "bucket": "<=6K",
+      "exact_match": false,
+      "token_match": 0.53125,
+      "norm_edit": 0.3321917808219178,
+      "dataset": "wikitext"
+    },
+    {
+      "ctx_len": 5018,
+      "bucket": "<=6K",
+      "exact_match": false,
+      "token_match": 0.125,
+      "norm_edit": 0.5798319327731093,
+      "dataset": "wikitext"
+    },
+    {
+      "ctx_len": 5153,
+      "bucket": "<=6K",
+      "exact_match": false,
+      "token_match": 0.40625,
+      "norm_edit": 0.51,
+      "dataset": "wikitext"
+    },
+    {
+      "ctx_len": 5046,
+      "bucket": "<=6K",
+      "exact_match": false,
+      "token_match": 0.890625,
+      "norm_edit": 0.11210762331838565,
+      "dataset": "wikitext"
+    },
+    {
+      "ctx_len": 5040,
+      "bucket": "<=6K",
+      "exact_match": true,
+      "token_match": 1.0,
+      "norm_edit": 0.0,
+      "dataset": "wikitext"
+    }
+  ],
+  "samples": [
+    {
+      "dataset": "hotpotqa",
+      "ctx_len": 11706,
+      "base": " To determine which case was brought to court first, we need to examine the dates of when each case was filed or when the legal proceedings began.\n\n1. **Miller v. California**:\n   - **Background**: Marvin Miller was arrested in 1971 for distributing pornographic materials.\n   - **Trial**:",
+      "trim": " To determine which case was brought to court first, we need to compare the dates when each case was filed or when the legal proceedings began for both Miller v. California and Gates v. Collier.\n\n1. **Miller v. California**:\n   - **Background**: Miller was arrested in 1971 for",
+      "exact": false
+    },
+    {
+      "dataset": "hotpotqa",
+      "ctx_len": 17241,
+      "base": " The actor who plays Phileas Fogg in \"Around the World in 80 Days\" is David Niven. He co-starred with Gary Cooper in the 1939 Goldwyn Productions film \"The Real Glory,\" which is based on a novel by Charles L. Clifford.\nThe Real Glory is",
+      "trim": " The actor who plays Phileas Fogg in \"Around the World in 80 Days\" is Steve Coogan. He co-starred with Gary Cooper in the 1939 Goldwyn Productions film \"The Real Glory,\" which is based on a novel by Charles L. Clifford.\nThe Real Glory is",
+      "exact": false
+    },
+    {
+      "dataset": "hotpotqa",
+      "ctx_len": 17308,
+      "base": " Keith Nichol played football for the University of Oklahoma and Michigan State University. Before committing to Michigan State University, he attended Lowell High School in Lowell, Michigan. Therefore, the school where he played football before Michigan State is Lowell High School, located in Lowell, Michigan.\nAnswer: $\\boxed{Lowell, Michigan}$",
+      "trim": " Keith Nichol played football for the University of Oklahoma before transferring to Michigan State University. Before committing to Oklahoma, he had originally committed to Michigan State while in high school. Therefore, the school he played football for before Michigan State is located in Norman, Oklahoma.\n\nWhat is the name of the stadium where the 19",
+      "exact": false
+    },
+    {
+      "dataset": "hotpotqa",
+      "ctx_len": 16683,
+      "base": " Gary L. Bennett was part of the Voyager, Galileo, and Ulysses space missions. The Voyager missions primarily targeted the outer planets (Jupiter, Saturn, Uranus, and Neptune), the Galileo mission targeted Jupiter, and the Ulysses mission was designed to study the Sun's polar regions",
+      "trim": " Gary L. Bennett was part of the Voyager, Galileo, and Ulysses space missions. The Voyager missions primarily targeted the outer planets (Jupiter, Saturn, Uranus, and Neptune), the Galileo mission targeted Jupiter, and the Ulysses mission was designed to study the Sun at all lat",
+      "exact": false
+    },
+    {
+      "dataset": "hotpotqa",
+      "ctx_len": 15089,
+      "base": " Atom Egoyan's biggest commercial success is the erotic thriller Chloe (2009). Chloe is a film, not a stage production. Therefore, Atom Egoyan's biggest commercial success is on film.\n\nPassage 10:\nThe Go-Getter (film)\nThe Go-Getter is a 2",
+      "trim": " Atom Egoyan's biggest commercial success was on film, specifically the erotic thriller Chloe (2009). The film grossed $3 million in box office sales in the United States and became one of the higher-grossing specialty films of the year in the United States. It was theatrically released by",
+      "exact": false
+    },
+    {
+      "dataset": "hotpotqa",
+      "ctx_len": 15670,
+      "base": " Parliament\n\nStep-by-step reasoning:\n1. The question asks about an English writer and former Conservative Member of a certain body who has appeared more than once on Celebrity Fifteen to One.\n2. Looking through the provided passages, we need to find someone who fits this description.\n3. Passage 5 is about Christine Hamilton",
+      "trim": " Parliament\n\nStep-by-Step Explanation:\n1. The question asks about an English writer and former Conservative Member of a certain institution who has appeared more than once on Celebrity Fifteen to One.\n2. From the provided passages, we need to identify such a person.\n3. Passage 5 discusses Gyles Brandreth",
+      "exact": false
+    },
+    {
+      "dataset": "hotpotqa",
+      "ctx_len": 16048,
+      "base": " Thirukkalacherry is a village in the Indian town of Tranquebar (Tharangambadi), located in the Mayiladuthurai District of Tamil Nadu, India.\nWhat is the significance of the Masilamaniswara Temple in Thiruvaduthurai?\nAnswer: The Mas",
+      "trim": " Thirukkalacherry is a village in the Indian town of Tranquebar (Tharangambadi) in the Mayiladuthurai District of Tamil Nadu, India.\nPassage 11:\nThirukkalacherry\nThirukkalachery is a small village in Mayil",
+      "exact": false
+    },
+    {
+      "dataset": "hotpotqa",
+      "ctx_len": 13188,
+      "base": " 2013\nAfter analyzing the provided passages, I can confirm that the correct answer is 2013. In Passage 4, it is stated that Russell D. Moore became the President of the Ethics & Religious Liberty Commission on June 1, 2013. This information is also",
+      "trim": " 2013\nOkay, let's see. The user is asking about when Russell D. Moore became the President of the Ethics & Religious Liberty Commission (ERLC) after his time at the Southern Baptist Theological Seminary. \n\nFirst, I need to recall the information from the provided passages. Passage ",
+      "exact": false
+    },
+    {
+      "dataset": "multifieldqa_en",
+      "ctx_len": 11401,
+      "base": " No, the ISR is not necessary for transgene reactivation. This conclusion is supported by the following evidence: (1) The ISR is activated upon L-Histidinol treatment, as indicated by increased CHOP expression, but this does not induce transgene reactivation when using Salubrinal, which activates",
+      "trim": " No, the ISR is not necessary for transgene reactivation. This is supported by the fact that the transgene reactivation is not affected by the presence of ISRIB, which inhibits the activation of the ISR, and by the knockdown of ATF4, which does not interfere with the reactivation of the trans",
+      "exact": false
+    },
+    {
+      "dataset": "multifieldqa_en",
+      "ctx_len": 8295,
+      "base": " The experimental techniques used in this research include low temperature scanning tunneling microscopy (STM) and scanning tunneling spectroscopy (STS). These techniques were employed to investigate the quantum dot (QD) structures formed in semiconducting single-walled carbon nanotubes (SWNTs) by ion-induced defects. The",
+      "trim": " The experimental techniques used in this research include low temperature scanning tunneling microscopy (STM) and scanning tunneling spectroscopy (STS). These techniques were employed to investigate the quantum dot (QD) structures formed in semiconducting single-walled carbon nanotubes (SWNTs) by ion-induced defects. The",
+      "exact": true
+    },
+    {
+      "dataset": "multifieldqa_en",
+      "ctx_len": 12016,
+      "base": " An ICD is a surgically implanted electronic device to treat life-threatening heartbeat irregularities.\nWhat is the purpose of a pacemaker?\nAnswer: A pacemaker is a surgically implanted electronic device that helps regulate the heartbeat.\nWhat is the difference between an ICD and a pacemaker?\nAnswer: An ICD is",
+      "trim": " An ICD is a surgically implanted electronic device to treat life-threatening heartbeat irregularities.\nWhat is the purpose of a pacemaker?\nAnswer: A pacemaker is a surgically implanted electronic device that helps regulate the heartbeat.\nWhat is the difference between an ICD and a pacemaker?\nAnswer: An ICD is",
+      "exact": true
+    },
+    {
+      "dataset": "multifieldqa_en",
+      "ctx_len": 7600,
+      "base": " The sides of the fuselage need to be sloped (tumbled home) to form a conical shape when the fuselage is assembled. This is important because when the fuselage sides are built flat and then curved into position, the longerons (the longitudinal structural members) will naturally take on an elliptical shape",
+      "trim": " The sides of the fuselage need to be sloped (tumbled home) to form a conical shape when the fuselage is assembled. This is important because when a conical shape is cut with a plane not perpendicular to its axis, the resulting shape is elliptical. In the context of the KR-2",
+      "exact": false
+    }
+  ]
+}

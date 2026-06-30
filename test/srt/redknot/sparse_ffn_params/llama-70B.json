@@ -1,0 +1,8 @@
+{
+  "dense_until": 20,
+  "mass_thresh": 0.2,
+  "deep_layer_start": 60,
+  "mass_thresh_deep": 0.05,
+  "recent_n": 512,
+  "local_window": 4096
+}

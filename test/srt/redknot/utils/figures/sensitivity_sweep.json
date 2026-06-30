@@ -1,0 +1,53 @@
+{
+  "_comment": "Fill x/em/flops from the sweep benchmarks. flops normalized to dense=1.0.",
+  "rho_g": {
+    "x": [
+      0.02,
+      0.05,
+      0.1,
+      0.15,
+      0.25
+    ],
+    "em": [],
+    "flops": []
+  },
+  "window": {
+    "x": [
+      128,
+      256,
+      512,
+      1024,
+      4096
+    ],
+    "em": [],
+    "flops": []
+  },
+  "dense_until": {
+    "x": [
+      0,
+      10,
+      20,
+      40,
+      80
+    ],
+    "em": [],
+    "flops": []
+  },
+  "mass_thresh": {
+    "x": [
+      0.3,
+      0.4,
+      0.5,
+      0.7,
+      0.9
+    ],
+    "em": [],
+    "flops": []
+  },
+  "defaults": {
+    "rho_g": 0.1,
+    "window": 256,
+    "dense_until": 20,
+    "mass_thresh": 0.5
+  }
+}

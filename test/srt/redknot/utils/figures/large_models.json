@@ -1,0 +1,73 @@
+{
+  "_platform": "8xL20Y. F1/compute-saving hardware-independent; TTFT measured on L20Y (NOT H800).",
+  "_provenance": {
+    "dsv4": "benchmark_redknot_dsv4_sparseffn_compare.py, DeepSeek-V4-Flash-Base (284B, TP8), HotpotQA 3K, 4 samples, sparse-FFN 3-mode",
+    "qwen35_35b": "benchmark_RedKnot_QWen35_397B_RAG.py, Qwen3.5-35B-A3B (same hybrid GatedDeltaNet+MoE arch as 397B), 16-32K, 2 samples/cfg",
+    "qwen35_397b": "FP8 checkpoint blocked by offline deep-gemm kernel download; 35B-A3B sibling validates the architecture; 397B numbers retain the draft's H800 measurement."
+  },
+  "dsv4_sparseffn": [
+    {
+      "mode": "dense",
+      "f1": 0.704,
+      "em": 0.5,
+      "keep_ratio": 1.0,
+      "moe_flops_pct": 100.0
+    },
+    {
+      "mode": "activation",
+      "f1": 0.795,
+      "em": 0.5,
+      "keep_ratio": 0.43,
+      "moe_flops_pct": 48.3
+    },
+    {
+      "mode": "indexer(RedKnot)",
+      "f1": 0.823,
+      "em": 0.5,
+      "keep_ratio": 0.339,
+      "moe_flops_pct": 40.0
+    }
+  ],
+  "qwen35_35b": [
+    {
+      "dataset": "hotpotqa",
+      "ctx": "16K",
+      "std_f1": 1.0,
+      "rk_f1": 1.0,
+      "compute_saving": 45.5,
+      "ttft_speedup": 1.84
+    },
+    {
+      "dataset": "triviaqa",
+      "ctx": "32K",
+      "std_f1": 1.0,
+      "rk_f1": 1.0,
+      "compute_saving": 50.4,
+      "ttft_speedup": 2.02
+    },
+    {
+      "dataset": "multifieldqa_en",
+      "ctx": "16K",
+      "std_f1": 1.0,
+      "rk_f1": 0.75,
+      "compute_saving": 47.0,
+      "ttft_speedup": 1.89
+    }
+  ],
+  "rows": [
+    {
+      "model": "Qwen3.5-35B-A3B",
+      "state": "explicit KV + recurrent",
+      "rho_g": 9.4,
+      "f1_retained": 92,
+      "ttft_speedup": 1.92
+    },
+    {
+      "model": "DeepSeek-V4-Flash",
+      "state": "MLA latent + sparse-MoE",
+      "rho_g": 4.6,
+      "f1_retained": 117,
+      "ttft_speedup": null
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "model": "Qwen3.5-397B-A17B",
+  "component": "linear_attention",
+  "method": "per_head_token_window_with_prefix_reuse",
+  "rationale": "Qwen3.5-397B linear-attention (GatedDeltaNet) heads have widely different decay/memory. Short-memory heads use a TOKEN window: window-outside history is reused from the decayed prefix status, window-inside is recomputed (lossless when window >= head memory). GLOBAL heads relay full status; LOCAL heads reset to decayed prefix at window boundaries.",
+  "dense_prefix_layers": 5,
+  "decay_quantile": 0.95,
+  "safety": 2.0,
+  "min_window": 256,
+  "segment": 2048,
+  "moe": {
+    "method": "deep_token_sparse_by_attention_mass",
+    "deep_moe_start_layer": 24,
+    "mass_thresh": 0.7,
+    "note": "Deep MoE layers (>= deep_moe_start_layer=24, i.e. the deep 36 of 60 layers) let tokens with attention-mass < mass_thresh*mean SKIP routed experts (keep shared only). Mass is collected from the deep half of full-attention layers. Sweet spot from the 397B sweep: deep_moe_start=24 + mass_thresh=0.7 maximized MoE compute saving (~46% total) while staying lossless."
+  },
+  "summary": {
+    "note": "397B sweet spot: shallow layers (<24) keep dense-token MoE; deep layers (>=24) use sparse-token MoE skipping ~53% low-mass tokens. window_tok[head] = clamp(ceil(safety * mem_len_token), min_window); >= context => GLOBAL. Layers < dense_prefix_layers stay dense."
+  },
+  "benchmark_datasets": [
+    {"dataset": "triviaqa", "context": 32000, "n_chunk": 4, "chunk": 8000}
+  ]
+}

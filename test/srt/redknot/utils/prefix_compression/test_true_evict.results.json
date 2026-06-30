@@ -1,0 +1,77 @@
+{
+  "config": {
+    "trim_layer_max": 32,
+    "sink": 128,
+    "window": 4096
+  },
+  "rows": [
+    {
+      "prefix_len": 8192,
+      "total_len": 8205,
+      "zero_fill": {
+        "cos_d1": 0.996217801574882,
+        "avg_cos": 0.9993742979504592,
+        "token_match": 1.0
+      },
+      "true_evict": {
+        "cos_d1": 0.9997986472031948,
+        "avg_cos": 0.9997742962179192,
+        "token_match": 1.0
+      },
+      "base_txt": "The history of artificial intelligence (AI) has roots in ancient myths and stories about artificial beings with intellig",
+      "zf_txt": "The history of artificial intelligence (AI) has roots in ancient myths and stories about artificial beings with intellig",
+      "te_txt": "The history of artificial intelligence (AI) has roots in ancient myths and stories about artificial beings with intellig"
+    },
+    {
+      "prefix_len": 16384,
+      "total_len": 16397,
+      "zero_fill": {
+        "cos_d1": 0.9984686579048315,
+        "avg_cos": 0.9990633315290569,
+        "token_match": 1.0
+      },
+      "true_evict": {
+        "cos_d1": 0.9997281381698793,
+        "avg_cos": 0.9996264828108223,
+        "token_match": 1.0
+      },
+      "base_txt": "The history of artificial intelligence (AI) has roots in ancient myths and stories of artificial beings with intelligenc",
+      "zf_txt": "The history of artificial intelligence (AI) has roots in ancient myths and stories of artificial beings with intelligenc",
+      "te_txt": "The history of artificial intelligence (AI) has roots in ancient myths and stories of artificial beings with intelligenc"
+    },
+    {
+      "prefix_len": 24576,
+      "total_len": 24589,
+      "zero_fill": {
+        "cos_d1": 0.9958860422815905,
+        "avg_cos": 0.9980336810908621,
+        "token_match": 1.0
+      },
+      "true_evict": {
+        "cos_d1": 0.9995533132006845,
+        "avg_cos": 0.8969631203463044,
+        "token_match": 0.8125
+      },
+      "base_txt": "The history of artificial intelligence (AI) has its roots in ancient myths and stories about artificial beings with inte",
+      "zf_txt": "The history of artificial intelligence (AI) has its roots in ancient myths and stories about artificial beings with inte",
+      "te_txt": "The history of artificial intelligence (AI) has its roots in ancient myths and stories about artificial beings with inte"
+    },
+    {
+      "prefix_len": 32768,
+      "total_len": 32781,
+      "zero_fill": {
+        "cos_d1": 0.9980852493219307,
+        "avg_cos": 0.9821895865456336,
+        "token_match": 1.0
+      },
+      "true_evict": {
+        "cos_d1": 0.9998613932300424,
+        "avg_cos": 0.988706876247058,
+        "token_match": 1.0
+      },
+      "base_txt": "The history of artificial intelligence (AI) began in antiquity with myths of artificial beings. Philosophers in the 19th",
+      "zf_txt": "The history of artificial intelligence (AI) began in antiquity with myths of artificial beings. Philosophers in the 19th",
+      "te_txt": "The history of artificial intelligence (AI) began in antiquity with myths of artificial beings. Philosophers in the 19th"
+    }
+  ]
+}

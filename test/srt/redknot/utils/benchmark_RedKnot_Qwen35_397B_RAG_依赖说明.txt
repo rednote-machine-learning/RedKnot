@@ -1,0 +1,146 @@
+================================================================================
+RedKnot Qwen3.5-397B-A17B RAG Benchmark — 运行关键依赖
+benchmark_RedKnot_Qwen35_397B_RAG.py
+================================================================================
+最后更新: 2026-06-27
+适用机器: 8x NVIDIA L20Y (80GB, 被识别为 SM 9.0), 容器 memcg 限额 ~2TB CPU 内存
+
+
+--------------------------------------------------------------------------------
+1. Python 解释器 / 虚拟环境
+--------------------------------------------------------------------------------
+必须使用仓库自带的 venv (.venv_tf5)，它带 transformers 5.x，支持 qwen3_5_moe。
+系统默认 python (transformers 4.57) 不支持该模型。
+
+  解释器:      <REPO>/.venv_tf5/bin/python        (Python 3.11)
+  额外 PYTHONPATH:
+      python                                       (sglang / driver_qwen35)
+      .venv_tf5/lib/python3.11/site-packages       (transformers 5.x 等)
+
+  完整: PYTHONPATH=python:.venv_tf5/lib/python3.11/site-packages
+
+
+--------------------------------------------------------------------------------
+2. Python 包版本 (关键)
+--------------------------------------------------------------------------------
+  python            3.11
+  torch             2.9.1+cu128       (来自 conda site-packages)
+  triton            3.5.1             (FP8 Triton kernel 需要)
+  transformers      5.12.0            (.venv_tf5; 提供 qwen3_5_moe + finegrained_fp8)
+  kernels           0.10.4            (.venv_tf5; Hub kernel 加载器)
+  accelerate        1.14.0            (.venv_tf5; device_map 多卡分发)
+  huggingface_hub   1.5.0             (.venv_tf5)
+  safetensors       0.8.0             (.venv_tf5)
+  CUDA              12.8
+
+
+--------------------------------------------------------------------------------
+3. 模型 / 数据集 / 配置文件 (本地路径)
+--------------------------------------------------------------------------------
+  模型 (FP8, ~379G):
+    /mnt/tidal-alsh01/dataset/redone/checkpoints/opensource/Qwen3.5-397B-A17B-FP8
+      - quant_method=fp8, block-wise [128,128], 60 层 (15 full-attn + 45 linear)
+      - 也有 BF16 版 (Qwen3.5-397B-A17B, ~794G) 但 8x80G 放不下会 CPU offload
+
+  LongBench 数据集:
+    /mnt/tidal-alsh01/dataset/redone/096/RedCacheV0.2/datasets/LongBench/data
+      (triviaqa.jsonl / multifieldqa_en.jsonl / hotpotqa.jsonl 等)
+
+  RedKnot 配置 (随仓库):
+    test/srt/redknot/head_class/qwen3.5-397B-A17B_redknot.json    (full-attn 头类稀疏)
+    test/srt/redknot/sparse_ffn_params/qwen3.5-397B-A17B.json     (linear attn + MoE 稀疏)
+
+  RedKnot driver:
+    python/sglang/srt/layers/attention/redknot/driver_qwen35.py
+
+
+--------------------------------------------------------------------------------
+4. FP8 离线/在线算子启用 (本环境特有, 必读)
+--------------------------------------------------------------------------------
+问题: transformers 5.x 的 FP8 matmul 在首次 forward 时要从 HF Hub 动态下载
+      kernel (deep-gemm / finegrained-fp8)。本机 HF 被设离线 + Hub 上没有匹配
+      torch2.9-cu128 的 finegrained-fp8 build (只有通用 torch-cuda)，且其符号名
+      (w8a8_*) 与 transformers 期望 (matmul/batched/grouped) 不一致 -> 直接跑会
+      报 OfflineModeIsEnabled 或 "missing required symbols"。
+
+解决: 仓库新增补丁 test/srt/redknot/utils/fp8_offline_patch.py
+      - benchmark 脚本在 import 前自动挂载 (FP8 模型路径自动启用,
+        由 REDKNOT_FP8_TORCH_FALLBACK 控制, 默认对 *fp8* 路径开启)。
+      - 优先使用本地缓存的 Triton kernel 并做 API shim (matmul/batched/grouped),
+        即真正的融合算子路径; 失败则退回纯 PyTorch block 反量化 (正确但慢)。
+      - 修复了上游 fp8_act_quant 对全零激活块的除零 -> NaN bug
+        (这是 FP8 输出退化成 '!!!!' / F1=0 的根因)。
+
+依赖的本地 Triton kernel 缓存 (必须存在, 9 个纯 .py 文件, 无 .so):
+  /root/.cache/huggingface/hub/models--kernels-community--finegrained-fp8/
+      snapshots/<sha>/build/torch-cuda/
+        __init__.py  _ops.py  act_quant.py  batched.py  grouped.py
+        matmul.py  metadata.json  utils.py  finegrained_fp8/__init__.py
+
+  若该缓存丢失, 在能访问 hf-mirror.com 时用 curl 重新下载到上面布局即可
+  (sha 见 refs/main; resolve URL:
+   https://hf-mirror.com/kernels-community/finegrained-fp8/resolve/<sha>/build/torch-cuda/<file>)
+
+
+--------------------------------------------------------------------------------
+5. 环境变量 (运行时)
+--------------------------------------------------------------------------------
+HF / 离线相关:
+  HF_ENDPOINT=https://hf-mirror.com
+  HF_HUB_OFFLINE=1
+  TRANSFORMERS_OFFLINE=1
+
+GPU:
+  CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7
+
+脚本读取的 REDKNOT_* 环境变量:
+  REDKNOT_MODEL_PATH         模型目录 (默认 35B-A3B; 跑 397B 必须显式设 FP8 路径)
+  REDKNOT_CONFIG_TAG         配置标签, 397B 用 "qwen3.5-397B-A17B"
+  REDKNOT_LONGBENCH_DIR      LongBench data 目录
+  REDKNOT_EXPERTS_IMPL       MoE 专家实现; 离线用 "eager" (纯 python 循环, 走 fp8_linear)
+  REDKNOT_FP8_TORCH_FALLBACK FP8 补丁开关 (默认对 fp8 路径自动=1)
+  REDKNOT_N_SAMPLES          每个 config 的样本数 (默认 2)
+  REDKNOT_MAX_NEW            每样本生成 token 数 (默认 48)
+  REDKNOT_CONFIGS            "标签:数据集:n_chunk:chunk" (如 triviaqa@32K:triviaqa:4:8000)
+  REDKNOT_DEVICE_MAP         device_map 策略 (默认 auto)
+  REDKNOT_MAX_MEM_PER_GPU    每卡显存上限
+  REDKNOT_MAX_CPU_MEM        CPU 内存上限 (防 memcg OOM)
+  其余可调超参 (一般用 JSON 默认值即可):
+    REDKNOT_DENSE_FULL_LAYERS  REDKNOT_FRAC_GLOBAL  REDKNOT_FULL_WINDOW
+    REDKNOT_DENSE_PREFIX_LAYERS REDKNOT_DECAY_QUANTILE REDKNOT_SAFETY
+    REDKNOT_MIN_WINDOW  REDKNOT_LINEAR_SEG
+    REDKNOT_DEEP_MOE_START  REDKNOT_MOE_MASS_THRESH
+    REDKNOT_OFFLINE_KV  REDKNOT_GLOBAL_OFFSET  REDKNOT_SEED
+
+
+--------------------------------------------------------------------------------
+6. 完整运行命令 (示例: 397B-FP8, 32K triviaqa, N=2)
+--------------------------------------------------------------------------------
+cd <REPO>     # /mnt/tidal-alsh01/dataset/redone/RedKnotV0.3
+
+HF_ENDPOINT=https://hf-mirror.com HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 \
+REDKNOT_MODEL_PATH=/mnt/tidal-alsh01/dataset/redone/checkpoints/opensource/Qwen3.5-397B-A17B-FP8 \
+REDKNOT_CONFIG_TAG=qwen3.5-397B-A17B \
+REDKNOT_EXPERTS_IMPL=eager \
+REDKNOT_LONGBENCH_DIR=/mnt/tidal-alsh01/dataset/redone/096/RedCacheV0.2/datasets/LongBench/data \
+REDKNOT_N_SAMPLES=2 REDKNOT_MAX_NEW=24 \
+REDKNOT_CONFIGS="triviaqa@32K:triviaqa:4:8000" \
+CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7 \
+PYTHONPATH=python:.venv_tf5/lib/python3.11/site-packages \
+.venv_tf5/bin/python -u test/srt/redknot/benchmark_RedKnot_Qwen35_397B_RAG.py
+
+
+--------------------------------------------------------------------------------
+7. 已知注意事项 / 坑
+--------------------------------------------------------------------------------
+- .venv_tf5 的 import 很慢 (transformers 5.x 冷启动约 2-3 分钟), 建议后台运行 + 轮询日志。
+- 权重加载 ~4-7 分钟 (FP8 379G, 8 卡分发)。
+- eager MoE 在 32K 上下文下单样本前向很慢 (分钟级); 想快速验证可用 16K + 小 N。
+- CPU 内存: 加载时峰值高 + page cache 会算进 memcg, 之前触发过 OOM-kill。
+  若 OOM: 先清 page cache (sync; echo 1 > /proc/sys/vm/drop_caches) 再重跑。
+- 启动建议用 setsid, 防止 shell 退出/超时杀掉长任务。
+- 日志默认写到: test/srt/redknot/rag_logs/
+- 验证产物: 每样本打印 "Baseline output" / "RedKnot output";
+  结尾打印 Compute saving / TTFT speedup / 每数据集 F1 (PLOTROW 行)。
+  正确运行时 baseline 与 RedKnot 输出应为正常文本 (出现 '!!!!' 即 FP8 NaN, 检查补丁)。
+================================================================================

@@ -1,0 +1,34 @@
+{
+  "_platform": "8xL20Y; FLOPs analytic (HW-independent); EM/F1 real (Qwen3-32B 24K).",
+  "_note": "SegPaged is a kernel/layout change: identical FLOPs to +Head-class, its benefit is decode/prefill latency (see Fig SegPaged microbench), not FLOPs.",
+  "rows": [
+    {
+      "config": "Dense (FA3)",
+      "ttft_speedup": 1.0,
+      "flops_reduction": 0.0,
+      "em": 1.0,
+      "f1": 1.0
+    },
+    {
+      "config": "\\;+Head-class",
+      "ttft_speedup": 1.41,
+      "flops_reduction": 23.9,
+      "em": 1.0,
+      "f1": 1.0
+    },
+    {
+      "config": "\\;+SegPaged",
+      "ttft_speedup": 1.8,
+      "flops_reduction": 23.9,
+      "em": 1.0,
+      "f1": 1.0
+    },
+    {
+      "config": "\\;+Sparse-FFN (\\textbf{full \\sysname})",
+      "ttft_speedup": 1.78,
+      "flops_reduction": 70.9,
+      "em": 1.0,
+      "f1": 1.0
+    }
+  ]
+}

@@ -1,0 +1,53 @@
+# ===========================================================================
+# DeepSeek-V4-Flash (FP8) RedKnot benchmark — runtime dependencies
+#
+# Target script : benchmark_RedKnot_DeepSeekV4_RAG.py
+# Model         : DeepSeek-V4-Flash (FP8 e4m3, block 128x128, scale ue8m0)
+# Hardware      : NVIDIA SM90 (Hopper, e.g. H100/H800/L20Y) x8, CUDA 12.9
+# Python        : 3.11
+#
+# Use the repo venv `.venv_tf5` (transformers 5.x) — DeepSeek-V4 is a new
+# architecture (`model_type: deepseek_v4`) that the system transformers 4.57
+# does NOT parse correctly. `.venv_tf5` is a `--system-site-packages` venv, so
+# it inherits every system package below and only overrides transformers /
+# safetensors.
+#
+# These versions were verified to make the model LOAD all 46 FP8 shards and
+# bring the SGLang Engine to READY. See the companion notes file
+# `DSV4_FLASH_SETUP_NOTES.md` for the remaining MoE-kernel issue and the
+# required environment variables.
+# ===========================================================================
+
+# --- Core model/runtime ---------------------------------------------------
+transformers==5.12.0          # new deepseek_v4 architecture; 4.57 cannot parse it
+safetensors>=0.7.0            # 0.5.3 cannot deserialize the F8_E8M0 (ue8m0) dtype
+                              # used by V4 microscaling weights (verified 0.8.0)
+
+# --- DeepSeek-V4 attention (FlashMLA) -------------------------------------
+# NOT on PyPI as a usable sdist (the +748b13d sdist is missing headers).
+# Build from source for SM90 (see install commands below).
+#   flash_mla   (built from github.com/deepseek-ai/FlashMLA, SM90)
+
+# --- Blockwise FP8 GEMM (DeepGEMM, sgl-project fork) -----------------------
+# Provides `import deep_gemm` with the recipe_a/recipe_b API SGLang calls.
+# MUST be built FROM SOURCE for the local CUDA/driver — the prebuilt wheels
+# (incl. the cu129 one) segfault in their _C.so on this host. See
+# DSV4_FLASH_SETUP_NOTES.md §4. Verified: deep_gemm 2.5.0+<sha> (from v0.1.0).
+
+# --- MoE backend note (FP4 experts on SM90) -------------------------------
+# DeepSeek-V4-Flash has expert_dtype=fp4. Native FP4 MoE GEMM needs SM100, so
+# on SM90 set moe_runner_backend='marlin' (REDKNOT_MOE_RUNNER_BACKEND=marlin).
+# Also set SGLANG_OPT_USE_TOPK_V2=0 to avoid the SM90 TMA-alignment assertion
+# in the indexer topk_v2 kernel.
+
+# --- DeepSeek-V4 MHC / hash layers ----------------------------------------
+tilelang==0.1.8               # pinned in python/pyproject.toml; 0.1.11 crashes
+apache-tvm-ffi==0.1.8.post2   # tilelang 0.1.8 is incompatible with tvm-ffi 0.1.12
+
+# --- Already present in the base image (listed for completeness) -----------
+# torch==2.9.1+cu128
+# sgl-kernel==0.3.20           # NOTE: package is named `sgl-kernel`, while
+#                              # engine.py checks for `sglang-kernel`; set
+#                              # SGLANG_SKIP_SGL_KERNEL_VERSION_CHECK=1.
+# flashinfer-python==0.5.3
+# deep_ep==1.2.1               # only needed for expert-parallel (EP) runs

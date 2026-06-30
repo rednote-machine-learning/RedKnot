@@ -1,0 +1,40 @@
+{
+  "config": {
+    "trim_layer_max": 32,
+    "sink": 128,
+    "window": 4096,
+    "new_text": "equal-length"
+  },
+  "rows": [
+    {
+      "prefix_len": 5120,
+      "text_len": 5120,
+      "total": 10240,
+      "cos_d1": 0.7788291924827102,
+      "avg_cos": 0.9257380068900871,
+      "token_match": 1.0,
+      "base_txt": " bits, enabling algorithms like Shor's and Grover's.  Quantum computing exploits superposition and entanglement to proce",
+      "reuse_txt": " bits, enabling algorithms like Shor's and Grover's.  Quantum computing exploits superposition and entanglement to proce"
+    },
+    {
+      "prefix_len": 6144,
+      "text_len": 6144,
+      "total": 12288,
+      "cos_d1": 0.9245505731149377,
+      "avg_cos": 0.9771216932078676,
+      "token_match": 1.0,
+      "base_txt": " like Shor's and Grover's.  Quantum computing exploits superposition and entanglement to process information. Qubits dif",
+      "reuse_txt": " like Shor's and Grover's.  Quantum computing exploits superposition and entanglement to process information. Qubits dif"
+    },
+    {
+      "prefix_len": 7168,
+      "text_len": 7168,
+      "total": 14336,
+      "cos_d1": 0.9621166284883796,
+      "avg_cos": 0.9795108558510016,
+      "token_match": 1.0,
+      "base_txt": " and Grover's.  Quantum computing exploits superposition and entanglement to process information. Qubits differ fundamen",
+      "reuse_txt": " and Grover's.  Quantum computing exploits superposition and entanglement to process information. Qubits differ fundamen"
+    }
+  ]
+}

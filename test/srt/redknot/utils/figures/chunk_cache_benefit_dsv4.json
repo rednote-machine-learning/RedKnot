@@ -1,0 +1,60 @@
+{
+  "model": "DeepSeek-V4-Flash",
+  "n_requests": 2417,
+  "n_chunks": 17629,
+  "kv_bytes_per_token": 49536,
+  "prefill_sec_per_chunk": 0.26489528816986857,
+  "prefill_source": "estimated(FLOPs)",
+  "policies": [
+    {
+      "policy": "cache_all",
+      "cached": 17629,
+      "pct_cached": 100.0,
+      "prefills_saved": 30686,
+      "gpu_seconds_saved": 8128.6,
+      "peak_kv_gb": 6017.91,
+      "mem_gb_seconds": 1472387.0,
+      "sec_saved_per_gb": 1.35
+    },
+    {
+      "policy": "prefix_only",
+      "cached": 7,
+      "pct_cached": 0.0,
+      "prefills_saved": 7,
+      "gpu_seconds_saved": 1.9,
+      "peak_kv_gb": 2.22,
+      "mem_gb_seconds": 1393.8,
+      "sec_saved_per_gb": 0.83
+    },
+    {
+      "policy": "redknot(R>=3)",
+      "cached": 3780,
+      "pct_cached": 21.4,
+      "prefills_saved": 27763,
+      "gpu_seconds_saved": 7354.3,
+      "peak_kv_gb": 1624.87,
+      "mem_gb_seconds": 1189344.0,
+      "sec_saved_per_gb": 4.53
+    },
+    {
+      "policy": "redknot(R>=5)",
+      "cached": 1862,
+      "pct_cached": 10.6,
+      "prefills_saved": 23216,
+      "gpu_seconds_saved": 6149.8,
+      "peak_kv_gb": 865.07,
+      "mem_gb_seconds": 817225.4,
+      "sec_saved_per_gb": 7.11
+    },
+    {
+      "policy": "redknot(R>=10)",
+      "cached": 782,
+      "pct_cached": 4.4,
+      "prefills_saved": 17406,
+      "gpu_seconds_saved": 4610.8,
+      "peak_kv_gb": 412.3,
+      "mem_gb_seconds": 519924.5,
+      "sec_saved_per_gb": 11.18
+    }
+  ]
+}

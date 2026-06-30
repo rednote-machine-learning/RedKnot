@@ -1,0 +1,34 @@
+{
+  "8192": {
+    "base": {
+      "n_in": 8778.0,
+      "n_out": 16.0,
+      "t_prefill": 1.2698292471468449,
+      "t_dec": 0.7857099436223507,
+      "prefill_tps": 6912.74044894077,
+      "decode_tps": 20.363748899798008,
+      "total_tps": 4278.19622194079,
+      "ok": true
+    },
+    "rk": {
+      "ok": false,
+      "err": "No module named 'transformers.models.qwen3_5_moe'"
+    }
+  },
+  "16384": {
+    "base": {
+      "n_in": 16971.0,
+      "n_out": 16.0,
+      "t_prefill": 2.8790835812687874,
+      "t_dec": 0.8197119385004044,
+      "prefill_tps": 5894.583995550774,
+      "decode_tps": 19.519052057812754,
+      "total_tps": 4592.576126257449,
+      "ok": true
+    },
+    "rk": {
+      "ok": false,
+      "err": "No module named 'transformers.models.qwen3_5_moe'"
+    }
+  }
+}

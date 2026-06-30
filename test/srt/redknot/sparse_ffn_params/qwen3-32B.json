@@ -1,0 +1,7 @@
+{
+  "dense_until": 5,
+  "mass_thresh": 0.2,
+  "deep_layer_start": 40,
+  "mass_thresh_deep": 0.05,
+  "recent_n": 128
+}

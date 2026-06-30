@@ -1,0 +1,161 @@
+{
+  "model": "Qwen3.5-35B-A3B",
+  "model_type": "qwen3_5_moe",
+  "method": "full_attention_head_class",
+  "comment": "Loadable HeadClassConfig for the SGLang RedKnot backend. Indexed by FULL-ATTENTION position (0..9), NOT global layer id; the backend maps global full-attn layer ids -> these rows. Generated from the sweet-spot params (frac_global=0.4, window=4096, dense_full_layers=5).",
+  "num_layers": 10,
+  "num_kv_heads": 2,
+  "dense_prefix_layers": 5,
+  "kv_head_classification": [
+    [
+      "local",
+      "local"
+    ],
+    [
+      "local",
+      "local"
+    ],
+    [
+      "global",
+      "local"
+    ],
+    [
+      "global",
+      "global"
+    ],
+    [
+      "global",
+      "global"
+    ],
+    [
+      "local",
+      "local"
+    ],
+    [
+      "local",
+      "global"
+    ],
+    [
+      "local",
+      "local"
+    ],
+    [
+      "global",
+      "local"
+    ],
+    [
+      "local",
+      "global"
+    ]
+  ],
+  "kv_head_max_distance": [
+    [
+      4096,
+      4096
+    ],
+    [
+      4096,
+      4096
+    ],
+    [
+      -1,
+      4096
+    ],
+    [
+      -1,
+      -1
+    ],
+    [
+      -1,
+      -1
+    ],
+    [
+      4096,
+      4096
+    ],
+    [
+      4096,
+      -1
+    ],
+    [
+      4096,
+      4096
+    ],
+    [
+      -1,
+      4096
+    ],
+    [
+      4096,
+      -1
+    ]
+  ],
+  "kv_head_sink_size": [
+    [
+      4,
+      4
+    ],
+    [
+      4,
+      4
+    ],
+    [
+      4,
+      4
+    ],
+    [
+      4,
+      4
+    ],
+    [
+      4,
+      4
+    ],
+    [
+      4,
+      4
+    ],
+    [
+      4,
+      4
+    ],
+    [
+      4,
+      4
+    ],
+    [
+      4,
+      4
+    ],
+    [
+      4,
+      4
+    ]
+  ],
+  "full_attention_layers": [
+    3,
+    7,
+    11,
+    15,
+    19,
+    23,
+    27,
+    31,
+    35,
+    39
+  ],
+  "full_attention_interval": null,
+  "provenance": {
+    "frac_global": 0.4,
+    "window": 4096,
+    "sink_size": 4,
+    "dense_full_layers": 5,
+    "sparse_full_layers": [
+      23,
+      27,
+      31,
+      35,
+      39
+    ]
+  }
+}

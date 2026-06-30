@@ -1,0 +1,85 @@
+{
+  "_platform": "8xL20Y (80GB). Quality/EM/F1 and analytic FLOPs are HW-independent; TTFT measured on L20Y, NOT H800.",
+  "_provenance": {
+    "qwen3": "benchmark_RedKnot_Qwen3_RAG.py, 5 samples, 16K/24K",
+    "llama70b": "benchmark_RedKnot_Llama3.3_RAG.py INT4, 4 samples, hotpotqa/multifieldqa",
+    "baselines": "benchmark_tokenlevel_PIC_baselines.py, 5 samples, qwen3-32b INT4"
+  },
+  "rows": [
+    {
+      "model": "Qwen3-32B",
+      "method": "Dense (FA3)",
+      "ctx": "24K",
+      "em": 0.8,
+      "f1": 0.978,
+      "cos": 1.0,
+      "top1": 1.0,
+      "top10": 1.0,
+      "ttft_speedup": 1.0,
+      "flops_reduction": 0.0
+    },
+    {
+      "model": "Qwen3-32B",
+      "method": "CacheBlend",
+      "ctx": "24K",
+      "em": 0.0,
+      "f1": 0.162,
+      "ttft_speedup": 2.02,
+      "flops_reduction": null
+    },
+    {
+      "model": "Qwen3-32B",
+      "method": "ProphetKV",
+      "ctx": "24K",
+      "em": 0.0,
+      "f1": 0.205,
+      "ttft_speedup": 1.88,
+      "flops_reduction": null
+    },
+    {
+      "model": "Qwen3-32B",
+      "method": "redknot",
+      "ctx": "24K",
+      "em": 1.0,
+      "f1": 1.0,
+      "ttft_speedup": 1.78,
+      "flops_reduction": 70.9
+    },
+    {
+      "model": "Llama-3.3-70B",
+      "method": "Dense (FA3)",
+      "ctx": "16K",
+      "em": 0.0,
+      "f1": 0.333,
+      "ttft_speedup": 1.0,
+      "flops_reduction": 0.0
+    },
+    {
+      "model": "Llama-3.3-70B",
+      "method": "CacheBlend",
+      "ctx": "16K",
+      "em": 0.0,
+      "f1": 0.167,
+      "ttft_speedup": 2.02,
+      "flops_reduction": null
+    },
+    {
+      "model": "Llama-3.3-70B",
+      "method": "ProphetKV",
+      "ctx": "16K",
+      "em": 0.0,
+      "f1": 0.167,
+      "ttft_speedup": 1.88,
+      "flops_reduction": null
+    },
+    {
+      "model": "Llama-3.3-70B",
+      "method": "redknot",
+      "ctx": "16K",
+      "em": 0.0,
+      "f1": 0.295,
+      "ttft_speedup": 1.58,
+      "flops_reduction": 49.8
+    }
+  ]
+}

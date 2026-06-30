@@ -1,0 +1,57 @@
+{
+  "Qwen3-32B": {
+    "arch": "GQA",
+    "Hkv": 8,
+    "head_dim": 128,
+    "window_median": 4096,
+    "full_head_frac": 0.1504,
+    "lengths": [
+      16000,
+      32000,
+      64000,
+      128000
+    ],
+    "hetero_ratio": [
+      1.201,
+      1.335,
+      1.455,
+      1.543
+    ]
+  },
+  "Qwen3.5-397B-A17B": {
+    "arch": "GQA",
+    "Hkv": 2,
+    "head_dim": 256,
+    "window_median": 2048,
+    "full_head_frac": 0.5,
+    "lengths": [
+      16000,
+      32000,
+      64000,
+      128000
+    ],
+    "hetero_ratio": [
+      1.773,
+      1.879,
+      1.938,
+      1.968
+    ]
+  },
+  "DeepSeek-V4-Flash": {
+    "arch": "MLA",
+    "physical_kv_heads": 1,
+    "lengths": [
+      16000,
+      32000,
+      64000,
+      128000
+    ],
+    "hetero_ratio": [
+      1.0,
+      1.0,
+      1.0,
+      1.0
+    ],
+    "note": "MLA shares a single latent KV across heads; per-head window heterogeneity gives no SegPaged benefit (ratio == 1)."
+  }
+}

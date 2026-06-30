@@ -1,0 +1,59 @@
+{
+  "budget_gb": 2.0,
+  "n_accesses": 48315,
+  "kv_bytes_per_token": 49536,
+  "results": [
+    {
+      "policy": "cache_all",
+      "requests": 48315,
+      "hits": 30686,
+      "misses": 17629,
+      "hit_rate": 0.6351,
+      "peak_kv_gb": 523.96,
+      "reused_tokens": 18411600,
+      "recompute_tokens": 10577400,
+      "token_reuse_rate": 0.6351,
+      "gpu_seconds_saved": 1215.2,
+      "sec_saved_per_gb": 2.3
+    },
+    {
+      "policy": "lru",
+      "requests": 48315,
+      "hits": 19785,
+      "misses": 28530,
+      "hit_rate": 0.4095,
+      "peak_kv_gb": 1.99,
+      "reused_tokens": 11871000,
+      "recompute_tokens": 17118000,
+      "token_reuse_rate": 0.4095,
+      "gpu_seconds_saved": 783.5,
+      "sec_saved_per_gb": 393.7
+    },
+    {
+      "policy": "lfu",
+      "requests": 48315,
+      "hits": 5287,
+      "misses": 43028,
+      "hit_rate": 0.1094,
+      "peak_kv_gb": 1.99,
+      "reused_tokens": 3172200,
+      "recompute_tokens": 25816800,
+      "token_reuse_rate": 0.1094,
+      "gpu_seconds_saved": 209.4,
+      "sec_saved_per_gb": 105.2
+    },
+    {
+      "policy": "redknot_3layer",
+      "requests": 48315,
+      "hits": 17890,
+      "misses": 30425,
+      "hit_rate": 0.3703,
+      "peak_kv_gb": 1.99,
+      "reused_tokens": 10734000,
+      "recompute_tokens": 18255000,
+      "token_reuse_rate": 0.3703,
+      "gpu_seconds_saved": 708.4,
+      "sec_saved_per_gb": 356.0
+    }
+  ]
+}
