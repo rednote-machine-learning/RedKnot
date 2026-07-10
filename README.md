@@ -27,6 +27,10 @@ While staying at **near-lossless accuracy** (in some scenarios even better than 
 
 > This repository is built on SGLang and retains all of SGLang's high-performance serving capabilities (RadixAttention, zero-overhead scheduler, PD disaggregation, continuous batching, quantization, etc.). RedKnot is integrated as an attention-layer extension under `python/sglang/srt/layers/attention/redknot/`.
 
+## Ascend Adaptation
+
+Huawei Cloud is actively adapting RedKnot for Ascend NPUs. Ascend support is currently work in progress; compatibility notes, deployment instructions, and performance results will be updated as the adaptation matures.
+
 ## Key Ideas
 
 | Mechanism | Description | Code Location |
