@@ -1914,6 +1914,232 @@ def _query_headclass_attention(
 
 
 # ──────────────────────────────────────────────────────────────────────────
+# Native sliding-window KV-reuse path
+# ──────────────────────────────────────────────────────────────────────────
+@torch.no_grad()
+def run_redknot_swa_offlinekv(
+    model,
+    tokenizer,
+    *,
+    segments_offline: List[OfflineSegment],
+    query_text: str,
+    recompute_prefix: int = 3000,
+    recompute_ratio: Optional[float] = None,
+    rope_helper: Optional[RoPEHelper] = None,
+    max_new_tokens: int = 100,
+    timing_stats: Optional[dict] = None,
+    stop_strings: Optional[List[str]] = None,
+) -> Tuple[torch.Tensor, str, int, float]:
+    """Reuse independently-prefilled documents with native sliding attention.
+
+    Offline keys are moved from document-local to concatenated RoPE positions.
+    For every document after the first, only its boundary prefix is forwarded
+    with the preceding documents as cache; that recomputed prefix replaces the
+    corresponding offline KV while the repositioned suffix is reused.
+
+    The cache deliberately uses plain ``DynamicCache()`` rather than a
+    config-derived sliding cache. It must retain every document for splicing;
+    Mistral's causal mask still enforces ``config.sliding_window`` during each
+    forward.
+    """
+    from transformers import DynamicCache
+
+    sliding_window = getattr(model.config, "sliding_window", None)
+    if not sliding_window or sliding_window <= 0:
+        raise ValueError(
+            "run_redknot_swa_offlinekv requires model.config.sliding_window > 0"
+        )
+    if not segments_offline:
+        raise ValueError("segments_offline must contain at least one document")
+    if recompute_ratio is not None and not 0 < recompute_ratio <= 1:
+        raise ValueError("recompute_ratio must be in (0, 1]")
+    if recompute_ratio is None and recompute_prefix <= 0:
+        raise ValueError("recompute_prefix must be positive")
+
+    base_model = model.model if hasattr(model, "model") else model
+    if rope_helper is None:
+        rope_helper = RoPEHelper(base_model.rotary_emb)
+    device = model.device
+    n_layers = model.config.num_hidden_layers
+    doc_lens = [seg.doc_len for seg in segments_offline]
+    offsets, total_kv = [], 0
+    for doc_len in doc_lens:
+        offsets.append(total_kv)
+        total_kv += doc_len
+
+    if torch.cuda.is_available():
+        torch.cuda.synchronize()
+        gpu_start = torch.cuda.Event(enable_timing=True)
+        gpu_end = torch.cuda.Event(enable_timing=True)
+        gpu_start.record()
+    else:
+        gpu_start = gpu_end = None
+    t_start = time.perf_counter()
+
+    # First restore every independently-prefilled document to its concatenated
+    # absolute positions. Values are position independent.
+    assembled: List[List[Tuple[torch.Tensor, torch.Tensor]]] = []
+    for doc_idx, seg in enumerate(segments_offline):
+        doc_kv = []
+        for layer_idx in range(n_layers):
+            layer_device = next(
+                base_model.layers[layer_idx].self_attn.parameters()
+            ).device
+            key, value = seg.kv[layer_idx]
+            key = key.to(layer_device)
+            value = value.to(layer_device)
+            if offsets[doc_idx]:
+                key = rope_helper.reposition_offset(
+                    key, src_start=0, dst_start=offsets[doc_idx]
+                )
+            doc_kv.append((key, value))
+        assembled.append(doc_kv)
+
+    if torch.cuda.is_available():
+        torch.cuda.synchronize()
+    t_after_rope = time.perf_counter()
+
+    def build_prefix_cache(end_doc: int, *, sliding: bool = False) -> DynamicCache:
+        # Recompute needs full prior documents for boundary correction. The
+        # final query/decode cache should use the model's native SWA layer so it
+        # retains only the active window instead of carrying the full context.
+        cache = DynamicCache(config=model.config) if sliding else DynamicCache()
+        for layer_idx in range(n_layers):
+            keys = [assembled[d][layer_idx][0] for d in range(end_doc)]
+            values = [assembled[d][layer_idx][1] for d in range(end_doc)]
+            cache.update(torch.cat(keys, dim=2), torch.cat(values, dim=2), layer_idx)
+        return cache
+
+    # Correct only the boundary region whose native SWA receptive field reaches
+    # into preceding documents. The rest of each document keeps its offline KV.
+    for doc_idx in range(1, len(segments_offline)):
+        prefix_len = (
+            max(1, int(doc_lens[doc_idx] * recompute_ratio))
+            if recompute_ratio is not None
+            else min(recompute_prefix, doc_lens[doc_idx])
+        )
+        prefix_ids = segments_offline[doc_idx].token_ids[:prefix_len].to(device)
+        prefix_ids = prefix_ids.unsqueeze(0)
+        start = offsets[doc_idx]
+        positions = torch.arange(start, start + prefix_len, device=device)
+        past = build_prefix_cache(doc_idx)
+        out = model(
+            input_ids=prefix_ids,
+            position_ids=positions.unsqueeze(0),
+            past_key_values=past,
+            cache_position=positions,
+            use_cache=True,
+            logits_to_keep=1,
+        )
+        past = out.past_key_values
+        for layer_idx in range(n_layers):
+            recomputed_k = past.layers[layer_idx].keys[:, :, -prefix_len:, :]
+            recomputed_v = past.layers[layer_idx].values[:, :, -prefix_len:, :]
+            offline_k, offline_v = assembled[doc_idx][layer_idx]
+            assembled[doc_idx][layer_idx] = (
+                torch.cat([recomputed_k, offline_k[:, :, prefix_len:, :]], dim=2),
+                torch.cat([recomputed_v, offline_v[:, :, prefix_len:, :]], dim=2),
+            )
+        del out, past
+
+    if torch.cuda.is_available():
+        torch.cuda.synchronize()
+    t_after_recompute = time.perf_counter()
+
+    past = build_prefix_cache(len(segments_offline), sliding=True)
+    query_ids = tokenizer(query_text, return_tensors="pt", add_special_tokens=False)[
+        "input_ids"
+    ].to(device)
+    query_len = int(query_ids.shape[1])
+    query_positions = torch.arange(total_kv, total_kv + query_len, device=device)
+    out = model(
+        input_ids=query_ids,
+        position_ids=query_positions.unsqueeze(0),
+        past_key_values=past,
+        cache_position=query_positions,
+        use_cache=True,
+        logits_to_keep=1,
+    )
+    first_logits = out.logits[0, -1, :].clone()
+    past = out.past_key_values
+
+    if torch.cuda.is_available():
+        gpu_end.record()
+        torch.cuda.synchronize()
+        ttft_gpu_ms = gpu_start.elapsed_time(gpu_end)
+    else:
+        ttft_gpu_ms = (time.perf_counter() - t_start) * 1000
+    ttft = time.perf_counter() - t_start
+    if timing_stats is not None:
+        timing_stats["ttft_gpu_ms"] = ttft_gpu_ms
+    print(
+        f"  [swa-reuse] rope={t_after_rope - t_start:.3f}s  "
+        f"recompute={t_after_recompute - t_after_rope:.3f}s  "
+        f"query={ttft - (t_after_recompute - t_start):.3f}s  "
+        f"total_ttft={ttft:.3f}s",
+        file=__import__("sys").stderr,
+    )
+
+    generated: List[int] = []
+    next_id = first_logits.argmax().view(1, 1)
+    generated.append(int(next_id.item()))
+    total_seen = total_kv + query_len
+    if torch.cuda.is_available():
+        torch.cuda.synchronize()
+    decode_start = time.perf_counter()
+    _stop_hit = False
+    for step in range(max_new_tokens - 1):
+        position = total_seen + step
+        out = model(
+            input_ids=next_id,
+            position_ids=torch.tensor([[position]], device=device),
+            past_key_values=past,
+            cache_position=torch.tensor([position], device=device),
+            use_cache=True,
+            logits_to_keep=1,
+        )
+        past = out.past_key_values
+        next_id = out.logits[0, -1, :].argmax().view(1, 1)
+        token_id = int(next_id.item())
+        generated.append(token_id)
+        if token_id == tokenizer.eos_token_id:
+            break
+        # Early stop on stop_strings
+        if stop_strings and step >= 1:
+            partial = tokenizer.decode(generated, skip_special_tokens=True)
+            for ss in stop_strings:
+                if ss in partial:
+                    # Truncate at the stop string boundary
+                    _stop_hit = True
+                    break
+            if _stop_hit:
+                break
+
+    if torch.cuda.is_available():
+        torch.cuda.synchronize()
+    if timing_stats is not None:
+        timing_stats["decode_seconds"] = max(time.perf_counter() - decode_start, 1e-3)
+        # The first token comes from the timed prefill/query phase. Decode
+        # throughput must use the number of subsequent model forwards, not a
+        # re-tokenization of text after EOS/stop-string truncation.
+        timing_stats["decode_forward_steps"] = max(len(generated) - 1, 0)
+
+    text = tokenizer.decode(generated, skip_special_tokens=True)
+    # Truncate at the first stop string occurrence
+    if stop_strings:
+        for ss in stop_strings:
+            idx = text.find(ss)
+            if idx != -1:
+                text = text[:idx]
+        text = text.strip()
+    del out, past
+    gc.collect()
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+    return first_logits, text, query_len, ttft
+
+
+# ──────────────────────────────────────────────────────────────────────────
 # Head-class hybrid KV-reuse path (paper-faithful)
 # ──────────────────────────────────────────────────────────────────────────
 @torch.no_grad()
