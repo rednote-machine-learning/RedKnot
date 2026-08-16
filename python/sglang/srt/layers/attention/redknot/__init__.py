@@ -25,6 +25,7 @@ from sglang.srt.layers.attention.redknot.driver_batched import (
     online_forward_segments_batched,
     run_redknot_batched,
     run_redknot_offlinekv,
+    run_redknot_swa_offlinekv,
 )
 from sglang.srt.layers.attention.redknot.deepseek_v4_mla import (
     DeepSeekV4MLAHeadConfig,
@@ -159,6 +160,7 @@ __all__ = [
     "run_redknot",
     "run_redknot_batched",
     "run_redknot_offlinekv",
+    "run_redknot_swa_offlinekv",
     "segment_attention_flash",
     "segment_attention_flash3",
     "segment_attention_flash3_parallel",

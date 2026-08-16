@@ -16,7 +16,7 @@
 
 | 模型 | 脚本 | 数据集 | 权重路径 | 运行环境 |
 |---|---|---|---|---|
-| Mistral-7B-Instruct-v0.3 | `benchmark_RedKnot_Mistral_RAG.py` | HotpotQA | `096/models/Mistral-7B-Instruct-v0.3` | 默认 python (bf16) |
+| Mistral-7B-Instruct-v0.1 | `benchmark_RedKnot_Mistral_RAG.py` | `longbench_rag.jsonl` / LongBench | native SWA 4096 | 默认 python (bf16) |
 | Qwen3-32B | `benchmark_RedKnot_Qwen3_RAG.py` | HotpotQA | `096/models/Qwen3-32B` | 默认 python (INT4) |
 | Llama-3.3-70B-Instruct | `benchmark_RedKnot_Llama3.3_RAG.py` | LongBench | `096/models/Llama-3.3-70B-Instruct` | 默认 python (INT4) |
 | Qwen3.5-35B-A3B | `benchmark_RedKnot_Qwen35_397B_RAG.py` | LongBench | `checkpoints/opensource/Qwen3.5-35B-A3B` | **`.venv_tf5`** (transformers 5.x) |
@@ -30,16 +30,27 @@
 
 ## 二、实验结果（每模型 4 样本）
 
-### Mistral-7B-Instruct-v0.3 — HotpotQA
+### Mistral-7B-Instruct-v0.1 — native SWA KV 复用
 
-| 上下文 | base F1 | RedKnot F1 | base TTFT | RedKnot TTFT | speedup | FLOPs 节省 |
-|---|---|---|---|---|---|---|
-| 16K | 0.250 | 0.475 | 0.70s | 0.52s | **1.35x** | 51.5% |
-| 24K | 0.250 | 0.250 | 1.12s | 0.80s | **1.39x** | 50.2% |
-| 32K | 0.688 | 0.100 | 1.67s | 1.24s | **1.35x** | 49.1% |
+硬件：NVIDIA A800-SXM4-80GB ×1 | 日期：2026-08-16 | 模型：`mistralai/Mistral-7B-Instruct-v0.1`（`sliding_window=4096`）
 
-说明：7B 小模型在长上下文 RAG 上**基线本身能力弱**（base F1 也在 0.25 左右波动），
-F1 噪声大；TTFT speedup / FLOPs 节省（系统指标）稳定在 ~1.35x / ~50%。
+默认评测集（`longbench_rag.jsonl`，4 文档 RAG，约 30K）：
+
+| n | 逐字一致 | EM (base / RedKnot) | logits 余弦 | base TTFT | RedKnot TTFT | speedup | GPU 节省 |
+|---|---|---|---|---|---|---|---|
+| 25 | **23/25 (92%)** | 0.440 / 0.440 | 0.998 | 1.46s | **0.45s** | **3.22x** | **68.9%** |
+
+Decode 吞吐两侧持平（约 33 tok/s）。首 token logits 余弦 0.998，复用路径与全量 FA-2 prefill 数值对齐。
+
+长上下文 LongBench（文档足够长、native SWA 复用能发挥作用）：
+
+| 数据集 | n | base F1 | RedKnot F1 | base TTFT | RedKnot TTFT | speedup | GPU 节省 |
+|---|---|---|---|---|---|---|---|
+| hotpotqa | 200 | 0.389 | **0.392** | 1.24s | 0.38s | **3.27x** | 69.4% |
+| musique | 200 | 0.143 | **0.146** | 1.50s | 0.44s | **3.42x** | 70.7% |
+| triviaqa | 200 | 0.494 | **0.506** | 1.14s | 0.41s | **2.80x** | 64.3% |
+
+这三组上 RedKnot F1 **均 ≥ baseline**，TTFT 约 3x，GPU 节省约 65–70%；上下文越长（musique / hotpotqa）加速越明显。
 
 ### Qwen3-32B — HotpotQA  ✅ 最佳
 

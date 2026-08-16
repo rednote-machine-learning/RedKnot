@@ -21,7 +21,7 @@
 - **SegPagedAttention Runtime**: per-head page table + segmented KV store, allowing different head classes to have different visible windows;
 - **DeepSeek-V4** and the **full Qwen 3.5 series** will be fully updated and adapted in the next release; only the base version is open-sourced for now.
 
-While staying at **near-lossless accuracy** (in some scenarios even better than the dense baseline), it reduces long-context prefill **FLOPs by roughly 50%–70%** and delivers **1.35x–2.2x TTFT speedup** (the gains grow larger as context length increases).
+While staying at **near-lossless accuracy** (in some scenarios even better than the dense baseline), it reduces long-context prefill **FLOPs by roughly 50%–70%** and delivers **1.35x–3.2x TTFT speedup** (the gains grow larger as context length increases).
 
 - **Paper**: **RedKnot: Efficient Long-Context LLM Serving with Head-Aware KV Reuse and SegPagedAttention** — Yang Liu, ZhaoKai Luo, HuaYi Jin, ZhiYong Wang, RuoZhou He, BoYu Wang, Guanjie Chen, Junhao Hu (<https://arxiv.org/abs/2606.06256>)
 
@@ -87,15 +87,28 @@ RedKnot F1 is **always ≥ baseline** (lossless or better), TTFT speedup grows w
 
 TTFT speedup grows with context (1.87→2.16x); lossless at 16K, with some degradation at long context (the cost of linear attention + MoE sparsity).
 
-### Mistral-7B-Instruct-v0.3 — HotpotQA
+### Mistral-7B-Instruct-v0.1 — native SWA KV reuse
 
-| Context | base F1 | RedKnot F1 | base TTFT | RedKnot TTFT | speedup | FLOPs saved |
-|---|---|---|---|---|---|---|
-| 16K | 0.250 | 0.475 | 0.70s | 0.52s | **1.35x** | 51.5% |
-| 24K | 0.250 | 0.250 | 1.12s | 0.80s | **1.39x** | 50.2% |
-| 32K | 0.688 | 0.100 | 1.67s | 1.24s | **1.35x** | 49.1% |
+> Hardware: NVIDIA A800-SXM4-80GB ×1 | Date: 2026-08-16
+> Model: `mistralai/Mistral-7B-Instruct-v0.1` (`sliding_window=4096`) | bf16 | vs full FA-2 prefill
 
-For this small 7B model, the baseline itself is weak on long-context RAG and F1 is noisy; the system metrics (TTFT speedup ~1.35x / FLOPs savings ~50%) remain stable.
+Default eval (`longbench_rag.jsonl`, 4-doc RAG, ~30K):
+
+| n | exact match | EM (base / RedKnot) | logits cosine | base TTFT | RedKnot TTFT | speedup | GPU save |
+|---|---|---|---|---|---|---|---|
+| 25 | **23/25 (92%)** | 0.440 / 0.440 | 0.998 | 1.46s | **0.45s** | **3.22x** | **68.9%** |
+
+Decode stays matched (~33 tok/s). First-token logits cosine 0.998 means the reuse path tracks full FA-2 prefill.
+
+Long-context LongBench (where each document is long enough for native SWA reuse to matter):
+
+| Dataset | n | base F1 | RedKnot F1 | base TTFT | RedKnot TTFT | speedup | GPU save |
+|---|---|---|---|---|---|---|---|
+| hotpotqa | 200 | 0.389 | **0.392** | 1.24s | 0.38s | **3.27x** | 69.4% |
+| musique | 200 | 0.143 | **0.146** | 1.50s | 0.44s | **3.42x** | 70.7% |
+| triviaqa | 200 | 0.494 | **0.506** | 1.14s | 0.41s | **2.80x** | 64.3% |
+
+RedKnot F1 is **≥ baseline** on these sets. TTFT speedup is ~3x, GPU savings ~65–70%, and the gain is larger on the longer contexts (musique / hotpotqa).
 
 ### Known Issues
 
@@ -146,8 +159,8 @@ PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True HF_HUB_OFFLINE=1 \
 REDKNOT_N_SAMPLES=1 REDKNOT_MAX_NEW=8 CUDA_VISIBLE_DEVICES=0,1 \
   .venv_tf5/bin/python test/srt/redknot/benchmark_RedKnot_Qwen35_397B_RAG.py
 
-# Mistral-7B-Instruct-v0.3 (bf16, single GPU)
-REDKNOT_N_SAMPLES=4 CUDA_VISIBLE_DEVICES=0 \
+# Mistral-7B-Instruct-v0.1 (native SWA 4096, bf16, single GPU)
+REDKNOT_N_SAMPLES=25 REDKNOT_TEXT_ONLY=0 CUDA_VISIBLE_DEVICES=0 \
   python test/srt/redknot/benchmark_RedKnot_Mistral_RAG.py
 
 # Llama-3.3-70B-Instruct (INT4 NF4, single GPU)
