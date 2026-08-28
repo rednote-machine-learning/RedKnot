@@ -612,8 +612,8 @@ ARG USE_LATEST_SGLANG
 
 WORKDIR /sgl-workspace
 
-COPY --from=local_src /src /tmp/local_src
-RUN if [ "$BRANCH_TYPE" = "local" ]; then \
+RUN --mount=type=bind,from=local_src,source=/src,target=/tmp/local_src \
+    if [ "$BRANCH_TYPE" = "local" ]; then \
         cp -r /tmp/local_src /sgl-workspace/sglang; \
     elif [ "$USE_LATEST_SGLANG" = "1" ]; then \
         git clone --depth=1 https://github.com/sgl-project/sglang.git /sgl-workspace/sglang; \
@@ -621,8 +621,7 @@ RUN if [ "$BRANCH_TYPE" = "local" ]; then \
         echo "ERROR: SGL_VERSION must be set when USE_LATEST_SGLANG=0 and BRANCH_TYPE!=local" && exit 1; \
     else \
         git clone --depth=1 --branch v${SGL_VERSION} https://github.com/sgl-project/sglang.git /sgl-workspace/sglang; \
-    fi \
-    && rm -rf /tmp/local_src
+    fi
 
 # Editable install (fast - dependencies already installed via constraints)
 # Clean up __pycache__/tests/pyc in same RUN to avoid writing ~28k files to layer
@@ -652,10 +651,9 @@ RUN --mount=type=cache,target=/root/.cache/pip \
 
 # Install pre-built gateway artifacts from parallel builder
 COPY --from=gateway_builder /build/sgl-model-gateway-bin /usr/local/bin/sgl-model-gateway
-COPY --from=gateway_builder /build/gateway_wheels /tmp/gateway_wheels
 RUN --mount=type=cache,target=/root/.cache/pip \
-    python3 -m pip install --force-reinstall /tmp/gateway_wheels/*.whl \
-    && rm -rf /tmp/gateway_wheels
+    --mount=type=bind,from=gateway_builder,source=/build/gateway_wheels,target=/tmp/gateway_wheels \
+    python3 -m pip install --force-reinstall /tmp/gateway_wheels/*.whl
 
 # Set workspace directory
 WORKDIR /sgl-workspace/sglang
