@@ -108,9 +108,13 @@ class Mxfp4MarlinMoEMethod:
         if getattr(layer, "_mega_moe_weights_built", False):
             return
 
+        # The packaged MXFP4 Marlin CUDA kernels are Hopper-specific.  On
+        # Blackwell, use the native FlashInfer MXFP4 backend selected by the
+        # B300 hardware profile instead of accepting an unsafe kernel image.
         if not is_sm90_supported():
             raise RuntimeError(
-                "DeepSeekV4 MXFP4 Marlin fallback requires Hopper/SM90 or above."
+                "DeepSeekV4 MXFP4 Marlin requires Hopper/SM90; use "
+                "flashinfer_mxfp4 on Blackwell."
             )
         if not check_moe_marlin_supports_layer(layer, 32):
             raise RuntimeError(

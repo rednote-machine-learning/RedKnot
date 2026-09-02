@@ -1,0 +1,64 @@
+{
+  "data_selection_sha256": "907df6c62dfdc0951fa2d03195df2e49dd798ae9c6ff16ecb8e321c875441daf",
+  "dataset": {
+    "bytes": 6052108,
+    "name": "2wikimqa",
+    "row_id_base": 0,
+    "sha256": "dda279cf93a99e1e5bfa3291fb199fd55978d10a1feb31822953cf77a1742e37"
+  },
+  "format": "redknot_pure_mla_prompt_v1",
+  "geometry": {
+    "chunk_tokens": 32768,
+    "num_chunks": 4,
+    "online_suffix_tokens": 47,
+    "query_start": 131072,
+    "total_tokens": 131119
+  },
+  "output_blind": true,
+  "prompt": {
+    "answers_sha256": "sha256:e8253215b11bd6bc15ffce138456560f477830bccb9a3668f4b40bae21f43de3",
+    "full_input_ids_sha256": "sha256:cc5c97c99cb262c5c27251ab4a11c7f6b1cdf324cbda09db6e4bcfbf72703730",
+    "offline_chunk_hashes": [
+      "sha256:a35e9176a0edff5092e4a51d6656e10a11a8463c7ed47827db843a26add10043",
+      "sha256:5c8bbd6b3afe1b468ca6ef15480042328fda4ed840de5131e6bdd51e69b34992",
+      "sha256:7583ae6aec4a4d447b4ee72fb7d5ede28d9e8219bd72eddea96070764f9183ea",
+      "sha256:da18a0ef9b69687c3752a8bfa97d693a908ba343fc9ca98fffbc111ad7e01495"
+    ],
+    "offline_prefix_hash": "sha256:c466bead31a785279685a847443137de5beeb6d359378d10425394d53ff19371",
+    "online_suffix_hash": "sha256:760ea70d3ca8da66cf2ef67fc713ac073893a2fed83af687350c5484ec88d78f",
+    "question_sha256": "sha256:d15d9735cf81d1a9a10329f911063931f65a1ffa87b6c86f8e5882dd8c6a22c1",
+    "text_sha256": "sha256:2ac64ffbf90d10a1bd942b643e1d88210391bc3fb26b07f2df2e2049756b33db"
+  },
+  "prompt_manifest_sha256": "796e6a644e9a4807b215363b68ac6f508551dae446006209cac67e379a3bdb61",
+  "prompt_mode": "official_rag_v1",
+  "protocol": {
+    "add_default_bos_token": true,
+    "document_delimiter": "\n\n",
+    "drop_thinking": true,
+    "encoder_path": "/mnt/tidal-alsh01/dataset/redone/checkpoints/opensource/DeepSeek-V4-Flash-0731/encoding/encoding_dsv4.py",
+    "encoder_sha256": "sha256:abc0d26120250dda0ae077dc64aa28836026e61e970854aaeb792445e6a0dde6",
+    "query_instruction": "\n\nAnswer the question using only the documents above. Return the shortest exact answer span only, with no explanation.\nQuestion: Who is Edward Watson, Viscount Sondes's paternal grandfather?\nAnswer:",
+    "reasoning_effort": "low",
+    "thinking_mode": "chat",
+    "tokenizer_config_path": "/mnt/tidal-alsh01/dataset/redone/checkpoints/opensource/DeepSeek-V4-Flash-0731/tokenizer_config.json",
+    "tokenizer_config_sha256": "sha256:6ac8c8dc065ed118161d02dd532749ae3f52c243deac27872134fae2f50d8547",
+    "tokenizer_path": "/mnt/tidal-alsh01/dataset/redone/checkpoints/opensource/DeepSeek-V4-Flash-0731/tokenizer.json",
+    "tokenizer_sha256": "sha256:8f9f37ca37fdc4f5fd36d5cf4d3b0e8392edb4e894fd10cc0d70b4957c8633cf"
+  },
+  "source": {
+    "chunk_hashes": [
+      "sha256:4f207052e1873184b9de56be6d05eaed4c4c378d3038a53f2cb04919510c6315",
+      "sha256:97122ba9daa7a81ad335e411648a7973d64f861ac545579352799a498c20e29e",
+      "sha256:63317954bd1ee35790908db474e4a93ce7b6608f3aeb90eefe4a59328d5b6079",
+      "sha256:2ffa27fb717205c0859ef556b89b135e5882ac450757f1ce8d84da604f89ee54"
+    ],
+    "chunk_order": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "expected_source_chunk": 0,
+    "query_row_id": 5
+  }
+}

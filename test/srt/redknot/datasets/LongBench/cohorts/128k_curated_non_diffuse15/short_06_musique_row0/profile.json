@@ -1,0 +1,43 @@
+{
+  "answer_style": "shortest_exact_span_v1",
+  "cases": [
+    {
+      "answers_sha256": "sha256:b9235a6b98c21ce84c11800f62b627155ac186bf893a9798060ba2633c189436",
+      "expected_source_chunk": 0,
+      "full_input_ids_sha256": "sha256:cca014749f6592217e6ea2034a492310327a636979aed142a848fb1e75c4e7f4",
+      "online_suffix_hash": "sha256:8adb14d26ddce009843dbd69abf675be3027a8ad64355540cd6154189f04898f",
+      "online_suffix_tokens": 50,
+      "query_index": 0,
+      "query_row_id": 0,
+      "question_sha256": "sha256:f7a574da3d57d1c64701963bfa4618d7083acd318d5cae528af4a10873a3f079",
+      "text_sha256": "sha256:c5577016c4da96a0edb2360a970e47b495aa247a3e418f8d72347db7348b83d3",
+      "total_tokens": 131122
+    }
+  ],
+  "chunk_tokens": 32768,
+  "cohort_index": 1280006,
+  "data_manifest": "/mnt/tidal-alsh01/dataset/redone/RedKnot_Deepseekv4/test/srt/redknot/datasets/LongBench/cohorts/128k_curated_non_diffuse15/short_06_musique_row0/data_selection.json",
+  "data_selection_sha256": "7ffcfb73cbb9998d124a86445654b76efd41b96e1920fc7bcbbd1d72b222af33",
+  "dataset": "musique",
+  "exclude_manifests": [],
+  "format": "redknot_multidataset_profile_v2",
+  "long_output_target_tokens": 0,
+  "max_total_tokens": 131122,
+  "num_chunks": 4,
+  "num_queries": 1,
+  "offline_chunk_hashes": [
+    "sha256:1de645c29db89a05ed65bb13cb2b9596c09802e7a424538d2e26bbd65074ae28",
+    "sha256:28997ad3d101f54333a8044a8d86741cf77f62fa4fea9548401f9229ad6f59e3",
+    "sha256:8bab78f276ee78fc525d77c06551cf8029c06f16c23a71cf5bb8f762a44de718",
+    "sha256:aa56e9c8690923ee9ed4d1743693cee4e6308a64e2807dc44461163c0187ac4a"
+  ],
+  "output_blind": true,
+  "prompt_manifest": "/mnt/tidal-alsh01/dataset/redone/RedKnot_Deepseekv4/test/srt/redknot/datasets/LongBench/cohorts/128k_curated_non_diffuse15/short_06_musique_row0/prompt_manifest.json",
+  "prompt_manifest_sha256": "3b4081bda51a17a64c93fec1831fedcd2e883eeed4bbfb51b375b83ab27f0c01",
+  "query_row_ids": [
+    0
+  ],
+  "query_start": 131072,
+  "row_offset": 0,
+  "target_tokens": 131072
+}

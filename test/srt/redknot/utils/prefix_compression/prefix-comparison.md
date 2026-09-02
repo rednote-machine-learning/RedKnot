@@ -2,7 +2,9 @@
 
 > Working draft for the paper. Model: **Qwen3-32B** (64 layers, 8 KV heads,
 > head\_dim 128, GQA 64 query heads, `max_position_embeddings = 40960`).
-> All experiments use NVIDIA L20Y (80 GB) GPUs.
+> Measurements in this draft use NVIDIA H200 GPUs under the Hopper/SM90
+> hardware profile. B300 reproductions use the separate Blackwell/SM103
+> profile; timing results are not mixed across hardware profiles.
 
 ## 1. Motivation
 
@@ -109,10 +111,11 @@ compute-bound.
 ## 3. Experimental Setup
 
 * **Model**: Qwen3-32B. Accuracy / single-stream runs use **bf16** weights
-  sharded across 2× L20Y (no quantization, so accuracy numbers are
-  trustworthy). Concurrency runs use **NF4** weights on a single L20Y to free
-  ~46 GB for KV (NF4 does not affect the *relative* concurrency/throughput
-  comparison, which is what we report).
+  sharded across 2× H200 (no quantization, so accuracy numbers are
+  trustworthy). Concurrency runs use **NF4** weights on a single H200 under
+  the fixed experiment-level KV-memory budget reported in Section 4.7 (NF4
+  does not affect the *relative* concurrency/throughput comparison, which is
+  what we report).
 * **Trimming**: `W = 4096`, `s = 128`, `L_trim = 32` (accuracy-safe).
 * **PD emulation**: the prefill node produces the full cache; we apply the
   trimming operator and perform a real cross-GPU copy of the kept slices
@@ -192,7 +195,7 @@ draw 6 samples (context ≥ 6 K tokens, capped at 32 K), prefill the context,
 trim, and decode; we report logits cosine, greedy-token agreement vs. the
 full-KV baseline, and **continuation perplexity** (teacher-forced NLL over a
 256-token continuation, full-cache vs. trimmed-cache predicting the same
-tokens). bf16, 2× L20Y.
+tokens), using bf16 on 2× H200.
 
 | Dataset | Task | avg ctx | cos(d1) | greedy match | PPL base → trim | ΔPPL |
 |---------|------|--------:|--------:|:------------:|:---------------:|-----:|
@@ -327,8 +330,10 @@ Single-stream latency understates the benefit; the real payoff is concurrency.
 ### 4.7 Memory-bound concurrency and QPS (the win)
 
 Decode is memory-bound: each concurrent request holds a KV cache, so a smaller
-`KV_per_request` lets more requests share one decode GPU. With a fixed
-**45.7 GiB KV budget** (single L20Y, NF4 weights) and `out_len = 256`:
+`KV_per_request` lets more requests share one decode GPU. For the reported
+single-H200 NF4 run, the KV allocation budget is held fixed at **45.7 GiB**
+(an experiment-level control, not the GPU's physical capacity), with
+`out_len = 256`:
 
 | Prefix | KV/req base | KV/req trim | ratio | max-batch base → trim | **batch gain** |
 |-------:|------------:|------------:|------:|:---------------------:|:--------------:|

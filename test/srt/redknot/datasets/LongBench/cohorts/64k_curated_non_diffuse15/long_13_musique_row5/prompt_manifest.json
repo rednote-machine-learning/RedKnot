@@ -1,0 +1,70 @@
+{
+  "data_selection_sha256": "b7eec0ff574f4a8fb19786b8fad30a145517fc0bc9d22cf0a65801dcdda43654",
+  "dataset": {
+    "bytes": 14085077,
+    "name": "musique",
+    "row_id_base": 0,
+    "sha256": "4ac69b91281c4ec6b21316cb7282e83fb6b4dda04fc68480bb8d8ed1e19ff7bd"
+  },
+  "format": "redknot_pure_mla_prompt_v1",
+  "geometry": {
+    "chunk_tokens": 16384,
+    "num_chunks": 4,
+    "online_suffix_tokens": 97,
+    "query_start": 65536,
+    "total_tokens": 65633
+  },
+  "output_blind": true,
+  "prompt": {
+    "answers_sha256": "sha256:7c0a83b4be7998ae55fcd61155b4653e15194557cb0edbebf694032819abdc5b",
+    "full_input_ids_sha256": "sha256:3601ad32ca9ca966692ded676a2c0a2bfcf0e2caceca96d87aac976ce31dd97e",
+    "offline_chunk_hashes": [
+      "sha256:f0150110dfb76ddc62e9346799f0e6a2d28118b06a29683061ffe38845f8c428",
+      "sha256:c042adeda44f30f91cbac5182167940780787cc3259c6d2d99b229fe4d209fd2",
+      "sha256:0a4240fdd6d7b3bf1407f0d13692e262ecdbb49b12b296c1f7db2169945b536f",
+      "sha256:7723d6d609622a831d5417623393c8f78608cf15996af6b096a187779bb4d1ca"
+    ],
+    "offline_prefix_hash": "sha256:b5c6bb3b6f61c4c0321bbcc5db5c615939891bbe07e25b8dd107cbd6d45914df",
+    "online_suffix_hash": "sha256:a6d5798ec5a68af28a0230a2f7c100d770e253a48b048d2894815577a3085521",
+    "question_sha256": "sha256:a22e7eca55306f7d93bd21af33697d0656f0387e0040a18aec90f1ac0d4c5743",
+    "text_sha256": "sha256:45b6db8e60dccbc75c8bd06055797db724f221998e8a1d535d932eae7755af8d"
+  },
+  "prompt_manifest_sha256": "9faef8c7785b125f6d3a47eb34e62d6c56b8de18c9164c2ff461886c356dd376",
+  "prompt_mode": "official_rag_v1",
+  "protocol": {
+    "add_default_bos_token": true,
+    "answer_style": "direct_answer_plus_document_evidence_v1",
+    "document_delimiter": "\n\n",
+    "drop_thinking": true,
+    "encoder_path": "/mnt/tidal-alsh01/dataset/redone/checkpoints/opensource/DeepSeek-V4-Flash-0731/encoding/encoding_dsv4.py",
+    "encoder_sha256": "sha256:abc0d26120250dda0ae077dc64aa28836026e61e970854aaeb792445e6a0dde6",
+    "query_instruction": "\n\nAnswer the question using only the documents above. Put the direct answer alone on the first line. Then give one or two concise sentences explaining the supporting evidence from the documents. Do not use bullets or introduce outside facts. Keep the complete response between 25 and 35 tokens (target: about 30 tokens).\nQuestion: When was the last time Peter Till's sports team beat the winner of the 1894-95 FA Cup?\nAnswer:",
+    "reasoning_effort": "low",
+    "target_output_token_range": [
+      25,
+      35
+    ],
+    "target_output_tokens": 30,
+    "thinking_mode": "chat",
+    "tokenizer_config_path": "/mnt/tidal-alsh01/dataset/redone/checkpoints/opensource/DeepSeek-V4-Flash-0731/tokenizer_config.json",
+    "tokenizer_config_sha256": "sha256:6ac8c8dc065ed118161d02dd532749ae3f52c243deac27872134fae2f50d8547",
+    "tokenizer_path": "/mnt/tidal-alsh01/dataset/redone/checkpoints/opensource/DeepSeek-V4-Flash-0731/tokenizer.json",
+    "tokenizer_sha256": "sha256:8f9f37ca37fdc4f5fd36d5cf4d3b0e8392edb4e894fd10cc0d70b4957c8633cf"
+  },
+  "source": {
+    "chunk_hashes": [
+      "sha256:b123582cecf4e1b16bda51c791a4b02fc1acc37abb702627342d6b9ffb31ee93",
+      "sha256:f0169ca1d1318f28fc57bd8f8e0a25f016db5bd1f89e2abde0bfeb57b1828d03",
+      "sha256:6be0ba994a75db78da30b75e5e8377362235eb838f64ac095ea19d3baf444fb3",
+      "sha256:6f77772f1f256ef25ad6fcd13707f7334db437761b5c19ba9521e7204eb50065"
+    ],
+    "chunk_order": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "expected_source_chunk": 0,
+    "query_row_id": 5
+  }
+}

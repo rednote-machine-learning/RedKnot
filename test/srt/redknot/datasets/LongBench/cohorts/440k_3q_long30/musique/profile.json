@@ -1,0 +1,73 @@
+{
+  "answer_style": "direct_answer_plus_document_evidence_v1",
+  "cases": [
+    {
+      "answers_sha256": "sha256:b9235a6b98c21ce84c11800f62b627155ac186bf893a9798060ba2633c189436",
+      "expected_source_chunk": 0,
+      "full_input_ids_sha256": "sha256:a8a40169f986d861660ae5d0d7eff9f2b7914f2a84526f7022b0bdaf58ed7e4c",
+      "online_suffix_hash": "sha256:18f7931cbf5d0e3a409b824146c53c8e8981beb07c942b0995671e5f17e82fd3",
+      "online_suffix_tokens": 94,
+      "query_index": 0,
+      "query_row_id": 0,
+      "question_sha256": "sha256:f7a574da3d57d1c64701963bfa4618d7083acd318d5cae528af4a10873a3f079",
+      "text_sha256": "sha256:67e39ebc461cae9eea67bf8f401d5c856abcdaadd63e4d81039bd81bbc1b684b",
+      "total_tokens": 450654
+    },
+    {
+      "answers_sha256": "sha256:5d4006414d06398346f001003e87783b774d97d21ea508a5522595d339363862",
+      "expected_source_chunk": 1,
+      "full_input_ids_sha256": "sha256:d1017b80a4597cf2e1bbf1716f8d013dbb6665b7cc016e58e5f7280d0df5e2c9",
+      "online_suffix_hash": "sha256:eafeb4f68bc2e9934dd59e6bc75aa42412e969919c544ee5b7f68a4254bd0132",
+      "online_suffix_tokens": 96,
+      "query_index": 1,
+      "query_row_id": 4,
+      "question_sha256": "sha256:d2f64f93863b8f15c8d899f3c57d9d8d20ca0d634b6da62a0a0bde1b410fc105",
+      "text_sha256": "sha256:ffc30a77e6d18612cd576338a2deb80af901637e889888682099757266158772",
+      "total_tokens": 450656
+    },
+    {
+      "answers_sha256": "sha256:9c44020ddbe7865c7f899d3a6373329e88e146df5b1bc002d56b10cdd9f572e5",
+      "expected_source_chunk": 2,
+      "full_input_ids_sha256": "sha256:586cca5939a1224fa62af1dc93729ddf0350dc40d66202db661fc34b39d168b9",
+      "online_suffix_hash": "sha256:cb56abd1de4b0bd3707e13e41249ecc3829a2dfd9c150da24f47bec8f4de7d9d",
+      "online_suffix_tokens": 92,
+      "query_index": 2,
+      "query_row_id": 8,
+      "question_sha256": "sha256:2014e3335c3ef4289699b92ccc1142e351ded0c3b475414e6c03167d4f2fc830",
+      "text_sha256": "sha256:193c1ef503943180f3967208db533a2143f76e925efdfc6ba952c639be085061",
+      "total_tokens": 450652
+    }
+  ],
+  "chunk_tokens": 56320,
+  "cohort_index": 44002,
+  "data_manifest": "/mnt/tidal-alsh01/dataset/redone/RedKnot_Deepseekv4/test/srt/redknot/datasets/LongBench/cohorts/440k_3q_long30/musique/data_selection.json",
+  "data_selection_sha256": "9b0feba68d2dc868ff1ddf98eb95f4c042e59b32d16d2c983e695da8b3370b84",
+  "dataset": "musique",
+  "exclude_manifests": [],
+  "format": "redknot_multidataset_profile_v2",
+  "long_output_target_tokens": 30,
+  "max_total_tokens": 450656,
+  "num_chunks": 8,
+  "num_queries": 3,
+  "offline_chunk_hashes": [
+    "sha256:3f4fbf8cf046633c23f4c32fe232381393e96bae4aa7b24a90c1b62237abf07a",
+    "sha256:ff4f391a99309efbc04662d8e78a02c53849674a7236183c85782c388377fa03",
+    "sha256:79e0c4d0cd4a4e8923c036c4b4bc2e6f7a6f03cf7e8dba9f3fcbba8afd672f5e",
+    "sha256:d2091758a1f53a53098f42c8f694eeb0bc251490965b4ebc0065ac631355db0a",
+    "sha256:acabf8405bbfeb8e0ee338c0a4e078c19b833d4c8c32a34844d02c21ea6b0959",
+    "sha256:25553609b72e1a25f96a37a40053a6ccf1737b02e834039eba09ab25247d07b0",
+    "sha256:5eb00fb82a7e4d605bad2296c8ce7f0f417d370daa4eb0fc49e5be12f8496def",
+    "sha256:dda45c22712287a15dd786ba9598360756ee2a8f3cc1a3ace934910357f8101c"
+  ],
+  "output_blind": true,
+  "prompt_manifest": "/mnt/tidal-alsh01/dataset/redone/RedKnot_Deepseekv4/test/srt/redknot/datasets/LongBench/cohorts/440k_3q_long30/musique/prompt_manifest.json",
+  "prompt_manifest_sha256": "78a8a6bb9e9fb746c7005e83670138ce7aad76b6c0c55a5e02e21d46a3d2c9a5",
+  "query_row_ids": [
+    0,
+    4,
+    8
+  ],
+  "query_start": 450560,
+  "row_offset": 0,
+  "target_tokens": 450560
+}

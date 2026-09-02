@@ -45,8 +45,9 @@ Design notes
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass
-from typing import Callable, Optional, Tuple
+from typing import Callable, Optional
 
 import torch
 
@@ -215,6 +216,8 @@ def select_important_tokens(
     # Keep ranks up to and including the one that first crosses the
     # threshold (so we never under-select).
     rank_keep = cum_frac < mass_thresh
+    crossing = torch.argmax((cum_frac >= mass_thresh).to(torch.int64), dim=-1)
+    rank_keep.scatter_(1, crossing.unsqueeze(1), True)
     rank_keep[..., 0] = True  # always keep the top token
     # Scatter the rank decision back to original positions.
     keep.scatter_(1, sorted_idx, rank_keep)
@@ -239,6 +242,198 @@ def select_important_tokens(
     if bool(zero_rows.any()):
         keep[zero_rows] = True
     return keep
+
+
+def enforce_token_selection_bounds(
+    importance: torch.Tensor,
+    keep: torch.Tensor,
+    protected: torch.Tensor,
+    *,
+    min_full_ratio: float,
+    max_full_ratio: float,
+) -> torch.Tensor:
+    """Apply protected-token, minimum, and maximum FULL-token constraints."""
+
+    if importance.ndim != 1 or keep.shape != importance.shape:
+        raise ValueError("importance and keep must be matching 1-D tensors")
+    if protected.shape != keep.shape or protected.dtype != torch.bool:
+        raise ValueError("protected must be a boolean tensor matching keep")
+    if not 0 <= min_full_ratio <= max_full_ratio <= 1:
+        raise ValueError("FULL-token ratio bounds must satisfy 0 <= min <= max <= 1")
+
+    result = keep.to(torch.bool) | protected
+    num_tokens = int(result.numel())
+    if num_tokens == 0:
+        return result
+
+    min_full = math.ceil(num_tokens * min_full_ratio)
+    current = int(result.sum().item())
+    if current < min_full:
+        candidates = torch.nonzero(~result, as_tuple=False).flatten()
+        need = min(min_full - current, int(candidates.numel()))
+        if need > 0:
+            candidate_scores = importance.index_select(0, candidates)
+            chosen = candidates.index_select(
+                0, torch.topk(candidate_scores, need).indices
+            )
+            result[chosen] = True
+
+    protected_count = int(protected.sum().item())
+    max_full = max(protected_count, math.ceil(num_tokens * max_full_ratio))
+    current = int(result.sum().item())
+    if current > max_full:
+        optional = torch.nonzero(result & ~protected, as_tuple=False).flatten()
+        optional_budget = max_full - protected_count
+        trimmed = protected.clone()
+        if optional_budget > 0:
+            optional_scores = importance.index_select(0, optional)
+            chosen = optional.index_select(
+                0, torch.topk(optional_scores, optional_budget).indices
+            )
+            trimmed[chosen] = True
+        result = trimmed
+    return result
+
+
+def select_fixed_budget_tokens(
+    importance: torch.Tensor,
+    protected: torch.Tensor,
+    *,
+    max_full_ratio: float,
+    protected_count: int,
+) -> torch.Tensor:
+    """Select a fixed FULL-token budget without a device-to-host fence.
+
+    The production RedKnot policy applies a cumulative-mass selection and then
+    caps the result at ``max_full_ratio``.  Whenever that cap binds, its final
+    result is precisely the protected rows plus the highest-importance
+    optional rows that fit the budget.  Selecting that fixed budget directly
+    is also a conservative superset when the mass rule would have selected
+    fewer rows, so it cannot remove a row retained by the old policy.
+
+    ``protected_count`` is derived from the already-certified request geometry
+    on CPU.  Supplying it explicitly avoids ``protected.sum().item()`` and
+    makes the hot path contain one GPU Top-K and one GPU sort, with no host
+    synchronization.  Returned indices are in original token order to keep
+    routed-expert accumulation as close as possible to the prior path.
+    """
+
+    if importance.ndim != 1:
+        raise ValueError("importance must be a 1-D tensor")
+    if protected.shape != importance.shape or protected.dtype != torch.bool:
+        raise ValueError("protected must be a boolean tensor matching importance")
+    if not 0.0 <= max_full_ratio <= 1.0:
+        raise ValueError("max_full_ratio must lie in [0, 1]")
+
+    total = int(importance.numel())
+    if not 0 <= int(protected_count) <= total:
+        raise ValueError("protected_count is outside the token extent")
+    if total == 0:
+        return torch.empty(0, dtype=torch.long, device=importance.device)
+
+    budget = max(int(protected_count), math.ceil(total * max_full_ratio))
+    budget = min(total, budget)
+    if budget == total:
+        return torch.arange(total, dtype=torch.long, device=importance.device)
+
+    scores = importance.float().clamp_min(0)
+    protected_priority = torch.full_like(scores, torch.finfo(scores.dtype).max)
+    scores = torch.where(protected, protected_priority, scores)
+    selected = torch.topk(scores, k=budget, sorted=False).indices
+    return torch.sort(selected).values
+
+
+def select_fixed_budget_blocks(
+    importance: torch.Tensor,
+    protected: torch.Tensor,
+    positions: torch.Tensor,
+    *,
+    max_full_ratio: float,
+    protected_count: int,
+    block_tokens: int = 128,
+) -> torch.Tensor:
+    """Select complete logical token blocks with one compact GPU Top-K.
+
+    RedKnot's online path is much faster when the routed-MoE rows form a small
+    number of contiguous ranges instead of thousands of unrelated token
+    indices.  This selector aggregates token importance into absolute-position
+    blocks, protects every block that contains a query/boundary/recent token,
+    and returns all rows in the highest-scoring blocks that fit the declared
+    FULL-token budget.
+
+    The result is a sorted index tensor, so the existing
+    ``forward_redknot_sparse`` gather/scatter path remains unchanged.  The
+    operation does not copy scores to the CPU and does not add a host fence.
+    Block rounding can exceed ``max_full_ratio`` by at most one block (plus
+    mandatory protected blocks); callers report the measured row ratio rather
+    than treating the requested ratio as achieved work.
+    """
+
+    if importance.ndim != 1:
+        raise ValueError("importance must be a 1-D tensor")
+    if protected.shape != importance.shape or protected.dtype != torch.bool:
+        raise ValueError("protected must be a boolean tensor matching importance")
+    if positions.shape != importance.shape or positions.ndim != 1:
+        raise ValueError("positions must be a 1-D tensor matching importance")
+    if not 0.0 <= max_full_ratio <= 1.0:
+        raise ValueError("max_full_ratio must lie in [0, 1]")
+    if type(block_tokens) is not int or block_tokens <= 0:
+        raise ValueError("block_tokens must be a positive built-in integer")
+
+    total = int(importance.numel())
+    if not 0 <= int(protected_count) <= total:
+        raise ValueError("protected_count is outside the token extent")
+    if total == 0:
+        return torch.empty(0, dtype=torch.long, device=importance.device)
+    if positions.device != importance.device:
+        raise ValueError("positions and importance must share a device")
+
+    logical_blocks = torch.div(
+        positions.to(torch.int64), block_tokens, rounding_mode="floor"
+    )
+    block_ids, inverse = torch.unique_consecutive(
+        logical_blocks, return_inverse=True
+    )
+    num_blocks = int(block_ids.numel())
+    if num_blocks <= 0:
+        raise RuntimeError("non-empty token input produced no logical block")
+
+    block_scores = torch.zeros(
+        num_blocks, dtype=torch.float32, device=importance.device
+    )
+    block_scores.scatter_add_(0, inverse, importance.float().clamp_min(0))
+    block_protected = torch.zeros(
+        num_blocks, dtype=torch.bool, device=importance.device
+    )
+    protected_rows = torch.nonzero(protected, as_tuple=False).flatten()
+    if int(protected_rows.numel()) > 0:
+        block_protected.scatter_(
+            0, inverse.index_select(0, protected_rows), True
+        )
+
+    token_budget = max(
+        int(protected_count), math.ceil(total * max_full_ratio)
+    )
+    block_budget = min(
+        num_blocks,
+        max(1, math.ceil(token_budget / block_tokens)),
+    )
+    if block_budget == num_blocks:
+        return torch.arange(total, dtype=torch.long, device=importance.device)
+
+    protected_priority = torch.full_like(
+        block_scores, torch.finfo(block_scores.dtype).max
+    )
+    ranked_scores = torch.where(
+        block_protected, protected_priority, block_scores
+    )
+    chosen_blocks = torch.topk(
+        ranked_scores, k=block_budget, sorted=False
+    ).indices
+    selected_blocks = block_protected.clone()
+    selected_blocks.scatter_(0, chosen_blocks, True)
+    selected_rows = selected_blocks.index_select(0, inverse)
+    return torch.nonzero(selected_rows, as_tuple=False).flatten()
 
 
 # ──────────────────────────────────────────────────────────────────────────
@@ -403,6 +598,7 @@ __all__ = [
     "SparseFFNSchedule",
     "token_importance_from_attn",
     "select_important_tokens",
+    "enforce_token_selection_bounds",
     "apply_sparse_ffn",
     "dense_ffn_flops_per_token",
     "sparse_ffn_flops",

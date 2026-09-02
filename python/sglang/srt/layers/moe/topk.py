@@ -1052,6 +1052,10 @@ def biased_grouped_topk_gpu(
     routed_scaling_factor: Optional[float] = None,
     apply_routed_scaling_factor_on_output: Optional[bool] = False,
 ):
+    # CPU weight offload can leave this small router parameter on the host even
+    # while the gate output is materialized on GPU via functional_call.
+    if correction_bias.device != gating_output.device:
+        correction_bias = correction_bias.to(gating_output.device, non_blocking=True)
 
     num_tokens = gating_output.shape[0]
     num_experts = gating_output.shape[1]

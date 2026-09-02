@@ -32,6 +32,18 @@ import torch
 logger = logging.getLogger(__name__)
 
 
+@dataclass
+class OfflineRecurrentState:
+    """Per-rank causal state for every linear-attention layer.
+
+    The request-slot dimension is removed from both fields. Qwen3.5 needs
+    these causal-convolution and recurrent tensors in addition to full-attn KV.
+    """
+
+    conv: List[torch.Tensor]
+    temporal: torch.Tensor
+
+
 # ──────────────────────────────────────────────────────────────────────────
 # Data structures
 # ──────────────────────────────────────────────────────────────────────────
@@ -54,7 +66,11 @@ class OfflineSegment:
     device:
         Current physical location of ``kv`` tensors.
     nbytes:
-        Total byte size across all (K, V) tensors. Used for LRU accounting.
+        Total byte size across (K, V) and optional recurrent tensors. Used for
+        LRU accounting.
+    recurrent_state:
+        Optional causal conv + recurrent state for hybrid models such as
+        Qwen3.5.
     """
 
     segment_id: str
@@ -63,6 +79,7 @@ class OfflineSegment:
     kv: List[Tuple[torch.Tensor, torch.Tensor]]
     device: torch.device
     nbytes: int
+    recurrent_state: Optional[OfflineRecurrentState] = None
     meta: Dict[str, object] = field(default_factory=dict)
 
 
@@ -131,9 +148,15 @@ class OfflineKVCache:
     def put(self, segment: OfflineSegment) -> None:
         with self._lock:
             if segment.segment_id in self._segments:
-                # Promote.
-                self._segments.move_to_end(segment.segment_id)
-                return
+                # Rebuilds and chunked prefill publish a new immutable
+                # snapshot under the same deterministic key. Replace the old
+                # value atomically and keep byte accounting exact; retaining
+                # the first partial chunk would corrupt every later query.
+                old = self._segments.pop(segment.segment_id)
+                if old.device.type == "cuda":
+                    self._device_bytes -= old.nbytes
+                else:
+                    self._host_bytes -= old.nbytes
             self._segments[segment.segment_id] = segment
             if segment.device.type == "cuda":
                 self._device_bytes += segment.nbytes
@@ -184,6 +207,14 @@ class OfflineKVCache:
                 )
                 for k, v in seg.kv
             ]
+            if seg.recurrent_state is not None:
+                seg.recurrent_state.conv = [
+                    state.to(device, non_blocking=True)
+                    for state in seg.recurrent_state.conv
+                ]
+                seg.recurrent_state.temporal = seg.recurrent_state.temporal.to(
+                    device, non_blocking=True
+                )
             if seg.device.type == "cuda" and device.type != "cuda":
                 self._device_bytes -= seg.nbytes
                 self._host_bytes += seg.nbytes
@@ -260,11 +291,21 @@ def kv_nbytes(kv: List[Tuple[torch.Tensor, torch.Tensor]]) -> int:
     return n
 
 
+def recurrent_nbytes(state: Optional[OfflineRecurrentState]) -> int:
+    """Total byte count for an optional hybrid recurrent-state snapshot."""
+    if state is None:
+        return 0
+    return sum(t.numel() * t.element_size() for t in state.conv) + (
+        state.temporal.numel() * state.temporal.element_size()
+    )
+
+
 def build_offline_segment(
     *,
     segment_id: str,
     token_ids: torch.Tensor,
     kv: List[Tuple[torch.Tensor, torch.Tensor]],
+    recurrent_state: Optional[OfflineRecurrentState] = None,
 ) -> OfflineSegment:
     """Construct an :class:`OfflineSegment` from raw materials, deriving
     derived fields (``nbytes``, ``device``)."""
@@ -275,7 +316,7 @@ def build_offline_segment(
     first = next((pair for pair in kv if pair[0] is not None), None)
     assert first is not None, "build_offline_segment: all kv entries are None"
     device = first[0].device
-    nbytes = kv_nbytes(kv)
+    nbytes = kv_nbytes(kv) + recurrent_nbytes(recurrent_state)
     return OfflineSegment(
         segment_id=segment_id,
         token_ids=token_ids.to("cpu"),
@@ -283,6 +324,7 @@ def build_offline_segment(
         kv=kv,
         device=device,
         nbytes=nbytes,
+        recurrent_state=recurrent_state,
     )
 
 

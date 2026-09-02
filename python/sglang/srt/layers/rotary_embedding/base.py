@@ -109,7 +109,12 @@ class RotaryEmbedding(MultiPlatformOp):
 
     def _match_cos_sin_cache_dtype(self, query: torch.Tensor) -> None:
         # __setattr__ in nn.Module (called by `self.cos_sin_cache = ...`)
-        # is expensive, so avoid calling it if possible
+        # is expensive, so avoid calling it if possible.
+        # Also skip during torch.compile / piecewise CUDA graph tracing: mutating
+        # this buffer between capture and replay fails the dtype guard and forces
+        # a runtime recompile that crashes piecewise CUDA graph.
+        if torch.compiler.is_compiling():
+            return
         if (
             self.cos_sin_cache.device != query.device
             or self.cos_sin_cache.dtype != query.dtype

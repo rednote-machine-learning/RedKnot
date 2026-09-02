@@ -348,6 +348,7 @@ class Engine(EngineScoreMixin, EngineBase):
         redknot_offline_segments: Optional[
             Union[List[Optional[List[str]]], List[str]]
         ] = None,
+        redknot_reuse_plan: Optional[Union[List[Optional[Dict]], Dict]] = None,
     ) -> Union[Dict, Iterator[Dict]]:
         """
         The arguments of this function is the same as `sglang/srt/managers/io_struct.py::GenerateReqInput`.
@@ -384,6 +385,7 @@ class Engine(EngineScoreMixin, EngineBase):
             session_params=session_params,
             priority=priority,
             redknot_offline_segments=redknot_offline_segments,
+            redknot_reuse_plan=redknot_reuse_plan,
         )
         generator = self.tokenizer_manager.generate_request(obj, None)
 

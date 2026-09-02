@@ -1,0 +1,992 @@
+{
+  "created_utc": "2026-08-28T18:16:44.875894+00:00",
+  "format": "redknot_posthoc_showcase_v1",
+  "groups": [
+    {
+      "dataset": "hotpotqa",
+      "eligible_query_count": 10,
+      "length": "256K",
+      "primary_exact_pair_count": 20,
+      "primary_pair_count": 20,
+      "selected_cases": [
+        {
+          "query_index": 0,
+          "query_row_id": 0,
+          "question": "Which case was brought to court first Miller v. California or Gates v. Collier ?",
+          "repeats": [
+            {
+              "dense_output": "Gates v. Collier",
+              "redknot_output": "Gates v. Collier",
+              "repeat": 0
+            },
+            {
+              "dense_output": "Gates v. Collier",
+              "redknot_output": "Gates v. Collier",
+              "repeat": 1
+            }
+          ]
+        },
+        {
+          "query_index": 1,
+          "query_row_id": 3,
+          "question": "Gary L. Bennett was a part of the space missions that have a primary destination of what celestial body?",
+          "repeats": [
+            {
+              "dense_output": "Sun",
+              "redknot_output": "Sun",
+              "repeat": 0
+            },
+            {
+              "dense_output": "Sun",
+              "redknot_output": "Sun",
+              "repeat": 1
+            }
+          ]
+        },
+        {
+          "query_index": 2,
+          "query_row_id": 6,
+          "question": "Thirukkalacherry is a village in which Indian town?",
+          "repeats": [
+            {
+              "dense_output": "Thirukkalachery",
+              "redknot_output": "Thirukkalachery",
+              "repeat": 0
+            },
+            {
+              "dense_output": "Thirukkalachery",
+              "redknot_output": "Thirukkalachery",
+              "repeat": 1
+            }
+          ]
+        },
+        {
+          "query_index": 3,
+          "query_row_id": 10,
+          "question": "When was the American singer, songwriter, record producer, dancer and actress born who's second studio album is Chapter II?",
+          "repeats": [
+            {
+              "dense_output": "October 13, 1980",
+              "redknot_output": "October 13, 1980",
+              "repeat": 0
+            },
+            {
+              "dense_output": "October 13, 1980",
+              "redknot_output": "October 13, 1980",
+              "repeat": 1
+            }
+          ]
+        },
+        {
+          "query_index": 4,
+          "query_row_id": 13,
+          "question": "Finally includes the song that peaked at what on the US Hot 100",
+          "repeats": [
+            {
+              "dense_output": "number five",
+              "redknot_output": "number five",
+              "repeat": 0
+            },
+            {
+              "dense_output": "number five",
+              "redknot_output": "number five",
+              "repeat": 1
+            }
+          ]
+        }
+      ],
+      "source_profile": "/mnt/tidal-alsh01/dataset/redone/RedKnot_Deepseekv4/test/srt/redknot/datasets/LongBench/cohorts/256k_10q/hotpotqa/profile.json",
+      "source_profile_sha256": "1f9162019a03c6cf636ded9a95d6b92494f93deb6d91826e0ec4f2477b420c71",
+      "source_result": "/mnt/tidal-alsh01/dataset/redone/redknot_runs/release_matrix_5x10_256k_440k_20260828/256k/hotpotqa/result.json",
+      "source_result_sha256": "899faefbe7bfe0473af6549ae5168c8430020e4f94815d2d820fa98778a63002"
+    },
+    {
+      "dataset": "2wikimqa",
+      "eligible_query_count": 8,
+      "length": "256K",
+      "primary_exact_pair_count": 16,
+      "primary_pair_count": 20,
+      "selected_cases": [
+        {
+          "query_index": 0,
+          "query_row_id": 0,
+          "question": "Where was the wife of Francis I Rákóczi born?",
+          "repeats": [
+            {
+              "dense_output": "Ozalj",
+              "redknot_output": "Ozalj",
+              "repeat": 0
+            },
+            {
+              "dense_output": "Ozalj",
+              "redknot_output": "Ozalj",
+              "repeat": 1
+            }
+          ]
+        },
+        {
+          "query_index": 1,
+          "query_row_id": 5,
+          "question": "Who is Edward Watson, Viscount Sondes's paternal grandfather?",
+          "repeats": [
+            {
+              "dense_output": "Lewis Watson, 1st Earl of Rockingham",
+              "redknot_output": "Lewis Watson, 1st Earl of Rockingham",
+              "repeat": 0
+            },
+            {
+              "dense_output": "Lewis Watson, 1st Earl of Rockingham",
+              "redknot_output": "Lewis Watson, 1st Earl of Rockingham",
+              "repeat": 1
+            }
+          ]
+        },
+        {
+          "query_index": 2,
+          "query_row_id": 10,
+          "question": "Which film has the director who was born earlier, The Secret Invasion or The House Of The Seven Hawks?",
+          "repeats": [
+            {
+              "dense_output": "The House of the Seven Hawks",
+              "redknot_output": "The House of the Seven Hawks",
+              "repeat": 0
+            },
+            {
+              "dense_output": "The House of the Seven Hawks",
+              "redknot_output": "The House of the Seven Hawks",
+              "repeat": 1
+            }
+          ]
+        },
+        {
+          "query_index": 3,
+          "query_row_id": 15,
+          "question": "Who is the spouse of the director of film Emergency Wedding?",
+          "repeats": [
+            {
+              "dense_output": "Barbara Hale",
+              "redknot_output": "Barbara Hale",
+              "repeat": 0
+            },
+            {
+              "dense_output": "Barbara Hale",
+              "redknot_output": "Barbara Hale",
+              "repeat": 1
+            }
+          ]
+        },
+        {
+          "query_index": 5,
+          "query_row_id": 25,
+          "question": "Who is younger, Guy Arvely Dolsin or Altuğ Çelikbilek?",
+          "repeats": [
+            {
+              "dense_output": "Altuğ Çelikbilek",
+              "redknot_output": "Altuğ Çelikbilek",
+              "repeat": 0
+            },
+            {
+              "dense_output": "Altuğ Çelikbilek",
+              "redknot_output": "Altuğ Çelikbilek",
+              "repeat": 1
+            }
+          ]
+        }
+      ],
+      "source_profile": "/mnt/tidal-alsh01/dataset/redone/RedKnot_Deepseekv4/test/srt/redknot/datasets/LongBench/cohorts/256k_10q/2wikimqa/profile.json",
+      "source_profile_sha256": "f3020284207f3517c4c20f0ec0be29641ba435bacd4518775f4f513bb80f66cd",
+      "source_result": "/mnt/tidal-alsh01/dataset/redone/redknot_runs/release_matrix_5x10_256k_440k_20260828/256k/2wikimqa/result.json",
+      "source_result_sha256": "079135e3e0c893285a94ebea7b2af05907734719507c0d3903fb92854856c026"
+    },
+    {
+      "dataset": "musique",
+      "eligible_query_count": 6,
+      "length": "256K",
+      "primary_exact_pair_count": 13,
+      "primary_pair_count": 20,
+      "selected_cases": [
+        {
+          "query_index": 0,
+          "query_row_id": 0,
+          "question": "Who plays the wife of the producer of Here Comes the Boom in Grown Ups?",
+          "repeats": [
+            {
+              "dense_output": "Salma Hayek",
+              "redknot_output": "Salma Hayek",
+              "repeat": 0
+            },
+            {
+              "dense_output": "Salma Hayek",
+              "redknot_output": "Salma Hayek",
+              "repeat": 1
+            }
+          ]
+        },
+        {
+          "query_index": 1,
+          "query_row_id": 3,
+          "question": "Who is the child of the Italian navigator who sailed for England and explored the eastern coast of the continent Francisco Bojado's birthplace is located?",
+          "repeats": [
+            {
+              "dense_output": "Sebastian Cabot",
+              "redknot_output": "Sebastian Cabot",
+              "repeat": 0
+            },
+            {
+              "dense_output": "Sebastian Cabot",
+              "redknot_output": "Sebastian Cabot",
+              "repeat": 1
+            }
+          ]
+        },
+        {
+          "query_index": 3,
+          "query_row_id": 9,
+          "question": "What is the experimental satellite being forerunner to communication satellite of INSAT-4CR's manufacturer called?",
+          "repeats": [
+            {
+              "dense_output": "ATS-6",
+              "redknot_output": "ATS-6",
+              "repeat": 0
+            },
+            {
+              "dense_output": "ATS-6",
+              "redknot_output": "ATS-6",
+              "repeat": 1
+            }
+          ]
+        },
+        {
+          "query_index": 4,
+          "query_row_id": 12,
+          "question": "Who is Frances Freeling Broderip's sibling?",
+          "repeats": [
+            {
+              "dense_output": "Tom Hood",
+              "redknot_output": "Tom Hood",
+              "repeat": 0
+            },
+            {
+              "dense_output": "Tom Hood",
+              "redknot_output": "Tom Hood",
+              "repeat": 1
+            }
+          ]
+        },
+        {
+          "query_index": 5,
+          "query_row_id": 15,
+          "question": "What is the name of the famous bridge located in the birthplace of the composer of Nulla in mundo pax sincera?",
+          "repeats": [
+            {
+              "dense_output": "Rialto Bridge",
+              "redknot_output": "Rialto Bridge",
+              "repeat": 0
+            },
+            {
+              "dense_output": "Rialto Bridge",
+              "redknot_output": "Rialto Bridge",
+              "repeat": 1
+            }
+          ]
+        }
+      ],
+      "source_profile": "/mnt/tidal-alsh01/dataset/redone/RedKnot_Deepseekv4/test/srt/redknot/datasets/LongBench/cohorts/256k_10q/musique/profile.json",
+      "source_profile_sha256": "9c52656daac2c2648f45547c50ee5aa0d81a9294cb6309b7788abd5d353bce57",
+      "source_result": "/mnt/tidal-alsh01/dataset/redone/redknot_runs/release_matrix_5x10_256k_440k_20260828/256k/musique/result.json",
+      "source_result_sha256": "ccb9000f5fce73e6727d8e020000a7c683bd864dfdd8ec0d9a551668caa1f774"
+    },
+    {
+      "dataset": "multifieldqa_en",
+      "eligible_query_count": 6,
+      "length": "256K",
+      "primary_exact_pair_count": 14,
+      "primary_pair_count": 20,
+      "selected_cases": [
+        {
+          "query_index": 0,
+          "query_row_id": 0,
+          "question": "What is the name of the most active fan club?",
+          "repeats": [
+            {
+              "dense_output": "South West Ultras",
+              "redknot_output": "South West Ultras",
+              "repeat": 0
+            },
+            {
+              "dense_output": "South West Ultras",
+              "redknot_output": "South West Ultras",
+              "repeat": 1
+            }
+          ]
+        },
+        {
+          "query_index": 2,
+          "query_row_id": 10,
+          "question": "Can individual molecules of indeno[1,2-a]fluorene switch between open-shell and closed-shell states?",
+          "repeats": [
+            {
+              "dense_output": "Yes",
+              "redknot_output": "Yes",
+              "repeat": 0
+            },
+            {
+              "dense_output": "Yes",
+              "redknot_output": "Yes",
+              "repeat": 1
+            }
+          ]
+        },
+        {
+          "query_index": 3,
+          "query_row_id": 14,
+          "question": "What is the main advantage of a horizontal business model for mobile devices?",
+          "repeats": [
+            {
+              "dense_output": "flexibility",
+              "redknot_output": "flexibility",
+              "repeat": 0
+            },
+            {
+              "dense_output": "flexibility",
+              "redknot_output": "flexibility",
+              "repeat": 1
+            }
+          ]
+        },
+        {
+          "query_index": 4,
+          "query_row_id": 19,
+          "question": "What were the vaccines trialed against?",
+          "repeats": [
+            {
+              "dense_output": "saline",
+              "redknot_output": "saline",
+              "repeat": 0
+            },
+            {
+              "dense_output": "saline",
+              "redknot_output": "saline",
+              "repeat": 1
+            }
+          ]
+        },
+        {
+          "query_index": 6,
+          "query_row_id": 29,
+          "question": "What did Mary tell the disciples?",
+          "repeats": [
+            {
+              "dense_output": "I have seen the Lord",
+              "redknot_output": "I have seen the Lord",
+              "repeat": 0
+            },
+            {
+              "dense_output": "I have seen the Lord",
+              "redknot_output": "I have seen the Lord",
+              "repeat": 1
+            }
+          ]
+        }
+      ],
+      "source_profile": "/mnt/tidal-alsh01/dataset/redone/RedKnot_Deepseekv4/test/srt/redknot/datasets/LongBench/cohorts/256k_10q/multifieldqa_en/profile.json",
+      "source_profile_sha256": "1f04cce1b5d5808fa67350361465bf7b1ab6a3f228cb4cdb4dcfe04187c8ef81",
+      "source_result": "/mnt/tidal-alsh01/dataset/redone/redknot_runs/release_matrix_5x10_256k_440k_20260828/256k/multifieldqa_en/result.json",
+      "source_result_sha256": "b707cca0b9440ec57f49070aaea5c8ee5c562c9e500898efb1798000c5127dc8"
+    },
+    {
+      "dataset": "triviaqa",
+      "eligible_query_count": 8,
+      "length": "256K",
+      "primary_exact_pair_count": 17,
+      "primary_pair_count": 20,
+      "selected_cases": [
+        {
+          "query_index": 0,
+          "query_row_id": 0,
+          "question": "Passage:\nVisit Grand Coulee Dam| Bureau of Reclamation\nVisit Grand Coulee Dam| Bureau of Reclamation\nContact Us\nVisit the Dam\nExplore the dam, take part in the D3 Geocache Challenge, view the Laser Light Show, and come inside the Visitor Center to experience the hands-on exhibits!\nThe visitor center is open daily (except Thanksgiving Day, December 25, and January 1) from 9:00 a.m. to 5:00 p.m, with extended hours between Memorial Day and September 30. During the summer season the visitor center is open until the laser light show, One River, Many Voices, ends. Show times vary, learn more >>\nQuestion:\nIn which country is the Grand Coulee Dam\nAnswer:\n",
+          "repeats": [
+            {
+              "dense_output": "United States",
+              "redknot_output": "United States",
+              "repeat": 0
+            },
+            {
+              "dense_output": "United States",
+              "redknot_output": "United States",
+              "repeat": 1
+            }
+          ]
+        },
+        {
+          "query_index": 2,
+          "query_row_id": 6,
+          "question": "Passage:\nFontanelle\nA fontanelle (or fontanel) (colloquially, soft spot) is an anatomical feature of the infant human skull comprising any of the soft membranous gaps (sutures) between the cranial bones that make up the calvaria of a fetus or an infant. Fontanelles allow for rapid stretching and deformation of the neurocranium as the brain expands faster than the surrounding bone can grow. Premature complete ossification of the sutures is called craniosynostosis.\n\nDuring infancy, the anterior fontanelle is known as the bregma.\n\nStructure\n\nThe skull of a newborn consists of five main bones: two frontal bones, two parietal bones, and one occipital bone. These are joined by fibrous sutures, which allow movement that facilitates childbirth and brain growth.\n\n* Posterior fontanelle is triangle-shaped. It lies at the junction between the sagittal suture and lambdoid suture. At birth, the skull features a small posterior fontanelle with an open area covered by a tough membrane, where the two parietal bones adjoin the occipital bone (at the lambda). The posterior fontanelles ossify within 2 or 3 months of birth. This is called intramembranous ossification.  The mesenchymal connective tissue turns into bone tissue.\n* Anterior fontanelle is a diamond-shaped membrane-filled space located between the two frontal and two parietal bones of the developing fetal skull. It persists until approximately 18 months after birth. It is at the junction of the coronal suture and sagittal suture. The fetal anterior fontanelle may be palpated until 18 months. In cleidocranial dysostosis, however, it is often late in closing or may never close.  Examination of an infant includes palpating the anterior fontanelle.\n* Two smaller fontanelles are located on each side of the head, more anteriorly the sphenoidal or anterolateral fontanelle (between the sphenoid, parietal, temporal, and frontal bones) and more posteriorly the mastoid or posterolateral fontanelle (between the temporal, occipital, and parietal bones).\nDuring birth, fontanelles enable the bony plates of the skull to flex, allowing the child's head to pass through the birth canal. The ossification of the bones of the skull causes the anterior fontanelle to close over by 9 to 18 months.  The sphenoidal and posterior fontanelles close during the first few months of life. The closures eventually form the sutures of the neurocranium. Other than the anterior and posterior fontanelles, the mastoid fontanelle and the sphenoidal fontanelle are also significant.\n\nClosure\n\nIn humans, the sequence of fontanelle closure is as follows:\n# The posterior fontanelle generally closes 8–12 weeks after birth;\n# The sphenoidal fontanelle is the next to close around 6 months after birth;\n# The mastoid fontanelle closes next from 6 to 18 months after birth; and\n# The anterior fontanelle is generally the last to close between 12–18 months.\n\nClinical significance\n\nThe fontanelle may pulsate, and although the precise cause of this is not known, it is perfectly normal and seems to echo the heartbeat, perhaps via the arterial pulse within the brain vasculature, or in the meninges. This pulsating action is how the soft spot got its name – fontanelle is borrowed from the old French word fontenele, which is a diminutive of fontaine, meaning \"spring\". It is assumed that the term spring is used because of the analogy of the dent in a rock or earth where a spring arises. \n\nParents may worry that their infant may be more prone to injury at the fontanelles. In fact, although they may colloquially be called \"soft-spots\", the membrane covering the fontanelles is extremely tough and difficult to penetrate.\n\nFontanelles allow the infant brain to be imaged using ultrasonography. Once they are closed, most of the brain is inaccessible to ultrasound imaging, because the bony skull presents an acoustic barrier.\n\nDisease\n\nFontanelles – bulging\n\nA very tense or bulging anterior fontanelle indicates raised intracranial pressure. Increased cranial pressure in infants may cause the fontanelles to bulge or the head to begin to enlarge abnormally.  It can occur due to:\n* Encephalitis – swelling (inflammation) of the brain, most often due to infections\n* Hydrocephalus – a buildup of fluid inside the skull\n* Meningitis—infection of the membranes covering the brain\n\nFontanelles – sunken\n\nA sunken (also called \"depressed\") fontanelle indicates dehydration or malnutrition. \n\nFontanelles – enlarged\n\nThe fontanelles may be enlarged, may be slow to close or may never close most commonly due to causes like: \n* Down syndrome\n* Hydrocephalus\n* Intrauterine growth restriction (IUGR)\n* Premature birth\n\nRarer causes include:\n* Achondroplasia\n* Apert syndrome\n* Cleidocranial dysostosis\n* Congenital rubella\n* Neonatal hypothyroidism\n* Osteogenesis imperfecta\n* Rickets\n\nIn other animals\n\nIn apes the fontanelles fuse soon after birth. In chimpanzees the anterior fontanelle is fully closed by 3 months of age.\n\nIn dogs\n\nNot all open fontanelles are connected with hydrocephalus. In many young dogs the skull bones are not fused at birth, but instead will close slowly over a three- to six-month period. Occasionally these bones fail to close, but the dog is still healthy. In these cases, however, the dog's owners need to be very careful, since any injury or bumps to the animal's head could cause significant brain damage, as well as conditions like epilepsy.\n\nAdditional images\n\n File:Fontanelle.png|Fontanelle.\n File:Anterior fontanelle.jpg|Anterior fontanelle.\n File:Sutures from top.png|Cranial sutures shown from top of head.\nQuestion:\nWhat name is given to the soft spots on a baby's head which, during birth, enable the bony plates of the skull to flex allowing the child's head to pass through the birth canal?\nAnswer:\n",
+          "repeats": [
+            {
+              "dense_output": "Fontanelles",
+              "redknot_output": "Fontanelles",
+              "repeat": 0
+            },
+            {
+              "dense_output": "Fontanelles",
+              "redknot_output": "Fontanelles",
+              "repeat": 1
+            }
+          ]
+        },
+        {
+          "query_index": 3,
+          "query_row_id": 11,
+          "question": "Passage:\nsheet music - 'Fine' at the end of the song - Music ...\nsheet music - 'Fine' at the end of the song - Music: Practice & Theory Stack Exchange\n'Fine' at the end of the song\n5\n \nI always like to think of it as a little congratulatory note waiting there at the end of the tune for me. Like the sheet music is telling me \"Cheer up, fella, you did just fine!\" –  Aaron Hipple Jan 17 '14 at 2:03\n  \n \nI didn't know this one was italian, I thought it was the english word –  Shevliaskovic Jan 16 '14 at 20:45\n7\n \n@Shevliaskovic: Don't forget to pronounce it the Italian way - fee-nay - and not the English way. –  Eric Lippert Jan 16 '14 at 23:18\nup vote 9 down vote\nFine pretty much means the end of a piece. In piece you used for your example the end is pretty obvious, but some pieces of music will end in the middle after a D.S. al Fine.\nIn this example you can see the end of the piece is not where it would usually be. D.S. al Fine itself means go the Segno and play to the Fine. The Fine is used to say where the ending actually is.\nQuestion:\n\"What does the word \"\"fine\"\" mean on sheet music?\"\nAnswer:\n",
+          "repeats": [
+            {
+              "dense_output": "End of a piece",
+              "redknot_output": "End of a piece",
+              "repeat": 0
+            },
+            {
+              "dense_output": "End of a piece",
+              "redknot_output": "End of a piece",
+              "repeat": 1
+            }
+          ]
+        },
+        {
+          "query_index": 4,
+          "query_row_id": 16,
+          "question": "Passage:\nOlivier, Laurence Kerr, Baron Olivier of Brighton\nOlivier, Laurence Kerr, Baron Olivier of Brighton\nEncyclopedia  >  People  >  Literature and the Arts  >  Theater: Biographies\nLaurence Kerr Olivier,  Baron Olivier of Brighton\nOlivier, Laurence Kerr, Baron Olivier of Brighton (ōlĭvˈē-āˌ) [ key ], 1907–89, English actor, director, and producer. He made his stage debut at Stratford-upon-Avon in 1922 and soon achieved renown through his work with the Old Vic company. Noted for his remarkable versatility and striking features, he enjoyed universal admiration for his work in the classics, in modern realistic plays, and in comedy. His films include Wuthering Heights (1939), Rebecca (1940), Pride and Prejudice (1940), Henry V (1944), Richard III (1956), The Entertainer (1960), Othello (1965), and Three Sisters (1970). In 1948 he won an Academy Award for his portrayal of Hamlet in the film that he also produced and directed. In 1962, Olivier was appointed director of the National Theatre of England, which became one of the finest repertory companies in the world. In the 1970s and 1980s, he was a highly prized character actor, appearing in such roles as the Nazi villain in The Marathon Man (1976). Olivier was knighted in 1947 and in 1970 was made a life peer, the first actor to be so honored.\nOlivier often costarred on stage and screen with his second wife, Vivien Leigh, 1913–67, a delicate brunette who made a spectacular American film debut in Gone with the Wind (1939), winning the Academy Award. She followed this with Waterloo Bridge (1940), Lady Hamilton (with Olivier as Nelson, 1941), and A Streetcar Named Desire (1951), for which she won a second Academy Award.\nSee F. Barker, The Oliviers (1953); L. Gourlay, ed., Olivier, a collection of memoirs by his friends (1973); Olivier's own disquisition on acting (1986); biographies by A. Holden (1988), H. Vickers (1989), A. Walker (1989), D. Spoto (1992, repr. 2001), and T. Coleman (2005).\nThe Columbia Electronic Encyclopedia, 6th ed. Copyright © 2012, Columbia University Press. All rights reserved.\nSee more Encyclopedia articles on: Theater: Biographies\nQuestion:\nWhen Laurence Olivier became Baron Olivier where was he the Baron of\nAnswer:\n",
+          "repeats": [
+            {
+              "dense_output": "Brighton",
+              "redknot_output": "Brighton",
+              "repeat": 0
+            },
+            {
+              "dense_output": "Brighton",
+              "redknot_output": "Brighton",
+              "repeat": 1
+            }
+          ]
+        },
+        {
+          "query_index": 5,
+          "query_row_id": 19,
+          "question": "Passage:\nHow to Make Triple Sec - Thursday Happy Hour\nHow to Make Triple Sec - Thursday Happy Hour\nHow to Make Triple Sec\nPosted by Shelly Bowen on Oct 8, 2009 in Handcrafted Mixers , How to ... | No Comments\nWhen it comes to mixing fantastic drinks, fewer things make it better than having the best ingredients on hand. Triple sec or orange liqueur (or Grand Marnier or Cointreau, both orange liqueurs) is widely used in many classics, so we made own special version.\nWhat does triple sec taste like? Triple sec is a sweet orange citrus liqueur. Our homemade triple sec tastes heavily of oranges and orange peel, like orange hard candy. Some triple secs are not as potently orange tasting.\nThis recipe comes from Charlie Hodges at the Ace Hotel, Palm Springs, via Imbibe Magazine‘s Fall 2009 issue. Read through the steps and you’ll see that you can multitask to speed up the process.\nHere’s what you need to make triple sec:\n4 small navel oranges\n12 oz. Everclear grain alcohol\n12 oz. vodka\n12 oz. can of Mandarin orange slices\n5 cups cane sugar\nOrange blossom water\nGet all your triple sec ingredients together, then:\nHeat oven to lowest temperature setting, generally around 180ºF – 200ºF. Slice the oranges into 1/8″ thick wheels and lay out on a baking tray. Bake oranges until sticky and gummy but not dried, about 1-2 hours.\nDrain the can of Mandarin oranges and place in a jar with the vodka to infuse for about 24 hours or until it tastes strongly of the oranges.\nCombine the baked orange slices with the Everclear and infuse for 8 hours, stirring occasionally.\nMake the simple syrup combining the sugar and water and stirring over medium heat until dissolved.\nFinally, strain all liquid ingredients through a fine sieve and combine with the syrup. Stir and add a few dashes of orange blossom water to taste. Bottle it up and it keeps refrigerated for about a month.\nReady to mix? Here are some mixed drink recipes that call for triple sec.\nQuestion:\nWhat is the flavour of the liqueur Triple-Sec?\nAnswer:\n",
+          "repeats": [
+            {
+              "dense_output": "Orange",
+              "redknot_output": "Orange",
+              "repeat": 0
+            },
+            {
+              "dense_output": "Orange",
+              "redknot_output": "Orange",
+              "repeat": 1
+            }
+          ]
+        }
+      ],
+      "source_profile": "/mnt/tidal-alsh01/dataset/redone/RedKnot_Deepseekv4/test/srt/redknot/datasets/LongBench/cohorts/256k_10q/triviaqa/profile.json",
+      "source_profile_sha256": "365fbdb9e8b8ace96f5546e5c540d67c45eff227b76c5e665fbcd7a036f688e2",
+      "source_result": "/mnt/tidal-alsh01/dataset/redone/redknot_runs/release_matrix_5x10_256k_440k_20260828/256k/triviaqa/result.json",
+      "source_result_sha256": "0bd8d209d065872f6b74b9d0bfe29cb2a85a7d886b7ce8553395f5513bb0fb63"
+    },
+    {
+      "dataset": "hotpotqa",
+      "eligible_query_count": 9,
+      "length": "440K",
+      "primary_exact_pair_count": 19,
+      "primary_pair_count": 20,
+      "selected_cases": [
+        {
+          "query_index": 0,
+          "query_row_id": 0,
+          "question": "Which case was brought to court first Miller v. California or Gates v. Collier ?",
+          "repeats": [
+            {
+              "dense_output": "Gates v. Collier",
+              "redknot_output": "Gates v. Collier",
+              "repeat": 0
+            },
+            {
+              "dense_output": "Gates v. Collier",
+              "redknot_output": "Gates v. Collier",
+              "repeat": 1
+            }
+          ]
+        },
+        {
+          "query_index": 1,
+          "query_row_id": 4,
+          "question": "Was Atom Egoyans biggest commercial success on stage or on film?",
+          "repeats": [
+            {
+              "dense_output": "film",
+              "redknot_output": "film",
+              "repeat": 0
+            },
+            {
+              "dense_output": "film",
+              "redknot_output": "film",
+              "repeat": 1
+            }
+          ]
+        },
+        {
+          "query_index": 2,
+          "query_row_id": 9,
+          "question": "For which band, was the female member of Fitz and The Tantrums, the front woman for ten years ?",
+          "repeats": [
+            {
+              "dense_output": "The Rebirth",
+              "redknot_output": "The Rebirth",
+              "repeat": 0
+            },
+            {
+              "dense_output": "The Rebirth",
+              "redknot_output": "The Rebirth",
+              "repeat": 1
+            }
+          ]
+        },
+        {
+          "query_index": 4,
+          "query_row_id": 19,
+          "question": "Name a member of a British-American supergroup who recored a version of Nobody's child in 1990",
+          "repeats": [
+            {
+              "dense_output": "George Harrison",
+              "redknot_output": "George Harrison",
+              "repeat": 0
+            },
+            {
+              "dense_output": "George Harrison",
+              "redknot_output": "George Harrison",
+              "repeat": 1
+            }
+          ]
+        },
+        {
+          "query_index": 5,
+          "query_row_id": 24,
+          "question": "Robbie Tucker plays in what series that follows a group of friends who run an Irish bar?",
+          "repeats": [
+            {
+              "dense_output": "It's Always Sunny in Philadelphia",
+              "redknot_output": "It's Always Sunny in Philadelphia",
+              "repeat": 0
+            },
+            {
+              "dense_output": "It's Always Sunny in Philadelphia",
+              "redknot_output": "It's Always Sunny in Philadelphia",
+              "repeat": 1
+            }
+          ]
+        }
+      ],
+      "source_profile": "/mnt/tidal-alsh01/dataset/redone/RedKnot_Deepseekv4/test/srt/redknot/datasets/LongBench/cohorts/440k_10q/hotpotqa/profile.json",
+      "source_profile_sha256": "9fc19004b147373de89bde50acded8b1f45c54d8d25ca595f2f408437a6c1535",
+      "source_result": "/mnt/tidal-alsh01/dataset/redone/redknot_runs/release_matrix_5x10_256k_440k_20260828/440k/hotpotqa/result.json",
+      "source_result_sha256": "6e3671a35e8a7cea54f50a9a25fe266830e4e754f9e052d6ad4812d6fac73c38"
+    },
+    {
+      "dataset": "2wikimqa",
+      "eligible_query_count": 8,
+      "length": "440K",
+      "primary_exact_pair_count": 17,
+      "primary_pair_count": 20,
+      "selected_cases": [
+        {
+          "query_index": 0,
+          "query_row_id": 0,
+          "question": "Where was the wife of Francis I Rákóczi born?",
+          "repeats": [
+            {
+              "dense_output": "Ozalj",
+              "redknot_output": "Ozalj",
+              "repeat": 0
+            },
+            {
+              "dense_output": "Ozalj",
+              "redknot_output": "Ozalj",
+              "repeat": 1
+            }
+          ]
+        },
+        {
+          "query_index": 1,
+          "query_row_id": 8,
+          "question": "Where did Helena Carroll's father study?",
+          "repeats": [
+            {
+              "dense_output": "St Patrick's College, Dublin",
+              "redknot_output": "St Patrick's College, Dublin",
+              "repeat": 0
+            },
+            {
+              "dense_output": "St Patrick's College, Dublin",
+              "redknot_output": "St Patrick's College, Dublin",
+              "repeat": 1
+            }
+          ]
+        },
+        {
+          "query_index": 2,
+          "query_row_id": 16,
+          "question": "Which film came out earlier, Indradhanura Chhai or The Death Of Black King?",
+          "repeats": [
+            {
+              "dense_output": "Indradhanura Chhai",
+              "redknot_output": "Indradhanura Chhai",
+              "repeat": 0
+            },
+            {
+              "dense_output": "Indradhanura Chhai",
+              "redknot_output": "Indradhanura Chhai",
+              "repeat": 1
+            }
+          ]
+        },
+        {
+          "query_index": 3,
+          "query_row_id": 25,
+          "question": "Who is younger, Guy Arvely Dolsin or Altuğ Çelikbilek?",
+          "repeats": [
+            {
+              "dense_output": "Altuğ Çelikbilek",
+              "redknot_output": "Altuğ Çelikbilek",
+              "repeat": 0
+            },
+            {
+              "dense_output": "Altuğ Çelikbilek",
+              "redknot_output": "Altuğ Çelikbilek",
+              "repeat": 1
+            }
+          ]
+        },
+        {
+          "query_index": 5,
+          "query_row_id": 43,
+          "question": "Which film whose producer was born first, All-American Co-Ed or Lagu Kenangan?",
+          "repeats": [
+            {
+              "dense_output": "All-American Co-Ed",
+              "redknot_output": "All-American Co-Ed",
+              "repeat": 0
+            },
+            {
+              "dense_output": "All-American Co-Ed",
+              "redknot_output": "All-American Co-Ed",
+              "repeat": 1
+            }
+          ]
+        }
+      ],
+      "source_profile": "/mnt/tidal-alsh01/dataset/redone/RedKnot_Deepseekv4/test/srt/redknot/datasets/LongBench/cohorts/440k_10q/2wikimqa/profile.json",
+      "source_profile_sha256": "6626a93b507406c7603445111549a426c9ae02d3a01668de9ed1704ff7ccd374",
+      "source_result": "/mnt/tidal-alsh01/dataset/redone/redknot_runs/release_matrix_5x10_256k_440k_20260828/440k/2wikimqa/result.json",
+      "source_result_sha256": "68311c83e194697556661468584066d9cadf63c8b4a3003f8b299458f5f72ea0"
+    },
+    {
+      "dataset": "musique",
+      "eligible_query_count": 5,
+      "length": "440K",
+      "primary_exact_pair_count": 12,
+      "primary_pair_count": 20,
+      "selected_cases": [
+        {
+          "query_index": 0,
+          "query_row_id": 0,
+          "question": "Who plays the wife of the producer of Here Comes the Boom in Grown Ups?",
+          "repeats": [
+            {
+              "dense_output": "Salma Hayek",
+              "redknot_output": "Salma Hayek",
+              "repeat": 0
+            },
+            {
+              "dense_output": "Salma Hayek",
+              "redknot_output": "Salma Hayek",
+              "repeat": 1
+            }
+          ]
+        },
+        {
+          "query_index": 3,
+          "query_row_id": 12,
+          "question": "Who is Frances Freeling Broderip's sibling?",
+          "repeats": [
+            {
+              "dense_output": "Tom Hood",
+              "redknot_output": "Tom Hood",
+              "repeat": 0
+            },
+            {
+              "dense_output": "Tom Hood",
+              "redknot_output": "Tom Hood",
+              "repeat": 1
+            }
+          ]
+        },
+        {
+          "query_index": 4,
+          "query_row_id": 16,
+          "question": "When did the party that gained control of Congress in the midterm elections in 1946 take control of the government branch that determines the rules of the US House?",
+          "repeats": [
+            {
+              "dense_output": "1946",
+              "redknot_output": "1946",
+              "repeat": 0
+            },
+            {
+              "dense_output": "1946",
+              "redknot_output": "1946",
+              "repeat": 1
+            }
+          ]
+        },
+        {
+          "query_index": 5,
+          "query_row_id": 20,
+          "question": "The author of Elizabeth and After attended which university?",
+          "repeats": [
+            {
+              "dense_output": "University of Toronto",
+              "redknot_output": "University of Toronto",
+              "repeat": 0
+            },
+            {
+              "dense_output": "University of Toronto",
+              "redknot_output": "University of Toronto",
+              "repeat": 1
+            }
+          ]
+        },
+        {
+          "query_index": 7,
+          "query_row_id": 28,
+          "question": "Who is the president of the new country who has jointly established a Commission on Truth and Friendship with the birth country of Satyo Husodo?",
+          "repeats": [
+            {
+              "dense_output": "Susilo Bambang Yudhoyono",
+              "redknot_output": "Susilo Bambang Yudhoyono",
+              "repeat": 0
+            },
+            {
+              "dense_output": "Susilo Bambang Yudhoyono",
+              "redknot_output": "Susilo Bambang Yudhoyono",
+              "repeat": 1
+            }
+          ]
+        }
+      ],
+      "source_profile": "/mnt/tidal-alsh01/dataset/redone/RedKnot_Deepseekv4/test/srt/redknot/datasets/LongBench/cohorts/440k_10q/musique/profile.json",
+      "source_profile_sha256": "0629b8e0e0d9b9681b764a74abd2ab9089d74a9bc6a679d42f751e3f2ea39944",
+      "source_result": "/mnt/tidal-alsh01/dataset/redone/redknot_runs/release_matrix_5x10_256k_440k_20260828/440k/musique/result.json",
+      "source_result_sha256": "5cd2d39e22885653590a4f1cbf72823e7ca800bfec0ec9ac84508d5e00850490"
+    },
+    {
+      "dataset": "multifieldqa_en",
+      "eligible_query_count": 7,
+      "length": "440K",
+      "primary_exact_pair_count": 16,
+      "primary_pair_count": 20,
+      "selected_cases": [
+        {
+          "query_index": 0,
+          "query_row_id": 0,
+          "question": "What is the name of the most active fan club?",
+          "repeats": [
+            {
+              "dense_output": "South West Ultras",
+              "redknot_output": "South West Ultras",
+              "repeat": 0
+            },
+            {
+              "dense_output": "South West Ultras",
+              "redknot_output": "South West Ultras",
+              "repeat": 1
+            }
+          ]
+        },
+        {
+          "query_index": 1,
+          "query_row_id": 7,
+          "question": "What was Hugh H. Goodwin's rank in the United States Navy?",
+          "repeats": [
+            {
+              "dense_output": "Vice Admiral",
+              "redknot_output": "Vice Admiral",
+              "repeat": 0
+            },
+            {
+              "dense_output": "Vice Admiral",
+              "redknot_output": "Vice Admiral",
+              "repeat": 1
+            }
+          ]
+        },
+        {
+          "query_index": 2,
+          "query_row_id": 14,
+          "question": "What is the main advantage of a horizontal business model for mobile devices?",
+          "repeats": [
+            {
+              "dense_output": "flexibility",
+              "redknot_output": "flexibility",
+              "repeat": 0
+            },
+            {
+              "dense_output": "flexibility",
+              "redknot_output": "flexibility",
+              "repeat": 1
+            }
+          ]
+        },
+        {
+          "query_index": 3,
+          "query_row_id": 23,
+          "question": "What are the three teams that used conflict optimization in the challenge?",
+          "repeats": [
+            {
+              "dense_output": "Lasa, Gitastrophe, and Shadoks",
+              "redknot_output": "Lasa, Gitastrophe, and Shadoks",
+              "repeat": 0
+            },
+            {
+              "dense_output": "Lasa, Gitastrophe, and Shadoks",
+              "redknot_output": "Lasa, Gitastrophe, and Shadoks",
+              "repeat": 1
+            }
+          ]
+        },
+        {
+          "query_index": 5,
+          "query_row_id": 41,
+          "question": "When was Weep Not, Child first published?",
+          "repeats": [
+            {
+              "dense_output": "1964",
+              "redknot_output": "1964",
+              "repeat": 0
+            },
+            {
+              "dense_output": "1964",
+              "redknot_output": "1964",
+              "repeat": 1
+            }
+          ]
+        }
+      ],
+      "source_profile": "/mnt/tidal-alsh01/dataset/redone/RedKnot_Deepseekv4/test/srt/redknot/datasets/LongBench/cohorts/440k_10q/multifieldqa_en/profile.json",
+      "source_profile_sha256": "b7785d14d6494dcee5a891d57249ded06fd272bc5680a111664f726e0a793b10",
+      "source_result": "/mnt/tidal-alsh01/dataset/redone/redknot_runs/release_matrix_5x10_256k_440k_20260828/440k/multifieldqa_en/result.json",
+      "source_result_sha256": "396b378a5df2e60805a30f3fbecb3c1f7195310fccb04cf8d4a88fefa4017895"
+    },
+    {
+      "dataset": "triviaqa",
+      "eligible_query_count": 9,
+      "length": "440K",
+      "primary_exact_pair_count": 19,
+      "primary_pair_count": 20,
+      "selected_cases": [
+        {
+          "query_index": 0,
+          "query_row_id": 0,
+          "question": "Passage:\nVisit Grand Coulee Dam| Bureau of Reclamation\nVisit Grand Coulee Dam| Bureau of Reclamation\nContact Us\nVisit the Dam\nExplore the dam, take part in the D3 Geocache Challenge, view the Laser Light Show, and come inside the Visitor Center to experience the hands-on exhibits!\nThe visitor center is open daily (except Thanksgiving Day, December 25, and January 1) from 9:00 a.m. to 5:00 p.m, with extended hours between Memorial Day and September 30. During the summer season the visitor center is open until the laser light show, One River, Many Voices, ends. Show times vary, learn more >>\nQuestion:\nIn which country is the Grand Coulee Dam\nAnswer:\n",
+          "repeats": [
+            {
+              "dense_output": "United States",
+              "redknot_output": "United States",
+              "repeat": 0
+            },
+            {
+              "dense_output": "United States",
+              "redknot_output": "United States",
+              "repeat": 1
+            }
+          ]
+        },
+        {
+          "query_index": 1,
+          "query_row_id": 5,
+          "question": "Passage:\nSuidae\nSuidae is a family of artiodactyl mammals commonly called \"pigs\", hogs, or boars.  In addition to numerous fossil species, up to sixteen extant species are currently recognized, classified into between four and eight genera. The family includes the domestic pig, Sus scrofa domesticus or Sus domesticus, in addition to numerous species of wild pig, such as the babirusa Babyrousa babyrussa and the warthog Phacochoerus aethiopicus. All suids, or swine, are native to the Old World, ranging from Asia and its islands, to Europe, and Africa.\n\nThe earliest fossil suids date from the Oligocene epoch of Asia, and their descendants reached Europe during the Miocene.  Several fossil species are known, and show adaptations to a wide range of different diets, from strict herbivory to possible carrion-eating (in Tetraconodon).\n\nPhysical characteristics\n\nSuids belong to the order Artiodactyla, and are generally regarded as the living members of that order most similar to the ancestral form. Unlike most other members of the order, they have four toes on each foot, although they walk only on the middle two digits, with the others staying clear of the ground. They also have a simple stomach, rather than the more complex, ruminant, stomach found in most other artiodactyl families.\n\nThey are small to medium animals, varying in size from 58 to in length, and 6 to in weight in the case of the pygmy hog, to 130 - and 100 - in the giant forest hog.  They have large heads and short necks, with relatively small eyes and prominent ears. Their heads have a distinctive snout, ending in a disc-shaped nose. Suids typically have a bristly coat, and a short tail ending in a tassle. The males possess a corkscrew-shaped penis, which fits into a similarly shaped groove in the female's cervix.   \n\nSuids have a well-developed sense of hearing, and are vocal animals, communicating with a series of grunts, squeals, and similar sounds. They also have an acute sense of smell. Many species are omnivorous, eating grass, leaves, roots, insects, worms, and even frogs or mice. Other species are more selective and purely herbivorous.\n\nTheir teeth reflect their diet, and suids retain the upper incisors, which are lost in most other Artiodactyls. The canine teeth are enlarged to form prominent tusks, used for rooting in moist earth or undergrowth, and in fighting. They have only a short diastema. The number of teeth varies between species, but the general dental formula is: \n\nBehaviour and reproduction\n\nSuids are intelligent and adaptable animals. Adult females (sows) and their young travel in a group (sounder; see List of animal names), while adult males (boars) are either solitary, or travel in small bachelor groups. Males generally are not territorial, and come into conflict only during the mating season.\n\nLitter size varies between one and twelve, depending on the species. The mother prepares a grass nest or similar den, which the young leave after about ten days. Suids are weaned at around three months, and become sexually mature at 18 months. In practice, however, male suids are unlikely to gain access to sows in the wild until they have reached their full physical size, at around four years of age. In all species, the male is significantly larger than the female, and possesses more prominent tusks.\n\nClassification\n\n \nThe complete list of living species, and a partial list of extinct genera known from the fossil record,   extinct taxa marked with a dagger \"†\", are:\n\n*Suidae\n**Subfamily †Cainochoerinae\n***Genus †Albanohyus\n***Genus †Cainochoerus\n**Subfamily †Hyotheriinae\n***Genus †Aureliachoerus\n***Genus †Chicochoerus\n***Genus †Hyotherium\n***Genus †Nguruwe (formerly placed in Kubanochoerinae) \n***Genus †Xenohyus\n**Subfamily †Listriodontinae \n***Tribe †Kubanochoerini\n****Genus †Kubanochoerus (junior synonyms Libycochoerus, Megalochoerus)\n***Tribe †Listriodontini\n****Genus †Eurolistriodon\n****Genus †Listriodon (junior synonym Bunolistriodon)\n***Tribe †Namachoerini\n****Genus †Lopholistriodon\n****Genus †Namachoerus\n***Tribe incertae sedis\n****Genus †Dicoryphochoerus\n**Subfamily Suinae\n***Tribe Babyrousini\n****Genus Babyrousa (Pleistocene to recent)\n*****Species B. babyrussa Buru babirusa\n*****Species †B. bolabatuensis Bola Batu babirusa\n*****Species Babyrousa celebensis North Sulawesi babirusa\n*****Species Babyrousa togeanensis Togian babirusa\n***Tribe †Hippohyini\n****Genus †Hippohyus (Miocene to Pleistocene)\n****Genus †Sinohyus (Miocene)\n****Genus †Sivahyus (Miocene to Pliocene)\n***Tribe Potamochoerini\n****Genus †Celebochoerus (Pliocene to Pleistocene)\n****Genus Hylochoerus (Pleistocene to recent)\n*****Species Hylochoerus meinertzhageni giant forest hog\n****Genus †Kolpochoerus (Pliocene to Pleistocene) (junior synonyms Ectopotamochoerus, Mesochoerus, Omochoerus, Promesochoerus)\n****Genus Potamochoerus (Miocene to recent)\n*****Species P. larvatus bushpig\n*****Species P. porcus red river hog\n****Genus †Propotamochoerus (Miocene to Pliocene)\n***Tribe Suini\n****Genus †Eumaiochoerus (Miocene)\n****Genus †Hippopotamodon (Miocene to Pleistocene)  (junior synonym Limnostonyx)\n****Genus †Korynochoerus (Miocene to Pliocene)\n****Genus †Microstonyx (Miocene)\n****Genus Sus (Miocene to recent)\n*****Species S. ahoenobarbus Palawan bearded pig\n*****Species S. barbatus Bornean bearded pig\n*****Species S. bucculentus Heude's pig or Vietnamese warty pig\n*****Species S. cebifrons Visayan warty pig\n*****Species S. celebensis Celebes warty pig\n*****Species S. heureni Flores warty pig\n*****Species S. oliveri Mindoro warty pig\n*****Species S. philippensis Philippine warty pig\n*****Species S. scrofa (also called S. domesticus) domestic pig, wild boar\n*****Species S. verrucosus Java warty pig\n*****Species †S. strozzi\n***Tribe Phacochoerini\n****Genus †Metridiochoerus (Pliocene to Pleistocene)\n****Genus Phacochoerus (Pliocene to recent)\n*****Species P. aethiopicus Cape, Somali or desert warthog\n*****Species P. africanus common warthog\n****Genus †Potamochoeroides (Pliocene, possibly Pleistocene)\n****Genus †Stylochoerus (Pleistocene)\n***Tribe incertae sedis  \n****Genus Porcula\n*****Species P. salvania pygmy hog\n** Subfamily †Tetraconodontinae\n*** Genus †Conohyus\n*** Genus †Notochoerus\n*** Genus †Nyanzachoerus\n*** Genus †Parachleuastochoerus\n*** Genus †Sivachoerus\n*** Genus †Tetraconodon (Miocene, Myanmar)  \n****Species †T. intermedius\n****Species †T. malensis\n****Species †T. minor\n**Subfamily incertae sedis\n***Genus †Chleuastochoerus\n***Genus †Hemichoerus\n***Genus †Hyosus\n***Genus †Kenyasus (formerly placed in Kubanochoerinae)\n***Genus †Schizochoerus\n***Genus †Sinapriculus\nQuestion:\nArtiodactyla Suidae is the scientific name for which farm animal?\nAnswer:\n",
+          "repeats": [
+            {
+              "dense_output": "Pigs",
+              "redknot_output": "Pigs",
+              "repeat": 0
+            },
+            {
+              "dense_output": "Pigs",
+              "redknot_output": "Pigs",
+              "repeat": 1
+            }
+          ]
+        },
+        {
+          "query_index": 2,
+          "query_row_id": 12,
+          "question": "Passage:\nNadine Coyle - Biography - IMDb\nNadine Coyle - Biography - IMDb\nNadine Coyle\nJump to: Overview  (4) | Mini Bio  (1) | Trade Mark  (2) | Trivia  (9)\nOverview (4)\n5' 5\" (1.65 m)\nMini Bio (1)\nNadine Coyle was born on June 15, 1985 in Derry, Northern Ireland as Nadine Elizabeth Louise Coyle.\nTrade Mark (2)\nShe was the third girl to make it into Girls Aloud .\nRanked #35 in FHM 100 Sexiest Women 2005.\nMember of the all girl pop group Girls Aloud from the UK.\nSupporter of Glasgow Celtic Football Club.\nHas won two series of Pop Idol (2001), the first was in Ireland but she was disqualified when the producers found out she was under the minimum age.\nLives in the US.\nTouring the world, and releasing a single with Girls Aloud in March 2006. [February 2006]\nWas in relationship with Jason Bell from 2008 to 2011 and then they got back together in 2013. They have a daughter together.\nGave birth to her 1st child at age 28, a daughter Anaíya Bell on February 10, 2014. Child's father is her fiancé, Jason Bell.\nSee also\nQuestion:\nWhich member of Girls Aloud was born in Northern Ireland?\nAnswer:\n",
+          "repeats": [
+            {
+              "dense_output": "Nadine Coyle",
+              "redknot_output": "Nadine Coyle",
+              "repeat": 0
+            },
+            {
+              "dense_output": "Nadine Coyle",
+              "redknot_output": "Nadine Coyle",
+              "repeat": 1
+            }
+          ]
+        },
+        {
+          "query_index": 3,
+          "query_row_id": 19,
+          "question": "Passage:\nHow to Make Triple Sec - Thursday Happy Hour\nHow to Make Triple Sec - Thursday Happy Hour\nHow to Make Triple Sec\nPosted by Shelly Bowen on Oct 8, 2009 in Handcrafted Mixers , How to ... | No Comments\nWhen it comes to mixing fantastic drinks, fewer things make it better than having the best ingredients on hand. Triple sec or orange liqueur (or Grand Marnier or Cointreau, both orange liqueurs) is widely used in many classics, so we made own special version.\nWhat does triple sec taste like? Triple sec is a sweet orange citrus liqueur. Our homemade triple sec tastes heavily of oranges and orange peel, like orange hard candy. Some triple secs are not as potently orange tasting.\nThis recipe comes from Charlie Hodges at the Ace Hotel, Palm Springs, via Imbibe Magazine‘s Fall 2009 issue. Read through the steps and you’ll see that you can multitask to speed up the process.\nHere’s what you need to make triple sec:\n4 small navel oranges\n12 oz. Everclear grain alcohol\n12 oz. vodka\n12 oz. can of Mandarin orange slices\n5 cups cane sugar\nOrange blossom water\nGet all your triple sec ingredients together, then:\nHeat oven to lowest temperature setting, generally around 180ºF – 200ºF. Slice the oranges into 1/8″ thick wheels and lay out on a baking tray. Bake oranges until sticky and gummy but not dried, about 1-2 hours.\nDrain the can of Mandarin oranges and place in a jar with the vodka to infuse for about 24 hours or until it tastes strongly of the oranges.\nCombine the baked orange slices with the Everclear and infuse for 8 hours, stirring occasionally.\nMake the simple syrup combining the sugar and water and stirring over medium heat until dissolved.\nFinally, strain all liquid ingredients through a fine sieve and combine with the syrup. Stir and add a few dashes of orange blossom water to taste. Bottle it up and it keeps refrigerated for about a month.\nReady to mix? Here are some mixed drink recipes that call for triple sec.\nQuestion:\nWhat is the flavour of the liqueur Triple-Sec?\nAnswer:\n",
+          "repeats": [
+            {
+              "dense_output": "Orange",
+              "redknot_output": "Orange",
+              "repeat": 0
+            },
+            {
+              "dense_output": "Orange",
+              "redknot_output": "Orange",
+              "repeat": 1
+            }
+          ]
+        },
+        {
+          "query_index": 4,
+          "query_row_id": 25,
+          "question": "Passage:\nGORDON JACKSON, 66; WAS BUTLER IN SERIES 'UPSTAIRS ...\nGORDON JACKSON, 66; WAS BUTLER IN SERIES 'UPSTAIRS, DOWNSTAIRS' - The Boston Globe (Boston, MA) | HighBeam Research\nAPA\nAssociated Press. \"GORDON JACKSON, 66; WAS BUTLER IN SERIES 'UPSTAIRS, DOWNSTAIRS'.\" The Boston Globe (Boston, MA). Boston Globe Media Partners, LLC. 1990. Retrieved January 19, 2017 from HighBeam Research: https://www.highbeam.com/doc/1P2-8156435.html\nPlease use HighBeam citations as a starting point only.  Not all required citation information is available for every article, and citation requirements change over time.\nGORDON JACKSON, 66; WAS BUTLER IN SERIES 'UPSTAIRS, DOWNSTAIRS'\nJanuary 16, 1990 | Associated Press | Copyright\nAll inquiries regarding rights or concerns about this content should be directed to Customer Service .\nCreate a link to this page\nCopy and paste this link tag into your Web page or blog:\n<a href=\"https://www.highbeam.com/doc/1P2-8156435.html\" title=\"GORDON JACKSON, 66; WAS BUTLER IN SERIES 'UPSTAIRS, DOWNSTAIRS' | HighBeam Research\">GORDON JACKSON, 66; WAS BUTLER IN SERIES 'UPSTAIRS, DOWNSTAIRS'</a>\nLONDON -  Scottish actor Gordon Jackson, known to television viewers around the world as the crotchety butler Hudson in the TV series \"Upstairs, Downstairs,\" died Sunday, his agent said yesterday. He was 66.\nMr. Jackson died Sunday at Cromwell Hospital in London, agent Michael Anderson said. No cause of death was given.\nMr. Jackson's long career in about 60 films made his face and gentle, rolling Scots accent familiar to two generations of moviegoers, but it was his lead role in \"Upstairs, Downstairs\" that brought the widest fame.\nAs Hudson, the tall, ginger-haired actor presided over the often chaotic \"downstairs\" servants' world with a stern hand but soft heart; his old-fashioned sense of duty and propriety was a bulwark to the aristocratic Bellamy family \"upstairs\" during the times of changing values of post-World War I. …\nChicago Sun-Times;             January 16, 1990\n507 words\nLONDON Scottish actor Gordon Jackson, known to television viewers around the world as the crotchety butler Hudson in the \"Upstairs Downstairs\" series, is dead at 66. His agent, Michael Anderson, said Mr. Jackson died Sunday in Cromwell Hospital here with his wife, Rona, at his side. No cause was…\nThe Washington Post;             January 16, 1990\n410 words\nGordon Jackson, 66, an actor who played the butler in \"Upstairs, Downstairs\" and brought his mellifluous Scottish accent to dozens of films, stage and television roles, died Jan. 14 at a hospital in London. The cause of death was not reported. The tall, ginger-haired Mr. Jackson started acting as a…\nDaily Mail (London);             December 18, 2010\n700+ words\nI'll never forget shooting my final scene in Upstairs, Downstairs 35 years ago. It was such an emotional experience. Every room in that grand old house in Belgravia - 165 Eaton Place, where the series had been set - held a memory for me and, of course, for my character Rose. In the storyline, the…\nDaily Mail (London);             November 26, 2010\nBy                     Das, Lina;                     700+ words\nByline: by Lina Das AS THE captivatingly seductive Lady Georgina Worsley in Upstairs Downstairs 35 years ago, Lesley-Anne Down broke more hearts than the wealthy Bellamy family had hot dinners, rustled up by the cook, the exacting Mrs Bridges. She went on to find fame in America as a Hollywood…\nThe Washington Post;             February 5, 2012\nBy                     Adam Bernstein;                     700+ words\nJenny Tomasin, a British actress forever known to hundreds of millions of television viewers as the clumsy, disheveled, Valentino- obsessed kitchen maid Ruby Finch in \"Upstairs, Downstairs,\" died at her home in London. She died Jan. 3 of hypertensive heart disease, according to the coroner's office…\nQuestion:\nWhich Scottish actor played the butler Hudson in the original series of ITV's Upstairs, Downstairs ?\nAnswer:\n",
+          "repeats": [
+            {
+              "dense_output": "Gordon Jackson",
+              "redknot_output": "Gordon Jackson",
+              "repeat": 0
+            },
+            {
+              "dense_output": "Gordon Jackson",
+              "redknot_output": "Gordon Jackson",
+              "repeat": 1
+            }
+          ]
+        }
+      ],
+      "source_profile": "/mnt/tidal-alsh01/dataset/redone/RedKnot_Deepseekv4/test/srt/redknot/datasets/LongBench/cohorts/440k_10q/triviaqa/profile.json",
+      "source_profile_sha256": "b8d6f1e533d09e95acfd0560adae80f37be85a35293d589d808a172ac9ff2c67",
+      "source_result": "/mnt/tidal-alsh01/dataset/redone/redknot_runs/release_matrix_5x10_256k_440k_20260828/440k/triviaqa/result.json",
+      "source_result_sha256": "a2c2a04e5261ad2913112b43f02bbddd14561c83815c74b3a912a2efbbc44ebd"
+    }
+  ],
+  "not_for_aggregate_metrics": true,
+  "primary_evaluation_is_authoritative": true,
+  "selection_bias": "posthoc",
+  "selection_policy": "After the full output-blind matrix completed, select at most 5 lowest-query-index cases per length/dataset for which every recorded repeat has byte-identical dense and RedKnot output. No selected case is used in aggregate accuracy or speed metrics.",
+  "source_summary": "/mnt/tidal-alsh01/dataset/redone/redknot_runs/release_matrix_5x10_256k_440k_20260828/summary.json",
+  "source_summary_sha256": "6073cae550ab696c735d2e3425ab0d343bc8e650dd406a7ef39952c1a5d54ec8"
+}

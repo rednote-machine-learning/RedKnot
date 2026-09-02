@@ -35,12 +35,20 @@ class RoPEHelper:
     """
 
     def __init__(self, rotary_emb: nn.Module) -> None:
-        if not hasattr(rotary_emb, "inv_freq"):
+        if not hasattr(rotary_emb, "inv_freq") and not (
+            hasattr(rotary_emb, "_compute_inv_freq") and hasattr(rotary_emb, "base")
+        ):
             raise AttributeError(
-                "rotary_emb is missing 'inv_freq' buffer; "
+                "rotary_emb cannot provide inverse frequencies; "
                 "this RedKnot helper only supports standard RoPE variants."
             )
         self.rotary_emb = rotary_emb
+
+    def _inv_freq(self, device: torch.device) -> torch.Tensor:
+        inv_freq = getattr(self.rotary_emb, "inv_freq", None)
+        if inv_freq is None:
+            inv_freq = self.rotary_emb._compute_inv_freq(self.rotary_emb.base)
+        return inv_freq.to(device=device, dtype=torch.float32)
 
     # ────────────────────────────────────────────────────────────────
     # Low-level rotation primitives
@@ -91,7 +99,16 @@ class RoPEHelper:
         if dst.dim() == 1:
             dst = dst.unsqueeze(0)
 
-        inv_freq = self.rotary_emb.inv_freq.to(device=device, dtype=torch.float32)
+        inv_freq = self._inv_freq(device)
+        rotary_dim = int(getattr(self.rotary_emb, "rotary_dim", 2 * inv_freq.numel()))
+        if rotary_dim != 2 * inv_freq.numel() or rotary_dim > k_rotated.shape[-1]:
+            raise ValueError(
+                "RoPE dimensions do not match the cached key: "
+                f"rotary_dim={rotary_dim}, inv_freq={inv_freq.numel()}, "
+                f"key_dim={k_rotated.shape[-1]}"
+            )
+        k_rope = k_rotated[..., :rotary_dim]
+        k_pass = k_rotated[..., rotary_dim:]
         # NOTE: ``attention_scaling`` (Llama-3 long-context RoPE) is a scalar
         # *magnitude* factor applied to q/k. Repositioning only changes the
         # rotation *phase*; it must NOT touch magnitude, otherwise the
@@ -109,11 +126,11 @@ class RoPEHelper:
             return cos, sin
 
         cos_src, sin_src = _cos_sin(src)
-        k_no_rope = self._unapply(k_rotated, cos_src, sin_src)
+        k_no_rope = self._unapply(k_rope, cos_src, sin_src)
 
         cos_dst, sin_dst = _cos_sin(dst)
         k_realigned = self._apply(k_no_rope, cos_dst, sin_dst)
-        return k_realigned
+        return torch.cat((k_realigned, k_pass), dim=-1)
 
     @torch.no_grad()
     def reposition_offset(

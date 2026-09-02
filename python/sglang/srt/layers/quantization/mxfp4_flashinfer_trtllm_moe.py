@@ -425,6 +425,10 @@ class Mxfp4FlashinferTrtllmMoEMethod:
             local_expert_offset=layer.moe_ep_rank * layer.num_local_experts,
             local_num_experts=num_local_experts,
             routed_scaling_factor=1.0,
+            # FlashInfer releases which expose the TRT-LLM Gen Blackwell
+            # wrapper require this deprecated compatibility argument even
+            # though the implementation now chooses the tile automatically.
+            tile_tokens_dim=None,
             routing_method_type=int(RoutingMethodType.TopK),
             do_finalize=True,
             tune_max_num_tokens=next_power_of_2(x_quant.shape[0]),

@@ -1,0 +1,70 @@
+{
+  "data_selection_sha256": "05c5154e4c82d5ca1f351eacdf1c227108c90d4361da8c43d169de67948f4fdc",
+  "dataset": {
+    "bytes": 6052108,
+    "name": "2wikimqa",
+    "row_id_base": 0,
+    "sha256": "dda279cf93a99e1e5bfa3291fb199fd55978d10a1feb31822953cf77a1742e37"
+  },
+  "format": "redknot_pure_mla_prompt_v1",
+  "geometry": {
+    "chunk_tokens": 32768,
+    "num_chunks": 4,
+    "online_suffix_tokens": 88,
+    "query_start": 131072,
+    "total_tokens": 131160
+  },
+  "output_blind": true,
+  "prompt": {
+    "answers_sha256": "sha256:01fbf9dcd9d74dd5e64f9e147dc2c59cbe541b2224133b3effbe7ecc927502e5",
+    "full_input_ids_sha256": "sha256:846b723ffb4f830b9c20e0d29205d06580d85829c01f7e092fab4f5b84dee344",
+    "offline_chunk_hashes": [
+      "sha256:2b16ec42df8c42d48eadc57758ac446e06463e74ed66eb32e35c78af03eb8b10",
+      "sha256:8d197558ca85a7b546ffd41e300156f84a716e8da479ead4f787ffbeb9c0ecd1",
+      "sha256:00cc2fe8a6e13be2fc8864fb397c03aef9d20f5628fe237c55a859b71bd78dc9",
+      "sha256:0ff4c239701a7dcbeff9a0e464b83ea89ae36891c81aa33c459289108f5a166e"
+    ],
+    "offline_prefix_hash": "sha256:c0f64aad9110c3d55d2580f5b54612fe3f931dee53f3887d122a729fac656607",
+    "online_suffix_hash": "sha256:a399d13dda5febaf1356c9b82ca4441798b1b15700b8d966f786d48788138575",
+    "question_sha256": "sha256:fcdbb4ec61b2205c1471c7abafa7abb0eefda35584d2655c142548c8e8fa0c2c",
+    "text_sha256": "sha256:7f025d9cd27d1b625677dc1aa7591e9930fab938ce8e7d6fb1cd457c8ea387f0"
+  },
+  "prompt_manifest_sha256": "77c38915c2190bf06d6b0cc9a5079f17204fd695ededf5264aded16fe1ed207d",
+  "prompt_mode": "official_rag_v1",
+  "protocol": {
+    "add_default_bos_token": true,
+    "answer_style": "direct_answer_plus_document_evidence_v1",
+    "document_delimiter": "\n\n",
+    "drop_thinking": true,
+    "encoder_path": "/mnt/tidal-alsh01/dataset/redone/checkpoints/opensource/DeepSeek-V4-Flash-0731/encoding/encoding_dsv4.py",
+    "encoder_sha256": "sha256:abc0d26120250dda0ae077dc64aa28836026e61e970854aaeb792445e6a0dde6",
+    "query_instruction": "\n\nAnswer the question using only the documents above. Put the direct answer alone on the first line. Then give one or two concise sentences explaining the supporting evidence from the documents. Do not use bullets or introduce outside facts. Keep the complete response between 25 and 35 tokens (target: about 30 tokens).\nQuestion: Where was the wife of Francis I Rákóczi born?\nAnswer:",
+    "reasoning_effort": "low",
+    "target_output_token_range": [
+      25,
+      35
+    ],
+    "target_output_tokens": 30,
+    "thinking_mode": "chat",
+    "tokenizer_config_path": "/mnt/tidal-alsh01/dataset/redone/checkpoints/opensource/DeepSeek-V4-Flash-0731/tokenizer_config.json",
+    "tokenizer_config_sha256": "sha256:6ac8c8dc065ed118161d02dd532749ae3f52c243deac27872134fae2f50d8547",
+    "tokenizer_path": "/mnt/tidal-alsh01/dataset/redone/checkpoints/opensource/DeepSeek-V4-Flash-0731/tokenizer.json",
+    "tokenizer_sha256": "sha256:8f9f37ca37fdc4f5fd36d5cf4d3b0e8392edb4e894fd10cc0d70b4957c8633cf"
+  },
+  "source": {
+    "chunk_hashes": [
+      "sha256:882a759e516208e657241bbb3d43148cf22b8b3c0a8d826b03060cd0ef3f365c",
+      "sha256:4f207052e1873184b9de56be6d05eaed4c4c378d3038a53f2cb04919510c6315",
+      "sha256:97122ba9daa7a81ad335e411648a7973d64f861ac545579352799a498c20e29e",
+      "sha256:63317954bd1ee35790908db474e4a93ce7b6608f3aeb90eefe4a59328d5b6079"
+    ],
+    "chunk_order": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "expected_source_chunk": 0,
+    "query_row_id": 0
+  }
+}

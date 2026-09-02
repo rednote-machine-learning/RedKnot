@@ -1,0 +1,6 @@
+holder_retained_during_cpu_prelaunch pid=1041860 pgid=1041860
+switching_to_light_bootstrap_holder old_pid=1041860 old_pgid=1041860
+light_bootstrap_holder_ready pid=1042561 workers=8 mem_frac=0.08
+all_tp_workers_ready_before_cuda pids=1046819 1046820 1046821 1046822 1046823 1046824 1046825 1046826  server_pgid=1045290
+stopping_holder_after_tp_worker_import pid=1042561 pgid=1042561
+gpu_release_acknowledged workers=8

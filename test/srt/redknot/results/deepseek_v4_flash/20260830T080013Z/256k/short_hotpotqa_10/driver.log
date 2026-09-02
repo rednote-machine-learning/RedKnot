@@ -1,0 +1,86 @@
+/root/miniconda3/lib/python3.11/site-packages/torch/cuda/__init__.py:63: FutureWarning: The pynvml package is deprecated. Please install nvidia-ml-py instead. If you did not install pynvml directly, please report this to the maintainers of the package that installed pynvml for you.
+  import pynvml  # type: ignore[import]
+WARNING:sglang.srt.layers.flashinfer_comm_fusion:flashinfer.comm unified allreduce_fusion API is not available, falling back to standard implementation
+[mla-off-capacity] tp=8 local_layers=[37, 37, 37, 37, 37, 37, 37, 37] bytes/token=[75822, 75822, 75822, 75822, 75822, 75822, 75822, 75822] projected=[19876282368, 19876282368, 19876282368, 19876282368, 19876282368, 19876282368, 19876282368, 19876282368]
+[pure-mla] data selection sha256=8c44abe1f0db045d6c1f0f35950fdca9e646fc92178c1a2e73c1ce0c688d2830 mode=offset
+[pure-mla] frozen official prompt sha256=4b353e160fdfd9bce408ed031ab1d7acee723fc6f246d8a899f3e09d2e45c1b6 max_total_tokens=262222
+[pure-mla] deferring GPU capacity check to the authenticated scheduler pre-CUDA release barrier
+[pure-mla] launching server: /mnt/tidal-alsh01/dataset/redone/RedKnot_Deepseekv4/server/start_server_redknot_mla.sh (port 31998)
+[pure-mla] server ready
+[mla-off-capacity] runtime server policy verified: port=31998 chunked_prefill_size=32768 max_prefill_tokens=65536
+[pure-mla] snapshot document 0 cached independently from position0 tokens=32768
+[pure-mla] snapshot document 1 cached independently from position0 tokens=32768
+[pure-mla] snapshot document 2 cached independently from position0 tokens=32768
+[pure-mla] snapshot document 3 cached independently from position0 tokens=32768
+[pure-mla] snapshot document 4 cached independently from position0 tokens=32768
+[pure-mla] snapshot document 5 cached independently from position0 tokens=32768
+[pure-mla] snapshot document 6 cached independently from position0 tokens=32768
+[pure-mla] snapshot document 7 cached independently from position0 tokens=32768
+
+====================================================================================================
+ REDKNOT PURE MLA OFFLINE/ONLINE MERGE — qualification benchmark
+ Model: /mnt/tidal-alsh01/dataset/redone/checkpoints/opensource/DeepSeek-V4-Flash-0731
+ chunks=8x32768 total=262197 strategy=independent_position0_rope_relocation_headsplit_fullscope prompt=official_rag_v1 boundary=128 quality_repeats=2
+====================================================================================================
+ streaming TTFT: dense_p50=31.526s reuse_p50=15.616s speedup=2.02x dense_p95=31.615s reuse_p95=15.892s
+----------------------------------------------------------------------------------------------------
+ Q0: Which case was brought to court first Miller v. California or Gates v. Collier ?
+    [DENSE OUTPUT]
+Gates v. Collier
+    [REDKNOT OUTPUT]
+Gates v. Collier
+ Q1: Gary L. Bennett was a part of the space missions that have a primary destination of what celestial body?
+    [DENSE OUTPUT]
+Sun
+    [REDKNOT OUTPUT]
+Sun
+ Q2: Thirukkalacherry is a village in which Indian town?
+    [DENSE OUTPUT]
+Thirukkalachery is a village in Mayiladuthurai District, Tranquebar (Tharangambadi) Taluk.
+    [REDKNOT OUTPUT]
+Tharangambadi
+ Q3: When was the American singer, songwriter, record producer, dancer and actress born who's second studio album is Chapter II?
+    [DENSE OUTPUT]
+October 13, 1980
+    [REDKNOT OUTPUT]
+October 13, 1980
+ Q4: Finally includes the song that peaked at what on the US Hot 100
+    [DENSE OUTPUT]
+number five
+    [REDKNOT OUTPUT]
+number five
+ Q5: Which retired Argentine footballer who played as a forward was a main player for Valencia CF?
+    [DENSE OUTPUT]
+Claudio López
+    [REDKNOT OUTPUT]
+Claudio López
+ Q6: Name a member of a British-American supergroup who recored a version of Nobody's child in 1990
+    [DENSE OUTPUT]
+George Harrison
+    [REDKNOT OUTPUT]
+George Harrison
+ Q7: Oak Beach, New York and Great South Bay are both situated between what same island?
+    [DENSE OUTPUT]
+Long Island
+    [REDKNOT OUTPUT]
+Jones Beach Island
+ Q8: The actor that plays Phileas Fogg in "Around the World in 80 Days", co-starred with Gary Cooper in a 1939 Goldwyn Productions film based on a novel by what author?
+    [DENSE OUTPUT]
+Charles L. Clifford
+    [REDKNOT OUTPUT]
+Charles L. Clifford
+ Q9: Was Atom Egoyans biggest commercial success on stage or on film?
+    [DENSE OUTPUT]
+film
+    [REDKNOT OUTPUT]
+film
+----------------------------------------------------------------------------------------------------
+ SUMMARY: streaming_ttft_speedup=2.02x online_row_saving=0.7729821396909337 scoped_mla_head_row_saving=0.6194686998747555 full_model_mla_head_row_saving=0.10573425381004099 mla_samples=4403/>=4403 formal_mla_requests=19/25 quality=False formal_reuse=False evidence=False full_local_sanity=None performance_claim_eligible=False performance=False overall=False
+ sequential service rate: dense=0.031 req/s, reuse=0.043 req/s; logical prompt dense=8132.2, reuse=11381.6 tok/s
+ online_row_saving is measured from selected transformer rows; it is not total-model FLOPs or GPU energy saving.
+ mla_head_row_saving counts omitted logical local-head rows at the attention output boundary; it is also not total-model FLOPs saving.
+ full_model_mla_head_row_saving uses all model layers, all 64 logical heads and every evidence request row; performance claims are gated on this conservative metric.
+ compact_woa_evidence certifies successful indexed inverse-RoPE/wo_a row activation only; it is not a FLOPs, utilization, or energy-saving measurement.
+====================================================================================================
+ structured result: /mnt/tidal-alsh01/dataset/redone/RedKnot_Deepseekv4/test/srt/redknot/results/deepseek_v4_flash/20260830T080013Z/256k/short_hotpotqa_10/result.json
+RedKnot pure MLA offline/online merge quality/runtime/performance gate failed

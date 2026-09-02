@@ -1,0 +1,43 @@
+{
+  "answer_style": "direct_answer_plus_document_evidence_v1",
+  "cases": [
+    {
+      "answers_sha256": "sha256:91767efb1decc461105b427ab9c08fb48d31a5aedad2574af0fdff6a69df587c",
+      "expected_source_chunk": 0,
+      "full_input_ids_sha256": "sha256:6f4f38d866aae2312b4a66e72f5a209ab36b6cc6c4e23c8df86c67413b15ef8b",
+      "online_suffix_hash": "sha256:60b21b670182c6ca9d8d6a43b872278f86a9f60ccbe208f3d74e42a18b1d0eca",
+      "online_suffix_tokens": 94,
+      "query_index": 0,
+      "query_row_id": 6,
+      "question_sha256": "sha256:1f3d9f99c2151aa2b2e2db6099f21cd185b680811b14b25451a415685d791c72",
+      "text_sha256": "sha256:bd1bd2443010f470b7470d141c95108ed0f4b2fd8ef8e3cbfc57e55f10174c1c",
+      "total_tokens": 65630
+    }
+  ],
+  "chunk_tokens": 16384,
+  "cohort_index": 640011,
+  "data_manifest": "/mnt/tidal-alsh01/dataset/redone/RedKnot_Deepseekv4/test/srt/redknot/datasets/LongBench/cohorts/64k_curated_non_diffuse15/long_11_2wikimqa_row6/data_selection.json",
+  "data_selection_sha256": "6176e152b2f41e9b064240b48f5d283f8c87edf080a8505c8f5aec9c2bd3ca4f",
+  "dataset": "2wikimqa",
+  "exclude_manifests": [],
+  "format": "redknot_multidataset_profile_v2",
+  "long_output_target_tokens": 30,
+  "max_total_tokens": 65630,
+  "num_chunks": 4,
+  "num_queries": 1,
+  "offline_chunk_hashes": [
+    "sha256:7d398e5acdd62cd8932ef1cf5a5475dfcc4edffcfb741e71ef899d8feac77ed8",
+    "sha256:3eb0f9bc8ea019537034f893e9bab0a18fa758a506c6e312fa1da91cf733fadc",
+    "sha256:d654787d99913fcbd415e2c293cfc05a137b451ca42c69eda1e92be3ccb1ad5d",
+    "sha256:9f1228e5181bc2d99b79a11d7abd512d09bc44cb33214715761dc480784dd087"
+  ],
+  "output_blind": true,
+  "prompt_manifest": "/mnt/tidal-alsh01/dataset/redone/RedKnot_Deepseekv4/test/srt/redknot/datasets/LongBench/cohorts/64k_curated_non_diffuse15/long_11_2wikimqa_row6/prompt_manifest.json",
+  "prompt_manifest_sha256": "fe6f1673a08a3cf4af84aba5276cfd7c554a9f8b17bd4c233a88d3f110d314c0",
+  "query_row_ids": [
+    6
+  ],
+  "query_start": 65536,
+  "row_offset": 6,
+  "target_tokens": 65536
+}

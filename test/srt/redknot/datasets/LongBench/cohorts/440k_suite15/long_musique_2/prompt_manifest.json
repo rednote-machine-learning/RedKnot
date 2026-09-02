@@ -1,0 +1,106 @@
+{
+  "cases": [
+    {
+      "answers_sha256": "sha256:b9235a6b98c21ce84c11800f62b627155ac186bf893a9798060ba2633c189436",
+      "expected_source_chunk": 0,
+      "full_input_ids_sha256": "sha256:a8a40169f986d861660ae5d0d7eff9f2b7914f2a84526f7022b0bdaf58ed7e4c",
+      "online_suffix_hash": "sha256:18f7931cbf5d0e3a409b824146c53c8e8981beb07c942b0995671e5f17e82fd3",
+      "online_suffix_tokens": 94,
+      "query_index": 0,
+      "query_row_id": 0,
+      "question_sha256": "sha256:f7a574da3d57d1c64701963bfa4618d7083acd318d5cae528af4a10873a3f079",
+      "text_sha256": "sha256:67e39ebc461cae9eea67bf8f401d5c856abcdaadd63e4d81039bd81bbc1b684b",
+      "total_tokens": 450654
+    },
+    {
+      "answers_sha256": "sha256:5d4006414d06398346f001003e87783b774d97d21ea508a5522595d339363862",
+      "expected_source_chunk": 1,
+      "full_input_ids_sha256": "sha256:d1017b80a4597cf2e1bbf1716f8d013dbb6665b7cc016e58e5f7280d0df5e2c9",
+      "online_suffix_hash": "sha256:eafeb4f68bc2e9934dd59e6bc75aa42412e969919c544ee5b7f68a4254bd0132",
+      "online_suffix_tokens": 96,
+      "query_index": 1,
+      "query_row_id": 4,
+      "question_sha256": "sha256:d2f64f93863b8f15c8d899f3c57d9d8d20ca0d634b6da62a0a0bde1b410fc105",
+      "text_sha256": "sha256:ffc30a77e6d18612cd576338a2deb80af901637e889888682099757266158772",
+      "total_tokens": 450656
+    }
+  ],
+  "data_selection_sha256": "6d1a9fa42a96e316b5bc56b1795223b48c5161c79a52ed0ba2805e87a878e801",
+  "dataset": {
+    "bytes": 14085077,
+    "name": "musique",
+    "row_id_base": 0,
+    "sha256": "4ac69b91281c4ec6b21316cb7282e83fb6b4dda04fc68480bb8d8ed1e19ff7bd"
+  },
+  "format": "redknot_pure_mla_prompt_multi_v1",
+  "geometry": {
+    "chunk_tokens": 56320,
+    "max_total_tokens": 450656,
+    "min_total_tokens": 450654,
+    "num_chunks": 8,
+    "num_queries": 2,
+    "query_start": 450560
+  },
+  "output_blind": true,
+  "prompt": {
+    "offline_chunk_hashes": [
+      "sha256:3f4fbf8cf046633c23f4c32fe232381393e96bae4aa7b24a90c1b62237abf07a",
+      "sha256:ff4f391a99309efbc04662d8e78a02c53849674a7236183c85782c388377fa03",
+      "sha256:79e0c4d0cd4a4e8923c036c4b4bc2e6f7a6f03cf7e8dba9f3fcbba8afd672f5e",
+      "sha256:d2091758a1f53a53098f42c8f694eeb0bc251490965b4ebc0065ac631355db0a",
+      "sha256:acabf8405bbfeb8e0ee338c0a4e078c19b833d4c8c32a34844d02c21ea6b0959",
+      "sha256:25553609b72e1a25f96a37a40053a6ccf1737b02e834039eba09ab25247d07b0",
+      "sha256:5eb00fb82a7e4d605bad2296c8ce7f0f417d370daa4eb0fc49e5be12f8496def",
+      "sha256:dda45c22712287a15dd786ba9598360756ee2a8f3cc1a3ace934910357f8101c"
+    ],
+    "offline_prefix_hash": "sha256:fbe11754b78928d36b766145161d505a8e3bf880c601c267bcb30d3d82b0c051"
+  },
+  "prompt_manifest_sha256": "1b97010c505e34d9edb925cc1dfb2a1e0b746d1a66a7b54eb31090395198a4f0",
+  "prompt_mode": "official_rag_v1",
+  "protocol": {
+    "add_default_bos_token": true,
+    "answer_style": "direct_answer_plus_document_evidence_v1",
+    "document_delimiter": "\n\n",
+    "drop_thinking": true,
+    "encoder_path": "/mnt/tidal-alsh01/dataset/redone/checkpoints/opensource/DeepSeek-V4-Flash-0731/encoding/encoding_dsv4.py",
+    "encoder_sha256": "sha256:abc0d26120250dda0ae077dc64aa28836026e61e970854aaeb792445e6a0dde6",
+    "query_instruction_mode": "per_case_direct_answer_plus_evidence_v1",
+    "reasoning_effort": "low",
+    "target_output_token_range": [
+      25,
+      35
+    ],
+    "target_output_tokens": 30,
+    "thinking_mode": "chat",
+    "tokenizer_config_path": "/mnt/tidal-alsh01/dataset/redone/checkpoints/opensource/DeepSeek-V4-Flash-0731/tokenizer_config.json",
+    "tokenizer_config_sha256": "sha256:6ac8c8dc065ed118161d02dd532749ae3f52c243deac27872134fae2f50d8547",
+    "tokenizer_path": "/mnt/tidal-alsh01/dataset/redone/checkpoints/opensource/DeepSeek-V4-Flash-0731/tokenizer.json",
+    "tokenizer_sha256": "sha256:8f9f37ca37fdc4f5fd36d5cf4d3b0e8392edb4e894fd10cc0d70b4957c8633cf"
+  },
+  "source": {
+    "chunk_hashes": [
+      "sha256:30bde1c3ffe1b5ecb0d6d0ca0512ac19deb40a5ac006b4f192a7e073fe959ab4",
+      "sha256:5e897ef9d01ca7515403facd704952bfce5cc00fefdd4c225b72acf83aa637ac",
+      "sha256:4ad31ebb92634d6b8fdcd4bccb04c50bcd8dc26e04bb690d827880a94609fa17",
+      "sha256:b58ea62ce7d1bdb239810433597c41ddffe8251c249dcaf5339e63ee5175d14a",
+      "sha256:96f9e7cc259f9f7a3658b2b0bba63864d98e61eb43a024ac140284c39b838fe0",
+      "sha256:ffefebb342c45e13c4891e27fc30889692dc7aa9c292645fa8974d4c92262bc9",
+      "sha256:bb5e47171c38886d665a1f536384dce89bf98d132436ccbf58b27723bf3e53a7",
+      "sha256:044acfaae0b026642b1bf88d771d5728da5519cbbb3ed7391a9bd3dd86543b35"
+    ],
+    "chunk_order": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "query_row_ids": [
+      0,
+      4
+    ]
+  }
+}

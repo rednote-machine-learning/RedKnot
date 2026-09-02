@@ -1,0 +1,76 @@
+{
+  "data_selection_sha256": "9321f293768fff00318ca9d0c80859b4e1f693979345e7f1ed4e05f54b70a901",
+  "dataset": {
+    "bytes": 11483614,
+    "name": "hotpotqa",
+    "row_id_base": 0,
+    "sha256": "a0005ab2a1bc2ac3a70352dccbf96cccc4e0aac6bb677f6a55180fa51b92ef6f"
+  },
+  "format": "redknot_pure_mla_prompt_v1",
+  "geometry": {
+    "chunk_tokens": 56320,
+    "num_chunks": 8,
+    "online_suffix_tokens": 53,
+    "query_start": 450560,
+    "total_tokens": 450613
+  },
+  "output_blind": true,
+  "prompt": {
+    "answers_sha256": "sha256:8b32558a6e1bd3da3f7c1de4bf874ce3bd6f1111f2d8979d183a5e6aca8b0549",
+    "full_input_ids_sha256": "sha256:8374b65e9475ecb1d3f11ddf1d1f986249a55678167e4774a5ba3cc1a9033347",
+    "offline_chunk_hashes": [
+      "sha256:40298a6538fdf606e50f8923df218046c46238be7f8835bb2b2c3713b4ae3e4f",
+      "sha256:7d0619ac875fbb87bb5aa971e44278ac2e660260246b6fae92071201a7103a20",
+      "sha256:5fe6df8afb7ac334db7b4e2f8205bf38f9308e6905f51c14fbd69f64fef4a4ea",
+      "sha256:cc4e0e4cb629a687da5e84eb2890a128eea6e78e9e92225f82fbdb492dfa652a",
+      "sha256:da15c95d344084e3a7f9b13171af072cf8cbf332969991a6b1520b6f33dffb20",
+      "sha256:2106c81aef18d423115f974b6eaab7a706fe239c6d430060fe78a50b5afe90ee",
+      "sha256:14141c95ea842262adf6e4e429d24c2ae5ca04e81e54b160574f3ff5fb926b61",
+      "sha256:9c50031d376ffabb19a635c7edf5398259b2397d4ce64389dca61b94841fe71e"
+    ],
+    "offline_prefix_hash": "sha256:6ed706be6036156e03c9c1688369124c3c027ca111a74685a862ddb49fa4f78f",
+    "online_suffix_hash": "sha256:2c19bacf96d9117e297a35ed57f375ec779b5053bb16f5c46607587e94ad210b",
+    "question_sha256": "sha256:1186003136301bc0a6e00db82e2f445e2a25b50ef380f34090a324c494592d3e",
+    "text_sha256": "sha256:414ce13c2125f05c4fe5af1a24f1150849bf71f7c32bef4ff5ab452575df8c97"
+  },
+  "prompt_manifest_sha256": "473b00252cbda06434d9278701258daea973b05f189523f41430583047ce3b74",
+  "prompt_mode": "official_rag_v1",
+  "protocol": {
+    "add_default_bos_token": true,
+    "document_delimiter": "\n\n",
+    "drop_thinking": true,
+    "encoder_path": "/mnt/tidal-alsh01/dataset/redone/checkpoints/opensource/DeepSeek-V4-Flash-0731/encoding/encoding_dsv4.py",
+    "encoder_sha256": "sha256:abc0d26120250dda0ae077dc64aa28836026e61e970854aaeb792445e6a0dde6",
+    "query_instruction": "\n\nAnswer the question using only the documents above. Return the shortest exact answer span only, with no explanation.\nQuestion: Which case was brought to court first Miller v. California or Gates v. Collier ?\nAnswer:",
+    "reasoning_effort": "low",
+    "thinking_mode": "chat",
+    "tokenizer_config_path": "/mnt/tidal-alsh01/dataset/redone/checkpoints/opensource/DeepSeek-V4-Flash-0731/tokenizer_config.json",
+    "tokenizer_config_sha256": "sha256:6ac8c8dc065ed118161d02dd532749ae3f52c243deac27872134fae2f50d8547",
+    "tokenizer_path": "/mnt/tidal-alsh01/dataset/redone/checkpoints/opensource/DeepSeek-V4-Flash-0731/tokenizer.json",
+    "tokenizer_sha256": "sha256:8f9f37ca37fdc4f5fd36d5cf4d3b0e8392edb4e894fd10cc0d70b4957c8633cf"
+  },
+  "source": {
+    "chunk_hashes": [
+      "sha256:2758c38d01f151f7fdf6d5971fb3a97df6a853eee5fa5b544612789536ca26db",
+      "sha256:d55477b93eb2556cf39f728b389ab55041fc8266181417c569626dec1f2ad5b1",
+      "sha256:5e89a95a2cd09af0f4806adb2145ffadf20faec82be6c98085681b5b2d86b29b",
+      "sha256:fcb9b9b732da841fbb6e94013c48093892716f70ab9653d7c66311dba67eba2b",
+      "sha256:554472fb14c33c9568894aac7efc5bbd29bb7fa55a5fe887202ae0d290ffcc06",
+      "sha256:f1061e2e493318b834e473c271fc242c0f3ea50fd451df3ad3ceda52ced8ff22",
+      "sha256:8749c2d8099b59575db6e3bc944b092f2391c8259f4c4c3fe4b81c134748108e",
+      "sha256:a1d2a0afb8f4e32587452d0121dac7f6c338241373b2eeefb435922f4f0e7ae2"
+    ],
+    "chunk_order": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "expected_source_chunk": 0,
+    "query_row_id": 0
+  }
+}

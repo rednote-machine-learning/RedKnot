@@ -305,6 +305,23 @@ class PiecewiseCudaGraphRunner:
         # Set graph pool id globally to be able to use symmetric memory
         set_graph_pool_id(get_global_graph_memory_pool())
 
+        # RedKnot: pre-convert rotary embedding cos_sin_cache buffers to the model
+        # compute dtype BEFORE any torch.compile warmup/capture. They are
+        # otherwise lazily converted (Float -> BFloat16) on the first eager
+        # forward, leaving them Float during compile capture but BFloat16 at
+        # replay -> dtype-guard recompile -> "PCG capture stream is not set".
+        try:
+            _model_dtype = self.model_runner.dtype
+            _n_conv = 0
+            for _mod in self.model_runner.model.modules():
+                _cache = getattr(_mod, "cos_sin_cache", None)
+                if isinstance(_cache, torch.Tensor) and _cache.dtype != _model_dtype:
+                    _mod.cos_sin_cache = _cache.to(dtype=_model_dtype)
+                    _n_conv += 1
+            logger.info(f"[PCG] pre-converted {_n_conv} cos_sin_cache buffers to {_model_dtype}")
+        except Exception as _e:
+            logger.warning(f"[PCG] cos_sin_cache pre-convert skipped: {_e}")
+
         with enable_piecewise_cuda_graph():
             language_model = getattr(
                 self.model_runner.model, "language_model", self.model_runner.model
@@ -659,7 +676,10 @@ class PiecewiseCudaGraphRunner:
             buffers.positions[num_tokens:static_num_tokens].zero_()
             if self.is_multimodal:
                 buffers.input_embeds[num_tokens:static_num_tokens].zero_()
-            if forward_batch.mrope_positions is not None:
+            if (
+                forward_batch.mrope_positions is not None
+                and buffers.mrope_positions is not None
+            ):
                 buffers.mrope_positions[:, num_tokens:static_num_tokens].zero_()
 
         bs = forward_batch.batch_size
@@ -703,7 +723,10 @@ class PiecewiseCudaGraphRunner:
             if buffers.mamba_track_seqlens is not None
             else None
         )
-        if forward_batch.mrope_positions is not None:
+        if (
+            forward_batch.mrope_positions is not None
+            and buffers.mrope_positions is not None
+        ):
             buffers.mrope_positions[:, :num_tokens].copy_(forward_batch.mrope_positions)
 
         input_ids = buffers.input_ids[:static_num_tokens]
@@ -713,7 +736,10 @@ class PiecewiseCudaGraphRunner:
 
         mrope_positions = (
             buffers.mrope_positions[:, :static_num_tokens]
-            if forward_batch.mrope_positions is not None
+            if (
+                forward_batch.mrope_positions is not None
+                and buffers.mrope_positions is not None
+            )
             else None
         )
 

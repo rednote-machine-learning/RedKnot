@@ -1,0 +1,54 @@
+/root/miniconda3/lib/python3.11/site-packages/torch/cuda/__init__.py:63: FutureWarning: The pynvml package is deprecated. Please install nvidia-ml-py instead. If you did not install pynvml directly, please report this to the maintainers of the package that installed pynvml for you.
+  import pynvml  # type: ignore[import]
+WARNING:sglang.srt.layers.flashinfer_comm_fusion:flashinfer.comm unified allreduce_fusion API is not available, falling back to standard implementation
+[mla-off-capacity] tp=8 local_layers=[37, 37, 37, 37, 37, 37, 37, 37] bytes/token=[75822, 75822, 75822, 75822, 75822, 75822, 75822, 75822] projected=[19876282368, 19876282368, 19876282368, 19876282368, 19876282368, 19876282368, 19876282368, 19876282368]
+[pure-mla] data selection sha256=8c44abe1f0db045d6c1f0f35950fdca9e646fc92178c1a2e73c1ce0c688d2830 mode=offset
+[pure-mla] frozen official prompt sha256=4b353e160fdfd9bce408ed031ab1d7acee723fc6f246d8a899f3e09d2e45c1b6 max_total_tokens=262222
+[pure-mla] deferring GPU capacity check to the authenticated scheduler pre-CUDA release barrier
+[pure-mla] launching server: /mnt/tidal-alsh01/dataset/redone/RedKnot_Deepseekv4/server/start_server_redknot_mla.sh (port 31998)
+[pure-mla] server ready
+[mla-off-capacity] runtime server policy verified: port=31998 chunked_prefill_size=32768 max_prefill_tokens=65536
+[pure-mla] snapshot document 0 cached independently from position0 tokens=32768
+[pure-mla] snapshot document 1 cached independently from position0 tokens=32768
+[pure-mla] snapshot document 2 cached independently from position0 tokens=32768
+[pure-mla] snapshot document 3 cached independently from position0 tokens=32768
+[pure-mla] snapshot document 4 cached independently from position0 tokens=32768
+[pure-mla] snapshot document 5 cached independently from position0 tokens=32768
+[pure-mla] snapshot document 6 cached independently from position0 tokens=32768
+[pure-mla] snapshot document 7 cached independently from position0 tokens=32768
+Traceback (most recent call last):
+  File "/mnt/tidal-alsh01/dataset/redone/RedKnot_Deepseekv4/test/srt/redknot/benchmark_dsv4_redknot_http.py", line 1083, in <module>
+    main()
+  File "/mnt/tidal-alsh01/dataset/redone/RedKnot_Deepseekv4/test/srt/redknot/benchmark_dsv4_redknot_http.py", line 1079, in main
+    runpy.run_path(str(DRIVER), run_name="__main__")
+  File "<frozen runpy>", line 291, in run_path
+  File "<frozen runpy>", line 98, in _run_module_code
+  File "<frozen runpy>", line 88, in _run_code
+  File "/mnt/tidal-alsh01/dataset/redone/RedKnot_Deepseekv4/test/srt/redknot/benchmark_RedKnot_DeepSeekV4_Flash_RAG.py", line 11437, in <module>
+    main()
+  File "/mnt/tidal-alsh01/dataset/redone/RedKnot_Deepseekv4/test/srt/redknot/benchmark_RedKnot_DeepSeekV4_Flash_RAG.py", line 11213, in main
+    if not _run_indexer_hot_benchmark():
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/tidal-alsh01/dataset/redone/RedKnot_Deepseekv4/test/srt/redknot/benchmark_RedKnot_DeepSeekV4_Flash_RAG.py", line 9668, in _run_indexer_hot_benchmark
+    _ih_generate_streaming_ttft(
+  File "/mnt/tidal-alsh01/dataset/redone/RedKnot_Deepseekv4/test/srt/redknot/benchmark_RedKnot_DeepSeekV4_Flash_RAG.py", line 2606, in _ih_generate_streaming_ttft
+    for event in _ih_stream_json_events(response):
+  File "/mnt/tidal-alsh01/dataset/redone/RedKnot_Deepseekv4/test/srt/redknot/benchmark_RedKnot_DeepSeekV4_Flash_RAG.py", line 2504, in _ih_stream_json_events
+    for raw_line in response.iter_lines(decode_unicode=False):
+  File "/root/miniconda3/lib/python3.11/site-packages/requests/models.py", line 869, in iter_lines
+    for chunk in self.iter_content(
+  File "/root/miniconda3/lib/python3.11/site-packages/requests/models.py", line 820, in generate
+    yield from self.raw.stream(chunk_size, decode_content=True)
+  File "/root/miniconda3/lib/python3.11/site-packages/urllib3/response.py", line 1063, in stream
+    yield from self.read_chunked(amt, decode_content=decode_content)
+  File "/root/miniconda3/lib/python3.11/site-packages/urllib3/response.py", line 1219, in read_chunked
+    self._update_chunk_length()
+  File "/root/miniconda3/lib/python3.11/site-packages/urllib3/response.py", line 1138, in _update_chunk_length
+    line = self._fp.fp.readline()  # type: ignore[union-attr]
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.11/socket.py", line 718, in readinto
+    return self._sock.recv_into(b)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/tidal-alsh01/dataset/redone/RedKnot_Deepseekv4/test/srt/redknot/benchmark_RedKnot_DeepSeekV4_Flash_RAG.py", line 9238, in interrupt_owned_server
+    raise KeyboardInterrupt(
+KeyboardInterrupt: received signal 15; stopping owned RedKnot server

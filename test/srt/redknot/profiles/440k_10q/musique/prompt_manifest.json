@@ -1,0 +1,204 @@
+{
+  "cases": [
+    {
+      "answers_sha256": "sha256:b9235a6b98c21ce84c11800f62b627155ac186bf893a9798060ba2633c189436",
+      "expected_source_chunk": 0,
+      "full_input_ids_sha256": "sha256:b690cfa2322c008e7a27321967f7243eefda8dc8dba589f7180e607c3afb20ed",
+      "online_suffix_hash": "sha256:fd7e7d7cc7c3b8677b14735e859e4f8cee45791b54fbcc51f4f032500e89b888",
+      "online_suffix_tokens": 53,
+      "query_index": 0,
+      "query_row_id": 0,
+      "question_sha256": "sha256:f7a574da3d57d1c64701963bfa4618d7083acd318d5cae528af4a10873a3f079",
+      "text_sha256": "sha256:b316b3fed0da9b725d5ce8e26a7c848a57337eed687d8820fff1eab0ac98e9ff",
+      "total_tokens": 450613
+    },
+    {
+      "answers_sha256": "sha256:5d4006414d06398346f001003e87783b774d97d21ea508a5522595d339363862",
+      "expected_source_chunk": 1,
+      "full_input_ids_sha256": "sha256:8f039de7139fb251c3beb0095c88280d73827c57b93af21f7dc23e7651331c95",
+      "online_suffix_hash": "sha256:ef6e332a7d6c4e9446b817d80e5a66f547a2dff6a6c2aa9b97777fdb971ce283",
+      "online_suffix_tokens": 55,
+      "query_index": 1,
+      "query_row_id": 4,
+      "question_sha256": "sha256:d2f64f93863b8f15c8d899f3c57d9d8d20ca0d634b6da62a0a0bde1b410fc105",
+      "text_sha256": "sha256:b2a55a6e6cd688569b0400866ca4c0672e5c2c875d9921c689852eb5cc91d5a7",
+      "total_tokens": 450615
+    },
+    {
+      "answers_sha256": "sha256:9c44020ddbe7865c7f899d3a6373329e88e146df5b1bc002d56b10cdd9f572e5",
+      "expected_source_chunk": 2,
+      "full_input_ids_sha256": "sha256:de0e09bf71dd41a1b9ad16ad2b7f359dd53996a120893eb619d46df078d6aeb8",
+      "online_suffix_hash": "sha256:2846946eb919edaa79943c403e8f442a2a5e09160d37e934fcccbd17f877c622",
+      "online_suffix_tokens": 51,
+      "query_index": 2,
+      "query_row_id": 8,
+      "question_sha256": "sha256:2014e3335c3ef4289699b92ccc1142e351ded0c3b475414e6c03167d4f2fc830",
+      "text_sha256": "sha256:417dfaa775689abfde1ea1f110ef06390fb35b66a93e3bc50fd02acd1ae4e53d",
+      "total_tokens": 450611
+    },
+    {
+      "answers_sha256": "sha256:ab6230b41711d131e42606cfb1a7df1b74e624df4c677aac7282ee2f91983dc9",
+      "expected_source_chunk": 3,
+      "full_input_ids_sha256": "sha256:62f3ed7a96527f1c9ffc29bf115d79f4660bbf81a087fc24c76d24b602e0ad53",
+      "online_suffix_hash": "sha256:98c9a2ad199b8bdf69377ac9194655ad35dd1e4b41002ff8c523f5a1246a0f26",
+      "online_suffix_tokens": 47,
+      "query_index": 3,
+      "query_row_id": 12,
+      "question_sha256": "sha256:2f434165539927e84177e9b24a570766a9514a3e37eb5772545b2c3ecfaad001",
+      "text_sha256": "sha256:860fdbd3102fa3b72b4f01aac255a7fe4a449174fc2bb58cdcf014b7129736e1",
+      "total_tokens": 450607
+    },
+    {
+      "answers_sha256": "sha256:68b7ed7a8bd90a57461c0693838811df50eedc1617c581a9020e24c47ed9d4e6",
+      "expected_source_chunk": 4,
+      "full_input_ids_sha256": "sha256:147dc6cb5147d7608b520c63c8aa82b1b22d41310a7681803f23d4aa05fe2e02",
+      "online_suffix_hash": "sha256:475a06332ed95c85d2c4e15ffa9004dc843485d6c3f3ddc1ab8b5c1a45c8a85e",
+      "online_suffix_tokens": 69,
+      "query_index": 4,
+      "query_row_id": 16,
+      "question_sha256": "sha256:dedd67deba845f5292d648956011e3ca5b6a413428640754f7e78500c2503fe1",
+      "text_sha256": "sha256:89e688caba87688b191ba0869909e123d3578fe63204d3cc4eec13c91507f19e",
+      "total_tokens": 450629
+    },
+    {
+      "answers_sha256": "sha256:6bc9cc193a3495d17301450f98c1a7094ea772ffb0c26ccfc37e2d45933a9a0d",
+      "expected_source_chunk": 5,
+      "full_input_ids_sha256": "sha256:aa73f34821e58627098d30a9244119f9299f303e1f2c778670d4e6df00d2d833",
+      "online_suffix_hash": "sha256:036960156b208b58c91fed553e659458fa0f40a5b262eff063be84da7889abfb",
+      "online_suffix_tokens": 46,
+      "query_index": 5,
+      "query_row_id": 20,
+      "question_sha256": "sha256:b4f32b0b6026fd6d3897d9bfd96aa51b4a055ba87b1724e64137c60ae7b24716",
+      "text_sha256": "sha256:f269323c127f25f94ba414a1215e7e0224511e8f78da81a8c3fb30728d016e46",
+      "total_tokens": 450606
+    },
+    {
+      "answers_sha256": "sha256:9aa0e76343f98365da73b39d86d889be07dcecdeae31efff0dff620713a306b3",
+      "expected_source_chunk": 6,
+      "full_input_ids_sha256": "sha256:217b5c30883662c129dbfd1c1cdc2375cbd35134a0591ec9ebb3e58ab46dbb37",
+      "online_suffix_hash": "sha256:c552e1f926f5bebf180a4ea66c336d58205df8bc965f0037d279f14753cb974b",
+      "online_suffix_tokens": 59,
+      "query_index": 6,
+      "query_row_id": 24,
+      "question_sha256": "sha256:ebeea9704bbd2166efa86da20bf364b553c7f108899b35e58fb957e9e9371bba",
+      "text_sha256": "sha256:463a8168d2cf7c6a08ac69f59065f0cd0032d7ad8fdd23ed8f95ac0d5f2850cc",
+      "total_tokens": 450619
+    },
+    {
+      "answers_sha256": "sha256:4d5e61b707a3e6dbee1051dd160dd57fdfb9705cb0c4ced36c8ee6856e2a5563",
+      "expected_source_chunk": 7,
+      "full_input_ids_sha256": "sha256:5f908b6f45c3e38992e59c58f0ce73d6555459a562f691cdc4b54359feebf58e",
+      "online_suffix_hash": "sha256:ac2fc6b9b0bffe6100fd4e8e8699a3831ed9df79549d7e3977a1c86a00990999",
+      "online_suffix_tokens": 64,
+      "query_index": 7,
+      "query_row_id": 28,
+      "question_sha256": "sha256:ab1e5fd3de493f5dbb4be34204e0c648c9ce1bf8a06f2a5a9a3d3b016e912681",
+      "text_sha256": "sha256:54555eec0ba73a63776eb5fac3d9f9576195314400b04f81716ac7ce1bbe4b8b",
+      "total_tokens": 450624
+    },
+    {
+      "answers_sha256": "sha256:0fa114f166aba50aa5cb6fcb4d9942e6dc606f53aefac51dd501a9312cdbe447",
+      "expected_source_chunk": 0,
+      "full_input_ids_sha256": "sha256:2a66d10dd4e7a9a5cb78eb39525163cb8e491d49ff118b5c6f4f94b598ed724a",
+      "online_suffix_hash": "sha256:b17e933750d76a33a30cdec4c3e1408a2f76f0cf844ab5ee15b020cd707561a0",
+      "online_suffix_tokens": 54,
+      "query_index": 8,
+      "query_row_id": 1,
+      "question_sha256": "sha256:9cd8bb314c851364a874c2bc51e4b121c4fb2aed5fa422d43a6a2544bec6fc21",
+      "text_sha256": "sha256:ceba3dc83b469515dc8f7addd80203e7f72a87cce057971e332510f9166e16c3",
+      "total_tokens": 450614
+    },
+    {
+      "answers_sha256": "sha256:7c0a83b4be7998ae55fcd61155b4653e15194557cb0edbebf694032819abdc5b",
+      "expected_source_chunk": 1,
+      "full_input_ids_sha256": "sha256:da25f007a9d782222b35f1c87657f5a3b9ae7a85937fbf924ea8a43853ac069d",
+      "online_suffix_hash": "sha256:b6e6f613970e67ff76781105924f5f4ec399ae73f1bebfc30cb9f9b4980a4fa9",
+      "online_suffix_tokens": 59,
+      "query_index": 9,
+      "query_row_id": 5,
+      "question_sha256": "sha256:a22e7eca55306f7d93bd21af33697d0656f0387e0040a18aec90f1ac0d4c5743",
+      "text_sha256": "sha256:c1eab4cf9b591895babf97c1b8aadc73970c3413c30f1582000768981980f808",
+      "total_tokens": 450619
+    }
+  ],
+  "data_selection_sha256": "1162cb12c9a2bbf2d0c80c3f7b5df2a2ea9a0c5f3bcd0b0e5659f2c38dec37f7",
+  "dataset": {
+    "bytes": 14085077,
+    "name": "musique",
+    "row_id_base": 0,
+    "sha256": "4ac69b91281c4ec6b21316cb7282e83fb6b4dda04fc68480bb8d8ed1e19ff7bd"
+  },
+  "format": "redknot_pure_mla_prompt_multi_v1",
+  "geometry": {
+    "chunk_tokens": 56320,
+    "max_total_tokens": 450629,
+    "min_total_tokens": 450606,
+    "num_chunks": 8,
+    "num_queries": 10,
+    "query_start": 450560
+  },
+  "output_blind": true,
+  "prompt": {
+    "offline_chunk_hashes": [
+      "sha256:3f4fbf8cf046633c23f4c32fe232381393e96bae4aa7b24a90c1b62237abf07a",
+      "sha256:ff4f391a99309efbc04662d8e78a02c53849674a7236183c85782c388377fa03",
+      "sha256:79e0c4d0cd4a4e8923c036c4b4bc2e6f7a6f03cf7e8dba9f3fcbba8afd672f5e",
+      "sha256:d2091758a1f53a53098f42c8f694eeb0bc251490965b4ebc0065ac631355db0a",
+      "sha256:acabf8405bbfeb8e0ee338c0a4e078c19b833d4c8c32a34844d02c21ea6b0959",
+      "sha256:25553609b72e1a25f96a37a40053a6ccf1737b02e834039eba09ab25247d07b0",
+      "sha256:5eb00fb82a7e4d605bad2296c8ce7f0f417d370daa4eb0fc49e5be12f8496def",
+      "sha256:dda45c22712287a15dd786ba9598360756ee2a8f3cc1a3ace934910357f8101c"
+    ],
+    "offline_prefix_hash": "sha256:fbe11754b78928d36b766145161d505a8e3bf880c601c267bcb30d3d82b0c051"
+  },
+  "prompt_manifest_sha256": "f3a8bfdcdb8d0c9f51012683b794bfd72108b2e0fe433d783e0300f0ba9ced71",
+  "prompt_mode": "official_rag_v1",
+  "protocol": {
+    "add_default_bos_token": true,
+    "document_delimiter": "\n\n",
+    "drop_thinking": true,
+    "encoder_path": "/mnt/tidal-alsh01/dataset/redone/checkpoints/opensource/DeepSeek-V4-Flash-0731/encoding/encoding_dsv4.py",
+    "encoder_sha256": "sha256:abc0d26120250dda0ae077dc64aa28836026e61e970854aaeb792445e6a0dde6",
+    "query_instruction_mode": "per_case_short_span_v1",
+    "reasoning_effort": "low",
+    "thinking_mode": "chat",
+    "tokenizer_config_path": "/mnt/tidal-alsh01/dataset/redone/checkpoints/opensource/DeepSeek-V4-Flash-0731/tokenizer_config.json",
+    "tokenizer_config_sha256": "sha256:6ac8c8dc065ed118161d02dd532749ae3f52c243deac27872134fae2f50d8547",
+    "tokenizer_path": "/mnt/tidal-alsh01/dataset/redone/checkpoints/opensource/DeepSeek-V4-Flash-0731/tokenizer.json",
+    "tokenizer_sha256": "sha256:8f9f37ca37fdc4f5fd36d5cf4d3b0e8392edb4e894fd10cc0d70b4957c8633cf"
+  },
+  "source": {
+    "chunk_hashes": [
+      "sha256:30bde1c3ffe1b5ecb0d6d0ca0512ac19deb40a5ac006b4f192a7e073fe959ab4",
+      "sha256:5e897ef9d01ca7515403facd704952bfce5cc00fefdd4c225b72acf83aa637ac",
+      "sha256:4ad31ebb92634d6b8fdcd4bccb04c50bcd8dc26e04bb690d827880a94609fa17",
+      "sha256:b58ea62ce7d1bdb239810433597c41ddffe8251c249dcaf5339e63ee5175d14a",
+      "sha256:96f9e7cc259f9f7a3658b2b0bba63864d98e61eb43a024ac140284c39b838fe0",
+      "sha256:ffefebb342c45e13c4891e27fc30889692dc7aa9c292645fa8974d4c92262bc9",
+      "sha256:bb5e47171c38886d665a1f536384dce89bf98d132436ccbf58b27723bf3e53a7",
+      "sha256:044acfaae0b026642b1bf88d771d5728da5519cbbb3ed7391a9bd3dd86543b35"
+    ],
+    "chunk_order": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "query_row_ids": [
+      0,
+      4,
+      8,
+      12,
+      16,
+      20,
+      24,
+      28,
+      1,
+      5
+    ]
+  }
+}

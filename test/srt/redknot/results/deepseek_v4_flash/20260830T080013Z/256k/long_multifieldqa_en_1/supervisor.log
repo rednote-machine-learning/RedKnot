@@ -1,0 +1,80 @@
+holder_retained_during_cpu_prelaunch pid=1358273 pgid=1358273
+switching_to_light_bootstrap_holder old_pid=1358273 old_pgid=1358273
+light_bootstrap_holder_ready pid=1359109 workers=8 mem_frac=0.08
+benchmark_starting: live output is mirrored to driver.log
+cold_start_note: the first exact long-context snapshot may spend several minutes in host-side preparation and CUDA/Triton compilation; this offline snapshot time is not counted as online TTFT
+/root/miniconda3/lib/python3.11/site-packages/torch/cuda/__init__.py:63: FutureWarning: The pynvml package is deprecated. Please install nvidia-ml-py instead. If you did not install pynvml directly, please report this to the maintainers of the package that installed pynvml for you.
+  import pynvml  # type: ignore[import]
+WARNING:sglang.srt.layers.flashinfer_comm_fusion:flashinfer.comm unified allreduce_fusion API is not available, falling back to standard implementation
+[mla-off-capacity] tp=8 local_layers=[37, 37, 37, 37, 37, 37, 37, 37] bytes/token=[75822, 75822, 75822, 75822, 75822, 75822, 75822, 75822] projected=[19876282368, 19876282368, 19876282368, 19876282368, 19876282368, 19876282368, 19876282368, 19876282368]
+[pure-mla] data selection sha256=2fd3441ff44bb978b3b8eab493b4f4a071a4f81dd081d6923b70ee8825453810 mode=offset
+[pure-mla] frozen official prompt sha256=fa947e1f8d7bc2b3087f246982f91ab93db3c18cfee63761467d838345dbe127 max_total_tokens=262225
+[pure-mla] deferring GPU capacity check to the authenticated scheduler pre-CUDA release barrier
+[pure-mla] launching server: /mnt/tidal-alsh01/dataset/redone/RedKnot_Deepseekv4/server/start_server_redknot_mla.sh (port 31998)
+all_tp_workers_ready_before_cuda pids=1363357 1363358 1363359 1363360 1363361 1363362 1363363 1363364  server_pgid=1361638
+stopping_holder_after_tp_worker_import pid=1359109 pgid=1359109
+gpu_release_acknowledged workers=8
+[progress] benchmark_alive elapsed_s=30 result=pending last=[pure-mla] launching server: /mnt/tidal-alsh01/dataset/redone/RedKnot_Deepseekv4/server/start_server_redknot_mla.sh (port 31998) 
+[pure-mla] server ready
+[mla-off-capacity] runtime server policy verified: port=31998 chunked_prefill_size=32768 max_prefill_tokens=65536
+[progress] benchmark_alive elapsed_s=60 result=pending last=[mla-off-capacity] runtime server policy verified: port=31998 chunked_prefill_size=32768 max_prefill_tokens=65536 
+[pure-mla] snapshot document 0 cached independently from position0 tokens=32768
+[pure-mla] snapshot document 1 cached independently from position0 tokens=32768
+[progress] benchmark_alive elapsed_s=90 result=pending last=[pure-mla] snapshot document 1 cached independently from position0 tokens=32768 
+[pure-mla] snapshot document 2 cached independently from position0 tokens=32768
+[pure-mla] snapshot document 3 cached independently from position0 tokens=32768
+[progress] benchmark_alive elapsed_s=120 result=pending last=[pure-mla] snapshot document 3 cached independently from position0 tokens=32768 
+[pure-mla] snapshot document 4 cached independently from position0 tokens=32768
+[pure-mla] snapshot document 5 cached independently from position0 tokens=32768
+[pure-mla] snapshot document 6 cached independently from position0 tokens=32768
+[progress] benchmark_alive elapsed_s=151 result=pending last=[pure-mla] snapshot document 6 cached independently from position0 tokens=32768 
+[pure-mla] snapshot document 7 cached independently from position0 tokens=32768
+[progress] benchmark_alive elapsed_s=181 result=pending last=[pure-mla] snapshot document 7 cached independently from position0 tokens=32768 
+[progress] benchmark_alive elapsed_s=211 result=pending last=[pure-mla] snapshot document 7 cached independently from position0 tokens=32768 
+[progress] benchmark_alive elapsed_s=241 result=pending last=[pure-mla] snapshot document 7 cached independently from position0 tokens=32768 
+[progress] benchmark_alive elapsed_s=271 result=pending last=[pure-mla] snapshot document 7 cached independently from position0 tokens=32768 
+[progress] benchmark_alive elapsed_s=301 result=pending last=[pure-mla] snapshot document 7 cached independently from position0 tokens=32768 
+[progress] benchmark_alive elapsed_s=331 result=pending last=[pure-mla] snapshot document 7 cached independently from position0 tokens=32768 
+[progress] benchmark_alive elapsed_s=361 result=pending last=[pure-mla] snapshot document 7 cached independently from position0 tokens=32768 
+[progress] benchmark_alive elapsed_s=391 result=pending last=[pure-mla] snapshot document 7 cached independently from position0 tokens=32768 
+[progress] benchmark_alive elapsed_s=421 result=pending last=[pure-mla] snapshot document 7 cached independently from position0 tokens=32768 
+[progress] benchmark_alive elapsed_s=451 result=pending last=[pure-mla] snapshot document 7 cached independently from position0 tokens=32768 
+[progress] benchmark_alive elapsed_s=481 result=pending last=[pure-mla] snapshot document 7 cached independently from position0 tokens=32768 
+[progress] benchmark_alive elapsed_s=511 result=pending last=[pure-mla] snapshot document 7 cached independently from position0 tokens=32768 
+[progress] benchmark_alive elapsed_s=542 result=pending last=[pure-mla] snapshot document 7 cached independently from position0 tokens=32768 
+[progress] benchmark_alive elapsed_s=572 result=pending last=[pure-mla] snapshot document 7 cached independently from position0 tokens=32768 
+[progress] benchmark_alive elapsed_s=602 result=pending last=[pure-mla] snapshot document 7 cached independently from position0 tokens=32768 
+[progress] benchmark_alive elapsed_s=632 result=pending last=[pure-mla] snapshot document 7 cached independently from position0 tokens=32768 
+
+====================================================================================================
+ REDKNOT PURE MLA OFFLINE/ONLINE MERGE — qualification benchmark
+ Model: /mnt/tidal-alsh01/dataset/redone/checkpoints/opensource/DeepSeek-V4-Flash-0731
+ chunks=8x32768 total=262225 strategy=independent_position0_rope_relocation_headsplit_fullscope prompt=official_rag_v1 boundary=128 quality_repeats=2
+====================================================================================================
+ streaming TTFT: dense_p50=31.462s reuse_p50=21.900s speedup=1.44x dense_p95=31.523s reuse_p95=22.288s
+----------------------------------------------------------------------------------------------------
+[progress] benchmark_alive elapsed_s=662 result=pending last=---------------------------------------------------------------------------------------------------- 
+[progress] benchmark_alive elapsed_s=692 result=pending last=---------------------------------------------------------------------------------------------------- 
+[progress] benchmark_alive elapsed_s=722 result=pending last=---------------------------------------------------------------------------------------------------- 
+[progress] benchmark_alive elapsed_s=752 result=pending last=---------------------------------------------------------------------------------------------------- 
+[progress] benchmark_alive elapsed_s=782 result=pending last=---------------------------------------------------------------------------------------------------- 
+ Q0: What is the name of the most active fan club?
+    [DENSE OUTPUT]
+South West Ultras fan club.  
+The club is a de facto representative of the Malatia-Sebastia District, and its most active fan group is the South West Ultras.
+    [REDKNOT OUTPUT]
+South West Ultras fan club.  
+The documents state that the most active group of fans is the South West Ultras fan club, composed mainly of residents from the Malatia-Sebastia District.
+----------------------------------------------------------------------------------------------------
+ SUMMARY: streaming_ttft_speedup=1.44x online_row_saving=0.7720487934558544 scoped_mla_head_row_saving=0.5867125513813211 full_model_mla_head_row_saving=0.11508018272866852 mla_samples=1295/>=1295 formal_mla_requests=7/7 quality=False formal_reuse=False evidence=True full_local_sanity=None performance_claim_eligible=False performance=False overall=False
+ sequential service rate: dense=0.025 req/s, reuse=0.034 req/s; logical prompt dense=6651.3, reuse=8983.0 tok/s
+ online_row_saving is measured from selected transformer rows; it is not total-model FLOPs or GPU energy saving.
+ mla_head_row_saving counts omitted logical local-head rows at the attention output boundary; it is also not total-model FLOPs saving.
+ full_model_mla_head_row_saving uses all model layers, all 64 logical heads and every evidence request row; performance claims are gated on this conservative metric.
+ compact_woa_evidence certifies successful indexed inverse-RoPE/wo_a row activation only; it is not a FLOPs, utilization, or energy-saving measurement.
+====================================================================================================
+ structured result: /mnt/tidal-alsh01/dataset/redone/RedKnot_Deepseekv4/test/srt/redknot/results/deepseek_v4_flash/20260830T080013Z/256k/long_multifieldqa_en_1/result.json
+[progress] benchmark_alive elapsed_s=812 result=present last= structured result: /mnt/tidal-alsh01/dataset/redone/RedKnot_Deepseekv4/test/srt/redknot/results/deepseek_v4_flash/20260830T080013Z/256k/long_multifieldqa_en_1/result.json 
+RedKnot pure MLA offline/online merge quality/runtime/performance gate failed
+benchmark_exit=1
+holder_restarted pid=1383983 workers=8

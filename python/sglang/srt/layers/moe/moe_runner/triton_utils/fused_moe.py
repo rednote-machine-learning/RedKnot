@@ -210,7 +210,7 @@ def outplace_fused_experts(
         routed_scaling_factor=routed_scaling_factor,
         gemm1_alpha=gemm1_alpha,
         gemm1_limit=gemm1_limit,
-        filter_expert=filter_expert,
+        filter_expert=effective_filter_expert,
         swiglu_limit=swiglu_limit,
     )
 
@@ -306,13 +306,13 @@ def fused_experts(
         )
 
 
-@torch.compile
+@torch.compiler.disable
 def moe_sum_reduce_torch_compile(x, out, routed_scaling_factor):
     torch.sum(x, dim=1, out=out)
     out.mul_(routed_scaling_factor)
 
 
-@torch.compile
+@torch.compile(dynamic=True)
 def _swiglu_silu_clamp_mul(x, gemm1_limit):
     gate, up = x.chunk(2, dim=-1)
     gate = F.silu(gate)
@@ -321,7 +321,7 @@ def _swiglu_silu_clamp_mul(x, gemm1_limit):
     return gate * up
 
 
-@torch.compile
+@torch.compile(dynamic=True)
 def swiglu_gpt_oss_sigmoid_alpha(x, gemm1_alpha, gemm1_limit):
     # NOTE: This variant uses gemm1_alpha, unlike _swiglu_silu_clamp_mul.
     # At present, only GPT-OSS uses this variant.
@@ -384,9 +384,18 @@ def _prepare_fused_moe_run(
         and down_config.pop("USE_TMA", False)
     )
 
-    sorted_token_ids, expert_ids, num_tokens_post_padded = moe_align_block_size(
-        topk_ids, config["BLOCK_SIZE_M"], E
-    )
+    align_topk_ids = getattr(topk_ids, "_sglang_moe_align_topk_ids", topk_ids)
+    route_mask = getattr(topk_ids, "_sglang_moe_route_mask", None)
+    if route_mask is not None:
+        sorted_token_ids, expert_ids, num_tokens_post_padded = (
+            _compact_moe_align_block_size(
+                topk_ids, route_mask, config["BLOCK_SIZE_M"], E
+            )
+        )
+    else:
+        sorted_token_ids, expert_ids, num_tokens_post_padded = moe_align_block_size(
+            align_topk_ids, config["BLOCK_SIZE_M"], E
+        )
 
     return (
         config,
@@ -396,6 +405,65 @@ def _prepare_fused_moe_run(
         expert_ids,
         num_tokens_post_padded,
     )
+
+
+def _compact_moe_align_block_size(
+    topk_ids: torch.Tensor,
+    route_mask: torch.Tensor,
+    block_size: int,
+    num_experts: int,
+):
+    """Build MoE routing metadata from only kept routed entries.
+
+    Unlike ``moe_align_block_size`` with expert id -1, skipped routes are not
+    assigned to filtered blocks at all. This is the route-mask fast path used by
+    sparse MoE: it keeps the full topk output shape for final reduction while
+    compacting expert GEMM work to kept routes only.
+    """
+    flat_ids = topk_ids.reshape(-1)
+    flat_mask = route_mask.reshape(-1).to(torch.bool)
+    valid_route_idx = torch.nonzero(flat_mask, as_tuple=False).flatten().to(torch.int32)
+
+    device = topk_ids.device
+    if valid_route_idx.numel() == 0:
+        # Degenerate safe output: no GEMM blocks, one padding token sentinel.
+        sorted_token_ids = torch.empty((0,), dtype=torch.int32, device=device)
+        expert_ids = torch.empty((0,), dtype=torch.int32, device=device)
+        num_tokens_post_padded = torch.zeros((1,), dtype=torch.int32, device=device)
+        return sorted_token_ids, expert_ids, num_tokens_post_padded
+
+    valid_experts = flat_ids.index_select(0, valid_route_idx.to(torch.long)).to(
+        torch.int32
+    )
+    order = torch.argsort(valid_experts, stable=True)
+    valid_route_idx = valid_route_idx.index_select(0, order)
+    valid_experts = valid_experts.index_select(0, order)
+
+    unique_experts, counts = torch.unique_consecutive(valid_experts, return_counts=True)
+    sentinel = torch.tensor(flat_ids.numel(), dtype=torch.int32, device=device)
+    chunks = []
+    expert_chunks = []
+    start = 0
+    for expert, count_t in zip(unique_experts.tolist(), counts.tolist()):
+        count = int(count_t)
+        end = start + count
+        routes = valid_route_idx[start:end]
+        pad = (block_size - (count % block_size)) % block_size
+        if pad:
+            routes = torch.cat([routes, sentinel.expand(pad)], dim=0)
+        chunks.append(routes)
+        n_blocks = routes.numel() // block_size
+        expert_chunks.append(
+            torch.full((n_blocks,), int(expert), dtype=torch.int32, device=device)
+        )
+        start = end
+
+    sorted_token_ids = torch.cat(chunks, dim=0).to(torch.int32)
+    expert_ids = torch.cat(expert_chunks, dim=0).to(torch.int32)
+    num_tokens_post_padded = torch.tensor(
+        [sorted_token_ids.numel()], dtype=torch.int32, device=device
+    )
+    return sorted_token_ids, expert_ids, num_tokens_post_padded
 
 
 def _fused_moe_kernel_sequence(
@@ -447,6 +515,9 @@ def _fused_moe_kernel_sequence(
     E, N, _ = w1.shape
     topk = topk_ids.shape[1]
     compute_type = tl.bfloat16 if hidden_states.dtype == torch.bfloat16 else tl.float16
+    route_mask = getattr(topk_ids, "_sglang_moe_route_mask", None)
+    has_route_mask = route_mask is not None
+    effective_filter_expert = filter_expert or has_route_mask
 
     padded_tokens = (
         min(num_tokens * topk, E + 1) * (config["BLOCK_SIZE_M"] - 1)
@@ -475,7 +546,7 @@ def _fused_moe_kernel_sequence(
         and (not use_int4_w4a16)
     )
 
-    intermediate_cache1 = torch.empty(
+    intermediate_cache1 = (torch.zeros if has_route_mask else torch.empty)(
         (total_tokens, N),
         device=hidden_states.device,
         dtype=hidden_states.dtype,
@@ -505,7 +576,7 @@ def _fused_moe_kernel_sequence(
         per_channel_quant=per_channel_quant,
         block_shape=block_shape,
         c_sorted=down_moe_use_tma,
-        filter_expert=filter_expert,
+        filter_expert=effective_filter_expert,
     )
 
     if hooks and hooks.after_gate_up:
@@ -520,7 +591,7 @@ def _fused_moe_kernel_sequence(
             topk_ids,
         )
 
-    intermediate_cache2 = torch.empty(
+    intermediate_cache2 = (torch.zeros if has_route_mask else torch.empty)(
         (total_tokens, N // 2),
         device=hidden_states.device,
         dtype=hidden_states.dtype,
@@ -556,9 +627,9 @@ def _fused_moe_kernel_sequence(
                 if filter_expert:
                     swiglu_limit_for_triton = swiglu_limit
                 else:
-                    assert (
-                        _is_cuda
-                    ), "fused silu_and_mul_clamp kernel is CUDA-only; HIP must disable SWIGLU_CLAMP_FUSION"
+                    assert _is_cuda, (
+                        "fused silu_and_mul_clamp kernel is CUDA-only; HIP must disable SWIGLU_CLAMP_FUSION"
+                    )
                     swiglu_limit_for_silu_and_mul_clamp = swiglu_limit
             else:
                 half = N // 2
@@ -590,7 +661,18 @@ def _fused_moe_kernel_sequence(
                     swiglu_limit=swiglu_limit_for_triton,
                 )
         elif _is_cuda or _is_hip or _is_xpu:
-            if filter_expert and _is_cuda:
+            if has_route_mask and _is_cuda:
+                act_and_mul_triton(
+                    intermediate_cache1.view(-1, N),
+                    intermediate_cache2,
+                    config,
+                    topk_ids,
+                    expert_ids,
+                    down_moe_use_tma,
+                    activation,
+                    route_mask=route_mask,
+                )
+            elif effective_filter_expert and _is_cuda:
                 # HIP/XPU fall through to the unfiltered path: the down kernel
                 # zeros filtered rows without reading their input.
                 silu_and_mul(
@@ -648,11 +730,21 @@ def _fused_moe_kernel_sequence(
 
     del intermediate_cache1
 
-    intermediate_cache3 = torch.empty(
-        (num_tokens, topk, w2.shape[1]),
-        device=hidden_states.device,
-        dtype=hidden_states.dtype,
-    )
+    if getattr(topk_ids, "_sglang_moe_align_topk_ids", None) is not None:
+        # Some routed entries are filtered out before expert GEMMs. The down
+        # kernel will not write those slots, so initialize them to zero before
+        # the final top-k reduce.
+        intermediate_cache3 = torch.zeros(
+            (num_tokens, topk, w2.shape[1]),
+            device=hidden_states.device,
+            dtype=hidden_states.dtype,
+        )
+    else:
+        intermediate_cache3 = torch.empty(
+            (num_tokens, topk, w2.shape[1]),
+            device=hidden_states.device,
+            dtype=hidden_states.dtype,
+        )
 
     # LoRA hooks force the second kernel to write to intermediate_cache3 so
     # hooks.after_down can inspect/modify it before reduction.
@@ -824,9 +916,9 @@ def fused_experts_impl(
     if use_int4_w4a16:
         assert hidden_states.shape[1] // 2 == w1.shape[2], "Hidden size mismatch"
     else:
-        assert (
-            hidden_states.shape[1] == w1.shape[2] - padded_size
-        ), f"Hidden size mismatch"
+        assert hidden_states.shape[1] == w1.shape[2] - padded_size, (
+            f"Hidden size mismatch"
+        )
     assert topk_weights.shape == topk_ids.shape, "topk shape mismatch"
     assert hidden_states.is_contiguous(), "Hidden_states must be contiguous"
     assert w1.is_contiguous(), "Expert weights1 must be contiguous"

@@ -1,0 +1,205 @@
+{
+  "dataset": {
+    "bytes": 4483926,
+    "name": "multifieldqa_en",
+    "row_id_base": 0,
+    "sha256": "0aac182fd317dcf6d74f8e1e0f3e61029407435346c2e0b3ff9fb45ae49c5c3f"
+  },
+  "format": "redknot_indexer_hot_data_selection_v1",
+  "geometry": {
+    "chunk_tokens": 32768,
+    "num_chunks": 4,
+    "num_queries": 1
+  },
+  "selection": {
+    "chunks": [
+      {
+        "chunk_index": 0,
+        "rows": [
+          {
+            "context_token_count": 7550,
+            "context_token_hash": "sha256:5f876171f0deab979c822cc01045198d94de7868b3cbd55a805aae7a9fcfbac8",
+            "row_id": 4,
+            "row_sha256": "9290aab9fe1c12513cd56b65659c11d46dcf7873755f394416a567ad9fe1f496",
+            "used_token_count": 7550
+          },
+          {
+            "context_token_count": 10141,
+            "context_token_hash": "sha256:e4dd726180ff9178214fa2f9e739f13f8741e60931e4ee38302e15c94cea75e8",
+            "row_id": 5,
+            "row_sha256": "679574fcf901f9c28633c4bca3b99cba0183245214b5b4e8a1da86fbc00906d4",
+            "used_token_count": 10141
+          },
+          {
+            "context_token_count": 7750,
+            "context_token_hash": "sha256:cf1defb60f3744a58bcaa52d1e7ee52009e996f95d5e0a11baaad72fc66c7081",
+            "row_id": 6,
+            "row_sha256": "63566a3f037bbedd9a619d2c860a7cc3ed2a5f218650d689cad58a88a26b01f1",
+            "used_token_count": 7750
+          },
+          {
+            "context_token_count": 2944,
+            "context_token_hash": "sha256:d304c4fb8d2cdb985ea3081cab85897c5e792e9511584bf892bd2374da1d0b95",
+            "row_id": 7,
+            "row_sha256": "0829aeabb489af1d9f54008f15a19a620894de45505c58612e417c1b93bd90e4",
+            "used_token_count": 2944
+          },
+          {
+            "context_token_count": 1887,
+            "context_token_hash": "sha256:76b173ecf05c6753c23e26f04734dd7f3656b512b566e6439be93ba62b523123",
+            "row_id": 8,
+            "row_sha256": "f463471ef8d3d5baf6b7d0667139c0e24ac49af437f1bf577cd72e9a7ee457c7",
+            "used_token_count": 1887
+          },
+          {
+            "context_token_count": 12869,
+            "context_token_hash": "sha256:cafef3968d44fecbac8f13a3552b6108998f580538a06d15f37170551317a25d",
+            "row_id": 9,
+            "row_sha256": "170f9a03c7198e90df177a34a8e60b568d1a8811b10abce6317b5fc2fc039a1f",
+            "used_token_count": 2496
+          }
+        ],
+        "token_hash": "sha256:9c7b3dbfcf4aed27f12c4b0b279305579f1b828fb58d6e2cfc2b0a276a812d25"
+      },
+      {
+        "chunk_index": 1,
+        "rows": [
+          {
+            "context_token_count": 8859,
+            "context_token_hash": "sha256:5a8409693591b36631e6ad27b7d8a3551751e8690407eb9b9c1949c299ad02e1",
+            "row_id": 10,
+            "row_sha256": "fbcc61bbc3d20168a486de828c7870755a07fe0a1db328189b468be50283dde8",
+            "used_token_count": 8859
+          },
+          {
+            "context_token_count": 9808,
+            "context_token_hash": "sha256:0e837300c4a69eeb9e8ecebddbe73f7814d20c1f0114a24a72327f2a50f0c1f0",
+            "row_id": 11,
+            "row_sha256": "2c3597d58474acfe10d7bc1fac8346f853b60a912d8003e32bada6343175e907",
+            "used_token_count": 9808
+          },
+          {
+            "context_token_count": 12869,
+            "context_token_hash": "sha256:cafef3968d44fecbac8f13a3552b6108998f580538a06d15f37170551317a25d",
+            "row_id": 12,
+            "row_sha256": "8a9ed41aebe9b69b9568469cf2bb4f427459cd0dec3d3d3d925a7d4c02248fef",
+            "used_token_count": 12869
+          },
+          {
+            "context_token_count": 7750,
+            "context_token_hash": "sha256:cf1defb60f3744a58bcaa52d1e7ee52009e996f95d5e0a11baaad72fc66c7081",
+            "row_id": 13,
+            "row_sha256": "3ff5a59be7582c58d11eaff724042a99398e9fd67c039c24ebd6fa7bb58f9c63",
+            "used_token_count": 1232
+          }
+        ],
+        "token_hash": "sha256:42a905f261347e3051efd24802e3e629bf8fc74a04aff355924fc1eeb5586ccf"
+      },
+      {
+        "chunk_index": 2,
+        "rows": [
+          {
+            "context_token_count": 9551,
+            "context_token_hash": "sha256:1afe92b5213aec99117ff6af5caaebf2c78c10adbe13a186bcc40aadb6b41108",
+            "row_id": 14,
+            "row_sha256": "d905862879bd82afcd8c93738291fb99df81181c99c41c0cdce1ec8c9b14e3fc",
+            "used_token_count": 9551
+          },
+          {
+            "context_token_count": 2733,
+            "context_token_hash": "sha256:6d62ee083abb33bd7471cabe3a41c11006af7756b49401b825807dac3bee0f1f",
+            "row_id": 15,
+            "row_sha256": "c97132c8e6ab8930352fac88d9a4fef2f53bf6102a713c085df266298cdbe141",
+            "used_token_count": 2733
+          },
+          {
+            "context_token_count": 7764,
+            "context_token_hash": "sha256:a66db861d3fb6dacb3e1baf83e1d662eacd238ef8e2a2e144d0f1dc08cccc4c2",
+            "row_id": 16,
+            "row_sha256": "eaf66d40e7238bf0211dab72f2df87d2f73bbfe5d85f60a130632ec49788bc6b",
+            "used_token_count": 7764
+          },
+          {
+            "context_token_count": 8247,
+            "context_token_hash": "sha256:648319713d075d931fe8cb04c1cd1ec994ea9c272162bb269bf59a7d29c76537",
+            "row_id": 17,
+            "row_sha256": "0f7c15e0dc9ad04c502d95a25f2f86580ebe13cb62a500e3958e4e1b24ea9fb2",
+            "used_token_count": 8247
+          },
+          {
+            "context_token_count": 9638,
+            "context_token_hash": "sha256:4ce2f595a49d278aba1ef24b9dec19b39236f7723abe11a9a253e1972bba71c8",
+            "row_id": 18,
+            "row_sha256": "11d23956080f6ca158a18803d94ce9e6ac8831bab93d54e2f16b964d7e44f34f",
+            "used_token_count": 4473
+          }
+        ],
+        "token_hash": "sha256:d9b873f520ae88d8b3b44f8497ceaa8eaab3c1064608b744a2e98a7c81635cd4"
+      },
+      {
+        "chunk_index": 3,
+        "rows": [
+          {
+            "context_token_count": 3776,
+            "context_token_hash": "sha256:c37b44295f90ce13fb9a4573e04dc6592680470b4e4bd3dbba636e468c4181e8",
+            "row_id": 19,
+            "row_sha256": "7853aaf6cfbaaeb510876e5025f03e10d4b7b0cd7f50ff56bc751c3c570a6d61",
+            "used_token_count": 3776
+          },
+          {
+            "context_token_count": 2156,
+            "context_token_hash": "sha256:de210e57ea38c9865814d9820eba4e3764a7d4c82683525bae734437f29fbf0d",
+            "row_id": 20,
+            "row_sha256": "4ae22f7fc3500122e13a0eb576cb6ac937b72afe09284f4af397647aafd6293a",
+            "used_token_count": 2156
+          },
+          {
+            "context_token_count": 7276,
+            "context_token_hash": "sha256:21c6aa8597e1250ac2b0cadd44d85155a2242e02595e0a5334829de48852be8b",
+            "row_id": 21,
+            "row_sha256": "5345c1c8b9a1b3540153adc91d168fd4941222b2ab2c5e66fa93be4f3c6abbd5",
+            "used_token_count": 7276
+          },
+          {
+            "context_token_count": 5572,
+            "context_token_hash": "sha256:44ee72f57046b1cd1b9b4ca638057835c56dbdf1d00a755936fa2673bfadaf2d",
+            "row_id": 22,
+            "row_sha256": "ba761e38a6424f43378255fa41c06def8d5e41c9a77282b759e2415c7cec514a",
+            "used_token_count": 5572
+          },
+          {
+            "context_token_count": 4968,
+            "context_token_hash": "sha256:ade0d54bd2807ae44ee2e6c4592cd7e076367d866502b9c8318cfccad02a98b1",
+            "row_id": 23,
+            "row_sha256": "bccae14bc8dca0f7eef42c33b24efd69ec187e581d3c304112cc37704883464f",
+            "used_token_count": 4968
+          },
+          {
+            "context_token_count": 10028,
+            "context_token_hash": "sha256:8c2b0d72baf1f1cc352f3af887bd8a0b27270ffb56a8f3cb58a38f9c021dc638",
+            "row_id": 24,
+            "row_sha256": "16bd4711a2985d809f0b69e5aecfa0e9d121151505f3e3367f8f199597993836",
+            "used_token_count": 9020
+          }
+        ],
+        "token_hash": "sha256:0b41e89ab65bf70fe2f98a37f96a46260601e9889c330b8bc6826d68b861fb55"
+      }
+    ],
+    "excluded_row_ids": [],
+    "excluded_selection_sha256": [],
+    "mode": "offset",
+    "queries": [
+      {
+        "answers_sha256": "a3cd1f40e26ccb48b645fdc14244afed13dbf90bce3b71b7b685fdab3be3b6c8",
+        "expected_chunk": 0,
+        "query_index": 0,
+        "query_token_hash": "sha256:da619dac676a49e2e96fdf07965919ad8da40f9863d5d95696ef5de2f682b405",
+        "question_sha256": "21ddd2fce69d330bbc377c0faa62b32590c1142d7eea7518d606bf26b98ed694",
+        "row_id": 4,
+        "row_sha256": "9290aab9fe1c12513cd56b65659c11d46dcf7873755f394416a567ad9fe1f496"
+      }
+    ],
+    "row_offset": 4
+  },
+  "selection_sha256": "6d97d13d786b136ecd19bc9006f659c31f10b387c5394ad36c60bbda33372f76"
+}

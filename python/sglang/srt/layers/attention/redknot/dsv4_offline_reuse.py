@@ -38,7 +38,9 @@ from sglang.srt.layers.attention.redknot.dsv4_rope_reloc import (
     NOPE_DIM,
     ROPE_DIM,
     read_rope_bf16,
+    read_packed_kv,
     reposition_rope,
+    write_packed_kv,
     write_rope_bf16,
 )
 
@@ -61,6 +63,7 @@ class SegmentSnapshot:
     length: int
     # rope_local[layer] : [L, 64] bf16, rotated at local positions [0, L)
     rope_local: Dict[int, torch.Tensor] = field(default_factory=dict)
+    packed_local: Dict[int, torch.Tensor] = field(default_factory=dict)
     meta: Dict[str, object] = field(default_factory=dict)
 
 
@@ -118,6 +121,41 @@ class DSV4OfflineReuseController:
             self.stats["segments_cached"] += 1
         rope = read_rope_bf16(kv_buffer, slot_indices, page_size)  # [L,64]
         seg.rope_local[layer_id] = rope.detach().clone()
+        seg.packed_local[layer_id] = (
+            read_packed_kv(kv_buffer, slot_indices, page_size).detach().cpu()
+        )
+
+    @torch.no_grad()
+    def restore_segment(
+        self,
+        seg_hash: str,
+        layer_id: int,
+        kv_buffer: torch.Tensor,
+        dst_slots: torch.Tensor,
+        global_offset: int,
+        freqs_cis: torch.Tensor,
+        page_size: int,
+        skip_first: int = 0,
+    ) -> int:
+        """Restore complete packed SWA records and relocate their RoPE bytes."""
+        seg = self._segments.get(seg_hash)
+        if seg is None or layer_id not in seg.packed_local:
+            return 0
+        if skip_first >= seg.length:
+            return 0
+        packed = seg.packed_local[layer_id][skip_first : seg.length]
+        slots = dst_slots[: packed.shape[0]]
+        write_packed_kv(kv_buffer, slots, packed, page_size)
+        return self.relocate_into_slots(
+            seg_hash=seg_hash,
+            layer_id=layer_id,
+            kv_buffer=kv_buffer,
+            dst_slots=slots,
+            global_offset=global_offset,
+            freqs_cis=freqs_cis,
+            page_size=page_size,
+            skip_first=skip_first,
+        )
 
     def has_segment(self, seg_hash: str) -> bool:
         return seg_hash in self._segments

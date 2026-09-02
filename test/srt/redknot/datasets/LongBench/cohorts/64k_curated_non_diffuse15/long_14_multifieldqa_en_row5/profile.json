@@ -1,0 +1,43 @@
+{
+  "answer_style": "direct_answer_plus_document_evidence_v1",
+  "cases": [
+    {
+      "answers_sha256": "sha256:f3dbbcaa381db69ac9fcf57aae8a873f5a611ea6fa3f65092e13f4a2d8c8526c",
+      "expected_source_chunk": 0,
+      "full_input_ids_sha256": "sha256:8295dbc213fd0b050c182d0f014a3ace761d69c0eced95046b108a0cdd9f5587",
+      "online_suffix_hash": "sha256:b3842a42bd4eb8a566480f573c2513c4696a04e7db2dd91d94ab4481d483171f",
+      "online_suffix_tokens": 89,
+      "query_index": 0,
+      "query_row_id": 5,
+      "question_sha256": "sha256:78d2bf743b8dbe89640d65c2c65882f78c07c482e5fa658927b68161ec9f1afa",
+      "text_sha256": "sha256:bce768337a7b60dbf017f345feb8b2b73b285b62102ba762f5903825db08a648",
+      "total_tokens": 65625
+    }
+  ],
+  "chunk_tokens": 16384,
+  "cohort_index": 640014,
+  "data_manifest": "/mnt/tidal-alsh01/dataset/redone/RedKnot_Deepseekv4/test/srt/redknot/datasets/LongBench/cohorts/64k_curated_non_diffuse15/long_14_multifieldqa_en_row5/data_selection.json",
+  "data_selection_sha256": "6b654d853fa0de1080535c4b5bc4b235a4fd25420f1d666f0284ab18d2ee7804",
+  "dataset": "multifieldqa_en",
+  "exclude_manifests": [],
+  "format": "redknot_multidataset_profile_v2",
+  "long_output_target_tokens": 30,
+  "max_total_tokens": 65625,
+  "num_chunks": 4,
+  "num_queries": 1,
+  "offline_chunk_hashes": [
+    "sha256:6cec580f155b70e8c60ed679043a1f2bd27d55835866d09006a88ebd200bfe24",
+    "sha256:1a9f883634da807474484588cb9fbed163211050b6e56ccd1b488f84f878fe7a",
+    "sha256:570d3ac40997a1e44ebb96151b68e4bb9a95f9bef806757917b44750668e3885",
+    "sha256:fb5dfe8f7e0504ade43d5997a7edd17e8b79ff5fdca7b01fa5b7ae7a88e30b10"
+  ],
+  "output_blind": true,
+  "prompt_manifest": "/mnt/tidal-alsh01/dataset/redone/RedKnot_Deepseekv4/test/srt/redknot/datasets/LongBench/cohorts/64k_curated_non_diffuse15/long_14_multifieldqa_en_row5/prompt_manifest.json",
+  "prompt_manifest_sha256": "1ac4a833512ff73c27abfa13d10978e34f9255926717666d3f4b8582c3163323",
+  "query_row_ids": [
+    5
+  ],
+  "query_start": 65536,
+  "row_offset": 5,
+  "target_tokens": 65536
+}

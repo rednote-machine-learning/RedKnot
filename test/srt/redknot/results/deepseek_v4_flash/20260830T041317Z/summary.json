@@ -1,0 +1,45 @@
+{
+  "cases_per_dataset": 10,
+  "created_utc": "20260830T041317Z",
+  "data_sha256": {
+    "2wikimqa": "dda279cf93a99e1e5bfa3291fb199fd55978d10a1feb31822953cf77a1742e37",
+    "hotpotqa": "a0005ab2a1bc2ac3a70352dccbf96cccc4e0aac6bb677f6a55180fa51b92ef6f",
+    "multifieldqa_en": "0aac182fd317dcf6d74f8e1e0f3e61029407435346c2e0b3ff9fb45ae49c5c3f",
+    "musique": "4ac69b91281c4ec6b21316cb7282e83fb6b4dda04fc68480bb8d8ed1e19ff7bd",
+    "triviaqa": "ed2529de2e10b12c00f49981870c23c7c51667069cdd8d0740e1423ff337d7fa"
+  },
+  "datasets": [
+    "hotpotqa",
+    "2wikimqa",
+    "musique",
+    "multifieldqa_en",
+    "triviaqa"
+  ],
+  "format": "redknot_deepseek_v4_flash_release_run_v1",
+  "head_config": "/mnt/tidal-alsh01/dataset/redone/RedKnot_Deepseekv4/test/srt/redknot/head_class/deepseek_v4_flash_0731_redknot.json",
+  "head_config_sha256": "6110156cc787b7040552111c1ac15251d0c302279b21677298bee8436e0d506f",
+  "lengths": [
+    "256K",
+    "440K"
+  ],
+  "model": "/mnt/tidal-alsh01/dataset/redone/checkpoints/opensource/DeepSeek-V4-Flash-0731",
+  "model_repo_fallback": "deepseek-ai/DeepSeek-V4-Flash-0731",
+  "profile_sha256": {
+    "256K/2wikimqa": "f3020284207f3517c4c20f0ec0be29641ba435bacd4518775f4f513bb80f66cd",
+    "256K/hotpotqa": "1f9162019a03c6cf636ded9a95d6b92494f93deb6d91826e0ec4f2477b420c71",
+    "256K/multifieldqa_en": "1f04cce1b5d5808fa67350361465bf7b1ab6a3f228cb4cdb4dcfe04187c8ef81",
+    "256K/musique": "9c52656daac2c2648f45547c50ee5aa0d81a9294cb6309b7788abd5d353bce57",
+    "256K/triviaqa": "365fbdb9e8b8ace96f5546e5c540d67c45eff227b76c5e665fbcd7a036f688e2",
+    "440K/2wikimqa": "6626a93b507406c7603445111549a426c9ae02d3a01668de9ed1704ff7ccd374",
+    "440K/hotpotqa": "9fc19004b147373de89bde50acded8b1f45c54d8d25ca595f2f408437a6c1535",
+    "440K/multifieldqa_en": "b7785d14d6494dcee5a891d57249ded06fd272bc5680a111664f726e0a793b10",
+    "440K/musique": "0629b8e0e0d9b9681b764a74abd2ab9089d74a9bc6a679d42f751e3f2ea39944",
+    "440K/triviaqa": "b8d6f1e533d09e95acfd0560adae80f37be85a35293d589d808a172ac9ff2c67"
+  },
+  "python": "/mnt/tidal-alsh01/dataset/redone/RedKnot_Deepseekv4/.venv_tf5/bin/python",
+  "repo": "/mnt/tidal-alsh01/dataset/redone/RedKnot_Deepseekv4",
+  "run_mode": "multidataset_matrix",
+  "runs": [],
+  "sparse_config": "/mnt/tidal-alsh01/dataset/redone/RedKnot_Deepseekv4/test/srt/redknot/sparse_ffn_params/deepseek_v4_flash_0731.json",
+  "sparse_config_sha256": "0828a26de107abe5569beaf59272cb6f48ffdfe5136f767abb29e1d3016b8ff3"
+}

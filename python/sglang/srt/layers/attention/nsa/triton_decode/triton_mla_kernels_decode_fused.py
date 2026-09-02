@@ -19,6 +19,7 @@ OPTIMIZED VERSION: Reduced code duplication in dual-scope kernel by using
 a helper function for KV block processing.
 """
 
+import os
 from typing import Optional, Tuple
 
 import torch
@@ -39,6 +40,25 @@ DSV4_NUM_TILES = 7
 DSV4_BYTES_PER_TOKEN_DATA = 576  # 448 nope + 128 rope
 DSV4_BYTES_PER_TOKEN_SCALE = 8  # 7 scales + 1 padding
 
+_DISABLE_DUAL_SCOPE_SPLITK_ENV = "REDKNOT_DSV4_DISABLE_DUAL_SCOPE_SPLITK"
+_SM103_HEAD_TILE_PRUNE_ENV = "REDKNOT_DSV4_SM103_HEAD_TILE_PRUNE"
+
+
+def _dual_scope_splitk_disabled() -> bool:
+    """Select the SM103-safe non-split kernel without changing Hopper."""
+
+    return os.environ.get(_DISABLE_DUAL_SCOPE_SPLITK_ENV) == "1"
+
+
+def _sm103_head_tile_prune_enabled() -> bool:
+    """Limit the SM103 compilation workaround to the B300 profile."""
+
+    return (
+        os.environ.get("REDKNOT_HARDWARE_PROFILE", "").strip().lower()
+        == "b300"
+        and os.environ.get(_SM103_HEAD_TILE_PRUNE_ENV, "1") == "1"
+    )
+
 
 # ============================================================================
 # Helper: Process KV block and compute QK scores + accumulator update
@@ -52,6 +72,7 @@ def _process_kv_block_aggressive(
     scale_base_offset,
     valid,
     valid_2d,
+    scope_valid_mask,
     # Query tiles
     q_0,
     q_1,
@@ -174,7 +195,8 @@ def _process_kv_block_aggressive(
     qk += tl.dot(q_7, tl.trans(kv_7)).to(tl.float32)
 
     qk = qk * sm_scale
-    qk = tl.where(valid[None, :], qk, NEG_INF)
+    valid_qk = valid[None, :] & scope_valid_mask
+    qk = tl.where(valid_qk, qk, NEG_INF)
 
     m_ij = tl.max(qk, axis=1)
     m_new = tl.maximum(m_i, m_ij)
@@ -198,6 +220,25 @@ def _process_kv_block_aggressive(
 # ============================================================================
 # DSV4 Fused Gather+Dequant+Attention Kernel (Single Scope)
 # ============================================================================
+def _prune_head_tile_configs(configs, named_args, **kwargs):
+    """Keep only head tiles that create distinct useful grids for ``h_q``."""
+
+    h_q = named_args.get("h_q", 128)
+    pruned = [c for c in configs if c.kwargs.get("BLOCK_H", 16) <= h_q]
+    if pruned:
+        return pruned
+
+    # TP-sharded RedKnot commonly presents fewer than 16 logical heads per
+    # rank.  No candidate BLOCK_H is then <= h_q, but returning every config
+    # needlessly autotunes BLOCK_H=16..128 even though every choice produces
+    # the same single head tile.  Keep only the smallest available tile while
+    # preserving its BLOCK_N/warp alternatives.
+    min_block_h = min(c.kwargs.get("BLOCK_H", 16) for c in configs)
+    return [
+        c for c in configs if c.kwargs.get("BLOCK_H", 16) == min_block_h
+    ]
+
+
 @triton.autotune(
     configs=[
         # Fused gather+dequant+attention kernel.
@@ -214,6 +255,7 @@ def _process_kv_block_aggressive(
         triton.Config({"BLOCK_H": 128, "BLOCK_N": 128}, num_warps=4, num_stages=1),
     ],
     key=["total_tokens_bucket", "h_q", "topk"],
+    prune_configs_by={"early_config_prune": _prune_head_tile_configs},
 )
 @triton.jit
 def _fused_gather_attn_dsv4_kernel(
@@ -384,6 +426,7 @@ def _fused_gather_attn_dsv4_kernel(
                     scale_base_offset,
                     valid,
                     valid_2d,
+                    mask_h[:, None],
                     q_0,
                     q_1,
                     q_2,
@@ -754,9 +797,7 @@ def _prune_dual_scope_configs(configs, named_args, **kwargs):
     For h_q=64: keep BLOCK_H <= 64 (removes BLOCK_H=128 which gives same grid)
     For h_q=128: keep all (all give different grid sizes)
     """
-    h_q = named_args.get("h_q", 128)
-    pruned = [c for c in configs if c.kwargs.get("BLOCK_H", 16) <= h_q]
-    return pruned if pruned else configs
+    return _prune_head_tile_configs(configs, named_args, **kwargs)
 
 
 @triton.autotune(
@@ -792,6 +833,8 @@ def _fused_gather_attn_dsv4_dual_scope_kernel(
     KV_Cache_Extra,
     Indices_Extra,
     TopkLength_Extra,
+    ExtraHeadMask,
+    MainHeadLengths,
     AttnSink,
     Output,
     LSE,
@@ -815,6 +858,8 @@ def _fused_gather_attn_dsv4_dual_scope_kernel(
     stride_idx_main_k,
     stride_idx_extra_t,
     stride_idx_extra_k,
+    stride_extra_head,
+    stride_main_head,
     stride_o_t,
     stride_o_h,
     stride_o_d,
@@ -822,6 +867,8 @@ def _fused_gather_attn_dsv4_dual_scope_kernel(
     stride_lse_h,
     HAS_TOPK_LENGTH_MAIN: tl.constexpr,
     HAS_TOPK_LENGTH_EXTRA: tl.constexpr,
+    HAS_EXTRA_HEAD_MASK: tl.constexpr,
+    HAS_MAIN_HEAD_LENGTHS: tl.constexpr,
     HAS_ATTN_SINK: tl.constexpr,
     BLOCK_H: tl.constexpr,
     BLOCK_N: tl.constexpr,
@@ -855,6 +902,23 @@ def _fused_gather_attn_dsv4_dual_scope_kernel(
 
     offs_h = pid_h * BLOCK_H + tl.arange(0, BLOCK_H)
     mask_h = offs_h < h_q
+    if HAS_EXTRA_HEAD_MASK:
+        extra_scope_heads = mask_h & (
+            tl.load(
+                ExtraHeadMask + offs_h * stride_extra_head,
+                mask=mask_h,
+                other=0,
+            )
+            != 0
+        )
+    else:
+        extra_scope_heads = mask_h
+    if HAS_MAIN_HEAD_LENGTHS:
+        main_head_lengths = tl.load(
+            MainHeadLengths + offs_h * stride_main_head,
+            mask=mask_h,
+            other=0,
+        )
 
     # Initialize accumulators
     m_i = tl.full([BLOCK_H], NEG_INF, dtype=tl.float32)
@@ -972,6 +1036,12 @@ def _fused_gather_attn_dsv4_dual_scope_kernel(
             )
 
             valid_2d = valid[:, None]
+            if HAS_MAIN_HEAD_LENGTHS:
+                main_scope_valid = mask_h[:, None] & (
+                    offs_n[None, :] < main_head_lengths[:, None]
+                )
+            else:
+                main_scope_valid = mask_h[:, None]
 
             # Use helper function for KV processing
             acc_0, acc_1, acc_2, acc_3, acc_4, acc_5, acc_6, acc_7, m_i, l_i = (
@@ -981,6 +1051,7 @@ def _fused_gather_attn_dsv4_dual_scope_kernel(
                     scale_base_offset,
                     valid,
                     valid_2d,
+                    main_scope_valid,
                     q_0,
                     q_1,
                     q_2,
@@ -1059,6 +1130,7 @@ def _fused_gather_attn_dsv4_dual_scope_kernel(
                     scale_base_offset,
                     valid,
                     valid_2d,
+                    extra_scope_heads[:, None],
                     q_0,
                     q_1,
                     q_2,
@@ -1174,15 +1246,22 @@ def _fused_gather_attn_dsv4_dual_scope_kernel(
 
 
 def _prune_splitk_configs(configs, named_args, **kwargs):
-    """Prune BLOCK_H=16 configs for large batch sizes to avoid CU oversubscription.
+    """Prune split-K head tiles for the actual TP-local head count.
 
     With h_q=128 and BLOCK_H=16, the grid has cdiv(128,16)=8 H-blocks.
     At bs=32 with split_k=2, this creates 8*32*2=512 blocks (200% CU),
     causing performance regression from oversubscription.
 
-    For small batch sizes (bucket <= 8), BLOCK_H=16 provides better
+    On B300, RedKnot can present fewer than 16 logical heads on one TP rank.
+    Apply the same head-aware pruning as the non-split dual-scope kernel only
+    for that hardware profile.  This leaves the H200 autotune candidate set
+    byte-for-byte equivalent to the original path.
+
+    For small batch sizes (bucket <= 8), BLOCK_H=16 also provides better
     parallelism and is ~10% faster in CUDA graph replay.
     """
+    if _sm103_head_tile_prune_enabled():
+        configs = _prune_head_tile_configs(configs, named_args, **kwargs)
     total_tokens_bucket = named_args.get("total_tokens_bucket", 32)
     if total_tokens_bucket > 8:
         # Remove BLOCK_H=16 configs for large batch sizes
@@ -1221,6 +1300,8 @@ def _fused_gather_attn_dsv4_dual_scope_splitk_kernel(
     KV_Cache_Extra,
     Indices_Extra,
     TopkLength_Extra,
+    ExtraHeadMask,
+    MainHeadLengths,
     PartialOutput,
     PartialLSE,
     sm_scale,
@@ -1244,6 +1325,8 @@ def _fused_gather_attn_dsv4_dual_scope_splitk_kernel(
     stride_idx_main_k,
     stride_idx_extra_t,
     stride_idx_extra_k,
+    stride_extra_head,
+    stride_main_head,
     stride_po_s,
     stride_po_t,
     stride_po_h,
@@ -1253,6 +1336,8 @@ def _fused_gather_attn_dsv4_dual_scope_splitk_kernel(
     stride_plse_h,
     HAS_TOPK_LENGTH_MAIN: tl.constexpr,
     HAS_TOPK_LENGTH_EXTRA: tl.constexpr,
+    HAS_EXTRA_HEAD_MASK: tl.constexpr,
+    HAS_MAIN_HEAD_LENGTHS: tl.constexpr,
     BLOCK_H: tl.constexpr,
     BLOCK_N: tl.constexpr,
 ):
@@ -1277,6 +1362,23 @@ def _fused_gather_attn_dsv4_dual_scope_splitk_kernel(
 
     offs_h = pid_h * BLOCK_H + tl.arange(0, BLOCK_H)
     mask_h = offs_h < h_q
+    if HAS_EXTRA_HEAD_MASK:
+        extra_scope_heads = mask_h & (
+            tl.load(
+                ExtraHeadMask + offs_h * stride_extra_head,
+                mask=mask_h,
+                other=0,
+            )
+            != 0
+        )
+    else:
+        extra_scope_heads = mask_h
+    if HAS_MAIN_HEAD_LENGTHS:
+        main_head_lengths = tl.load(
+            MainHeadLengths + offs_h * stride_main_head,
+            mask=mask_h,
+            other=0,
+        )
 
     # Calculate the range for this split
     total_topk = topk_main + topk_extra
@@ -1388,6 +1490,12 @@ def _fused_gather_attn_dsv4_dual_scope_splitk_kernel(
             )
 
             valid_2d = valid[:, None]
+            if HAS_MAIN_HEAD_LENGTHS:
+                main_scope_valid = mask_h[:, None] & (
+                    offs_n[None, :] < main_head_lengths[:, None]
+                )
+            else:
+                main_scope_valid = mask_h[:, None]
 
             acc_0, acc_1, acc_2, acc_3, acc_4, acc_5, acc_6, acc_7, m_i, l_i = (
                 _process_kv_block_aggressive(
@@ -1396,6 +1504,7 @@ def _fused_gather_attn_dsv4_dual_scope_splitk_kernel(
                     scale_base_offset,
                     valid,
                     valid_2d,
+                    main_scope_valid,
                     q_0,
                     q_1,
                     q_2,
@@ -1476,6 +1585,7 @@ def _fused_gather_attn_dsv4_dual_scope_splitk_kernel(
                     scale_base_offset,
                     valid,
                     valid_2d,
+                    extra_scope_heads[:, None],
                     q_0,
                     q_1,
                     q_2,
@@ -1577,6 +1687,42 @@ def _fused_gather_attn_dsv4_dual_scope_splitk_kernel(
     tl.store(lse_ptrs, lse, mask=mask_h)
 
 
+def _prepare_extra_head_mask(
+    extra_head_mask: Optional[torch.Tensor],
+    h_q: int,
+    device: torch.device,
+    fallback: torch.Tensor,
+) -> Tuple[torch.Tensor, bool]:
+    """Validate an optional per-query-head gate for the EXTRA KV scope."""
+    if extra_head_mask is None:
+        return fallback.reshape(-1)[:1], False
+    if extra_head_mask.device != device:
+        raise ValueError("extra_head_mask must be on the same device as q")
+    if extra_head_mask.ndim != 1 or extra_head_mask.numel() != h_q:
+        raise ValueError(f"extra_head_mask must have shape [{h_q}]")
+    if extra_head_mask.dtype not in (torch.bool, torch.uint8):
+        raise TypeError("extra_head_mask must have dtype torch.bool or torch.uint8")
+    return extra_head_mask.contiguous(), True
+
+
+def _prepare_main_head_lengths(
+    main_head_lengths: Optional[torch.Tensor],
+    h_q: int,
+    device: torch.device,
+    fallback: torch.Tensor,
+) -> Tuple[torch.Tensor, bool]:
+    """Validate optional per-query-head limits within the MAIN index row."""
+    if main_head_lengths is None:
+        return fallback.reshape(-1)[:1], False
+    if main_head_lengths.device != device:
+        raise ValueError("main_head_lengths must be on the same device as q")
+    if main_head_lengths.ndim != 1 or main_head_lengths.numel() != h_q:
+        raise ValueError(f"main_head_lengths must have shape [{h_q}]")
+    if main_head_lengths.dtype not in (torch.int32, torch.int64):
+        raise TypeError("main_head_lengths must have dtype torch.int32 or torch.int64")
+    return main_head_lengths.contiguous(), True
+
+
 def fused_gather_attn_decode_dsv4_dual_scope(
     q: torch.Tensor,
     kv_cache_main: torch.Tensor,
@@ -1590,6 +1736,8 @@ def fused_gather_attn_decode_dsv4_dual_scope(
     topk_length_extra: Optional[torch.Tensor] = None,
     attn_sink: Optional[torch.Tensor] = None,
     s_q: int = 1,
+    extra_head_mask: Optional[torch.Tensor] = None,
+    main_head_lengths: Optional[torch.Tensor] = None,
 ) -> Tuple[torch.Tensor, torch.Tensor]:
     """
     Fused gather+dequant+attention for DSV4 with dual scope (main + extra).
@@ -1608,6 +1756,10 @@ def fused_gather_attn_decode_dsv4_dual_scope(
         topk_length_extra: Optional per-batch topk length for extra [b]
         attn_sink: Optional attention sink values [h_q]
         s_q: Sequence length per batch
+        extra_head_mask: Optional bool/uint8 mask [h_q]. Heads with a zero mask
+            attend MAIN only; non-zero heads attend MAIN + EXTRA.
+        main_head_lengths: Optional int32/int64 limits [h_q] within each MAIN
+            index row. This permits local and global heads to share one launch.
 
     Returns:
         output: Attention output [total_tokens, h_q, d_v]
@@ -1640,6 +1792,13 @@ def fused_gather_attn_decode_dsv4_dual_scope(
     if not indices_extra.is_contiguous():
         indices_extra = indices_extra.contiguous()
 
+    extra_head_mask_tensor, has_extra_head_mask = _prepare_extra_head_mask(
+        extra_head_mask, h_q, device, indices_main
+    )
+    main_head_lengths_tensor, has_main_head_lengths = _prepare_main_head_lengths(
+        main_head_lengths, h_q, device, indices_main
+    )
+
     kv_cache_size_main = stride_kv_block_main * num_blocks_main
     kv_cache_size_extra = stride_kv_block_extra * num_blocks_extra
     disable_buffer_ops = (
@@ -1665,7 +1824,7 @@ def fused_gather_attn_decode_dsv4_dual_scope(
     # For h_q > 64 (e.g. h_q=128), the non-splitk grid has very few blocks
     # in the H dimension, leading to low GPU utilization at medium batch sizes.
     use_splitk_for_large_hq = h_q > 64 and total_tokens > 8 and total_topk >= 256
-    if (
+    if not _dual_scope_splitk_disabled() and (
         use_splitk_for_small_bs
         or use_splitk_for_h64_large_topk
         or use_splitk_for_large_topk
@@ -1731,6 +1890,8 @@ def fused_gather_attn_decode_dsv4_dual_scope(
                 kv_flat_extra,
                 indices_extra,
                 topk_length_extra_tensor,
+                extra_head_mask_tensor,
+                main_head_lengths_tensor,
                 partial_output,
                 partial_lse,
                 sm_scale,
@@ -1754,6 +1915,8 @@ def fused_gather_attn_decode_dsv4_dual_scope(
                 indices_main.stride(1),
                 indices_extra.stride(0),
                 indices_extra.stride(1),
+                extra_head_mask_tensor.stride(0),
+                main_head_lengths_tensor.stride(0),
                 partial_output.stride(0),
                 partial_output.stride(1),
                 partial_output.stride(2),
@@ -1763,6 +1926,8 @@ def fused_gather_attn_decode_dsv4_dual_scope(
                 partial_lse.stride(2),
                 HAS_TOPK_LENGTH_MAIN=topk_length_main is not None,
                 HAS_TOPK_LENGTH_EXTRA=topk_length_extra is not None,
+                HAS_EXTRA_HEAD_MASK=has_extra_head_mask,
+                HAS_MAIN_HEAD_LENGTHS=has_main_head_lengths,
             )
 
         if disable_buffer_ops:
@@ -1868,6 +2033,8 @@ def fused_gather_attn_decode_dsv4_dual_scope(
             kv_flat_extra,
             indices_extra,
             topk_length_extra_tensor,
+            extra_head_mask_tensor,
+            main_head_lengths_tensor,
             attn_sink_tensor,
             output,
             lse,
@@ -1891,6 +2058,8 @@ def fused_gather_attn_decode_dsv4_dual_scope(
             indices_main.stride(1),
             indices_extra.stride(0),
             indices_extra.stride(1),
+            extra_head_mask_tensor.stride(0),
+            main_head_lengths_tensor.stride(0),
             output.stride(0),
             output.stride(1),
             output.stride(2),
@@ -1898,6 +2067,8 @@ def fused_gather_attn_decode_dsv4_dual_scope(
             lse.stride(1),
             HAS_TOPK_LENGTH_MAIN=topk_length_main is not None,
             HAS_TOPK_LENGTH_EXTRA=topk_length_extra is not None,
+            HAS_EXTRA_HEAD_MASK=has_extra_head_mask,
+            HAS_MAIN_HEAD_LENGTHS=has_main_head_lengths,
             HAS_ATTN_SINK=attn_sink is not None,
         )
 
@@ -2091,6 +2262,7 @@ def _fused_gather_attn_dsv4_splitk_kernel(
                     scale_base_offset,
                     valid,
                     valid_2d,
+                    mask_h[:, None],
                     q_0,
                     q_1,
                     q_2,
@@ -2790,6 +2962,8 @@ def fused_gather_attn_decode_dsv4_dual_scope_low_overhead(
     topk_length_extra: Optional[torch.Tensor] = None,
     attn_sink: Optional[torch.Tensor] = None,
     s_q: int = 1,
+    extra_head_mask: Optional[torch.Tensor] = None,
+    main_head_lengths: Optional[torch.Tensor] = None,
 ) -> Tuple[torch.Tensor, torch.Tensor]:
     """
     Low-overhead version of fused_gather_attn_decode_dsv4_dual_scope.
@@ -2827,6 +3001,13 @@ def fused_gather_attn_decode_dsv4_dual_scope_low_overhead(
     if not indices_extra.is_contiguous():
         indices_extra = indices_extra.contiguous()
 
+    extra_head_mask_tensor, has_extra_head_mask = _prepare_extra_head_mask(
+        extra_head_mask, h_q, device, indices_main
+    )
+    main_head_lengths_tensor, has_main_head_lengths = _prepare_main_head_lengths(
+        main_head_lengths, h_q, device, indices_main
+    )
+
     # Determine split_k
     SPLITK_DUAL_SCOPE_TOPK_THRESHOLD = 2048
     use_splitk_for_small_bs = total_tokens <= 8 and (h_q >= 128 or total_topk >= 1024)
@@ -2841,7 +3022,7 @@ def fused_gather_attn_decode_dsv4_dual_scope_low_overhead(
     # at medium batch sizes.  Split-K doubles the parallelism.
     use_splitk_for_large_hq = h_q > 64 and total_tokens > 8 and total_topk >= 256
 
-    if not (
+    if _dual_scope_splitk_disabled() or not (
         use_splitk_for_small_bs
         or use_splitk_for_h64_large_topk
         or use_splitk_for_large_topk
@@ -2861,6 +3042,8 @@ def fused_gather_attn_decode_dsv4_dual_scope_low_overhead(
             topk_length_extra,
             attn_sink,
             s_q,
+            extra_head_mask=extra_head_mask,
+            main_head_lengths=main_head_lengths,
         )
 
     # Select split_k based on workload and total_topk.
@@ -2942,6 +3125,8 @@ def fused_gather_attn_decode_dsv4_dual_scope_low_overhead(
                 kv_flat_extra,
                 indices_extra,
                 topk_length_extra_tensor,
+                extra_head_mask_tensor,
+                main_head_lengths_tensor,
                 partial_output,
                 partial_lse,
                 sm_scale,
@@ -2965,6 +3150,8 @@ def fused_gather_attn_decode_dsv4_dual_scope_low_overhead(
                 indices_main.stride(1),
                 indices_extra.stride(0),
                 indices_extra.stride(1),
+                extra_head_mask_tensor.stride(0),
+                main_head_lengths_tensor.stride(0),
                 stride_po[0],
                 stride_po[1],
                 stride_po[2],
@@ -2974,6 +3161,8 @@ def fused_gather_attn_decode_dsv4_dual_scope_low_overhead(
                 stride_plse[2],
                 HAS_TOPK_LENGTH_MAIN=topk_length_main is not None,
                 HAS_TOPK_LENGTH_EXTRA=topk_length_extra is not None,
+                HAS_EXTRA_HEAD_MASK=has_extra_head_mask,
+                HAS_MAIN_HEAD_LENGTHS=has_main_head_lengths,
             )
     else:
         _fused_gather_attn_dsv4_dual_scope_splitk_kernel[grid_splitk](
@@ -2984,6 +3173,8 @@ def fused_gather_attn_decode_dsv4_dual_scope_low_overhead(
             kv_flat_extra,
             indices_extra,
             topk_length_extra_tensor,
+            extra_head_mask_tensor,
+            main_head_lengths_tensor,
             partial_output,
             partial_lse,
             sm_scale,
@@ -3007,6 +3198,8 @@ def fused_gather_attn_decode_dsv4_dual_scope_low_overhead(
             indices_main.stride(1),
             indices_extra.stride(0),
             indices_extra.stride(1),
+            extra_head_mask_tensor.stride(0),
+            main_head_lengths_tensor.stride(0),
             stride_po[0],
             stride_po[1],
             stride_po[2],
@@ -3016,6 +3209,8 @@ def fused_gather_attn_decode_dsv4_dual_scope_low_overhead(
             stride_plse[2],
             HAS_TOPK_LENGTH_MAIN=topk_length_main is not None,
             HAS_TOPK_LENGTH_EXTRA=topk_length_extra is not None,
+            HAS_EXTRA_HEAD_MASK=has_extra_head_mask,
+            HAS_MAIN_HEAD_LENGTHS=has_main_head_lengths,
         )
 
     # Run combine kernel

@@ -7,8 +7,9 @@ the current known-good vs. blocked state.
 - **Model**: `checkpoints/opensource/DeepSeek-V4-Flash` (FP8 e4m3, block
   `128x128`, scale `ue8m0`; `model_type: deepseek_v4`, 43 layers, 64 heads,
   256 routed experts, `moe_intermediate_size=2048`).
-- **Hardware verified**: 8x NVIDIA SM90 (Hopper; reported as "L20Y" but
-  `torch.cuda.get_device_properties` returns `sm_90`, 132 SMs), CUDA 12.9.
+- **Hardware verified**: 8x NVIDIA H200 (Hopper SM90, 132 SMs), CUDA 12.9.
+  NVIDIA B300 uses the separate Blackwell SM103 profile; do not reuse this
+  SM90 build recipe for B300.
 - **Python env**: use `.venv_tf5` (transformers 5.12). It is a
   `--system-site-packages` venv, so it sees all system packages.
 
@@ -84,11 +85,11 @@ export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 export SGLANG_RANK_LOG_DIR=/tmp/dsv4_ranklog
 ```
 
-### MoE backend: FP4 experts on SM90
+### MoE backend: FP4 experts on H200/SM90
 
 DeepSeek-V4-Flash has `expert_dtype: fp4` (the MoE experts are FP4-packed, even
 though attention/dense are FP8). Native FP4 MoE GEMM in `deep_gemm` requires
-**SM100 (Blackwell)** — on SM90 (Hopper) it asserts
+**SM10x (Blackwell; B300 uses SM103)** — on H200/SM90 it asserts
 `ab.scalar_type()==kPackedFP4 and arch_major==10`. So on SM90 you must NOT use
 the deep_gemm MoE runner. Working options on SM90:
 - `moe_runner_backend='marlin'`  — verified working (used below).
@@ -133,8 +134,8 @@ End-to-end run succeeds with the §6 recipe:
 How the blockers were resolved:
 - FP8 linear/attention segfault — fixed by building `deep_gemm` from source
   (§4); the prebuilt wheel's `_C.so` was the culprit.
-- MoE — DeepSeek-V4's experts are FP4; FP4 MoE GEMM needs SM100, so on SM90 use
-  `moe_runner_backend='marlin'` (§5) instead of deep_gemm.
+- MoE — DeepSeek-V4's experts are FP4; FP4 MoE GEMM needs Blackwell SM10x, so
+  on H200/SM90 use `moe_runner_backend='marlin'` (§5) instead of deep_gemm.
 - Indexer topk — `SGLANG_OPT_USE_TOPK_V2=0` to avoid the SM90 TMA-alignment
   assertion (§5).
 

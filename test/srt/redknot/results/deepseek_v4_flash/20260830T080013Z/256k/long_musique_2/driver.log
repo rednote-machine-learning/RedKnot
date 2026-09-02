@@ -1,0 +1,49 @@
+/root/miniconda3/lib/python3.11/site-packages/torch/cuda/__init__.py:63: FutureWarning: The pynvml package is deprecated. Please install nvidia-ml-py instead. If you did not install pynvml directly, please report this to the maintainers of the package that installed pynvml for you.
+  import pynvml  # type: ignore[import]
+WARNING:sglang.srt.layers.flashinfer_comm_fusion:flashinfer.comm unified allreduce_fusion API is not available, falling back to standard implementation
+[mla-off-capacity] tp=8 local_layers=[37, 37, 37, 37, 37, 37, 37, 37] bytes/token=[75822, 75822, 75822, 75822, 75822, 75822, 75822, 75822] projected=[19876282368, 19876282368, 19876282368, 19876282368, 19876282368, 19876282368, 19876282368, 19876282368]
+[pure-mla] data selection sha256=6930a4965b52bf64787801f1d7d4fe156b8d06526c055ec898392b2494671aea mode=offset
+[pure-mla] frozen official prompt sha256=2b27647a5bb904540927abb368b8ce93e3c2451ad5938d7d8452622e2d04a4fb max_total_tokens=262251
+[pure-mla] deferring GPU capacity check to the authenticated scheduler pre-CUDA release barrier
+[pure-mla] launching server: /mnt/tidal-alsh01/dataset/redone/RedKnot_Deepseekv4/server/start_server_redknot_mla.sh (port 31998)
+[pure-mla] server ready
+[mla-off-capacity] runtime server policy verified: port=31998 chunked_prefill_size=32768 max_prefill_tokens=65536
+[pure-mla] snapshot document 0 cached independently from position0 tokens=32768
+[pure-mla] snapshot document 1 cached independently from position0 tokens=32768
+[pure-mla] snapshot document 2 cached independently from position0 tokens=32768
+[pure-mla] snapshot document 3 cached independently from position0 tokens=32768
+[pure-mla] snapshot document 4 cached independently from position0 tokens=32768
+[pure-mla] snapshot document 5 cached independently from position0 tokens=32768
+[pure-mla] snapshot document 6 cached independently from position0 tokens=32768
+[pure-mla] snapshot document 7 cached independently from position0 tokens=32768
+
+====================================================================================================
+ REDKNOT PURE MLA OFFLINE/ONLINE MERGE — qualification benchmark
+ Model: /mnt/tidal-alsh01/dataset/redone/checkpoints/opensource/DeepSeek-V4-Flash-0731
+ chunks=8x32768 total=262238 strategy=independent_position0_rope_relocation_headsplit_fullscope prompt=official_rag_v1 boundary=128 quality_repeats=2
+====================================================================================================
+ streaming TTFT: dense_p50=31.514s reuse_p50=15.195s speedup=2.07x dense_p95=31.819s reuse_p95=16.466s
+----------------------------------------------------------------------------------------------------
+ Q0: Who plays the wife of the producer of Here Comes the Boom in Grown Ups?
+    [DENSE OUTPUT]
+Salma Hayek  
+In Grown Ups, Salma Hayek plays Roxanne, the wife of Lenny Feder, who is a Hollywood talent agent, not the producer of Here Comes the Boom.
+    [REDKNOT OUTPUT]
+Salma Hayek plays the wife of the producer of Here Comes the Boom in Grown Ups.
+ Q1: Who is the child of the Italian navigator who sailed for England and explored the eastern coast of the continent Francisco Bojado's birthplace is located?
+    [DENSE OUTPUT]
+Sebastian Cabot  
+Sebastian Cabot was the son of John Cabot, the Italian navigator who sailed for England. Francisco Bojado was born in Mexico, not on a continent's eastern coast.
+    [REDKNOT OUTPUT]
+Sebastian Cabot  
+Sebastian Cabot was the son of John Cabot, the Italian navigator who sailed for England. Francisco Bojado was born in Mexico, which is in North America.
+----------------------------------------------------------------------------------------------------
+ SUMMARY: streaming_ttft_speedup=2.07x online_row_saving=0.8604996184492383 scoped_mla_head_row_saving=0.7491183739205287 full_model_mla_head_row_saving=0.08992058285065578 mla_samples=1665/>=1665 formal_mla_requests=9/9 quality=False formal_reuse=False evidence=True full_local_sanity=None performance_claim_eligible=False performance=False overall=False
+ sequential service rate: dense=0.025 req/s, reuse=0.036 req/s; logical prompt dense=6444.5, reuse=9432.6 tok/s
+ online_row_saving is measured from selected transformer rows; it is not total-model FLOPs or GPU energy saving.
+ mla_head_row_saving counts omitted logical local-head rows at the attention output boundary; it is also not total-model FLOPs saving.
+ full_model_mla_head_row_saving uses all model layers, all 64 logical heads and every evidence request row; performance claims are gated on this conservative metric.
+ compact_woa_evidence certifies successful indexed inverse-RoPE/wo_a row activation only; it is not a FLOPs, utilization, or energy-saving measurement.
+====================================================================================================
+ structured result: /mnt/tidal-alsh01/dataset/redone/RedKnot_Deepseekv4/test/srt/redknot/results/deepseek_v4_flash/20260830T080013Z/256k/long_musique_2/result.json
+RedKnot pure MLA offline/online merge quality/runtime/performance gate failed

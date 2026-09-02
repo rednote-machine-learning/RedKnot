@@ -1,0 +1,73 @@
+{
+  "answer_style": "direct_answer_plus_document_evidence_v1",
+  "cases": [
+    {
+      "answers_sha256": "sha256:02cb0aee3a66e128d5e2bfb2b08f83129c178d40caaff87db659aa93415e5e83",
+      "expected_source_chunk": 0,
+      "full_input_ids_sha256": "sha256:43f227af05c1ba349f1b09f05f969520139cea5945e4cc533478311e6938e75f",
+      "online_suffix_hash": "sha256:07eaa5f0cc27b93b795915da0c0fbb128393fd5b1e768f63d957172d463e9a51",
+      "online_suffix_tokens": 81,
+      "query_index": 0,
+      "query_row_id": 0,
+      "question_sha256": "sha256:1b701b0bb54e5d1f36af0abc63727ddd3c1b38a367e4c564e5cfdbbc684b9ee4",
+      "text_sha256": "sha256:9362641076aa9bf9989115f9675de6f96ae58cc0f71dc0d4f1c473b5dcc3ea78",
+      "total_tokens": 262225
+    },
+    {
+      "answers_sha256": "sha256:f3dbbcaa381db69ac9fcf57aae8a873f5a611ea6fa3f65092e13f4a2d8c8526c",
+      "expected_source_chunk": 1,
+      "full_input_ids_sha256": "sha256:771fcd7ffaeb27ea257f08a28e4070883dfd635e17eeb143a88d456cb1f9408d",
+      "online_suffix_hash": "sha256:0e37a5224250c88d3ac9c94b00b5203f8a772cb5b07b2689bf4f129f82cea402",
+      "online_suffix_tokens": 86,
+      "query_index": 1,
+      "query_row_id": 5,
+      "question_sha256": "sha256:78d2bf743b8dbe89640d65c2c65882f78c07c482e5fa658927b68161ec9f1afa",
+      "text_sha256": "sha256:11b4f904bb0af4020677f0cb466f5daa9102d8d2b7a559037c6d69006b9a1b91",
+      "total_tokens": 262230
+    },
+    {
+      "answers_sha256": "sha256:7654923cbafdf7f4e294c4a25e75ed2ce3111f93f303c939a1f666abcfa9d033",
+      "expected_source_chunk": 2,
+      "full_input_ids_sha256": "sha256:522460121e5e4036177eacff8fd0942ad1bb5f8d82c8e46e65ed3ac7ce9ca0e8",
+      "online_suffix_hash": "sha256:e58cebf0d7a32e2177d7c5581e761a579f5b5e56d19c7ad4e0bb8bdb2b3e11bd",
+      "online_suffix_tokens": 94,
+      "query_index": 2,
+      "query_row_id": 10,
+      "question_sha256": "sha256:5eed951a572553e09985148af0ffeb5ff9dde5c15148631cad293afe0d9e0692",
+      "text_sha256": "sha256:b4e3ea18873305eb76a18dcbfe189f008948c68fb5f2a90267e651deb3ba96d2",
+      "total_tokens": 262238
+    }
+  ],
+  "chunk_tokens": 32768,
+  "cohort_index": 25603,
+  "data_manifest": "/mnt/tidal-alsh01/dataset/redone/RedKnot_Deepseekv4/test/srt/redknot/datasets/LongBench/cohorts/256k_3q_long50/multifieldqa_en/data_selection.json",
+  "data_selection_sha256": "55cbddb1c25a85d62b73fe75e83486715c70f0a6763f05fb845f3e22af0802a8",
+  "dataset": "multifieldqa_en",
+  "exclude_manifests": [],
+  "format": "redknot_multidataset_profile_v2",
+  "long_output_target_tokens": 50,
+  "max_total_tokens": 262238,
+  "num_chunks": 8,
+  "num_queries": 3,
+  "offline_chunk_hashes": [
+    "sha256:be65a67e0c192d9147b1bf24086a877270d5266a8cb2b05e8f8d3b86322a3f5e",
+    "sha256:5dfe6acb65375c36a731b8552f5f5f3e84d8953beaf6f34c6c0cd9d21630afd7",
+    "sha256:c12ae663c825198331214b35848bd41368a8b1436a028b93e74d2443e845e8e6",
+    "sha256:9638513560eeadf957ef89a624078d8fcd9af13a97d25a4c3a6652630ec52865",
+    "sha256:610cd70a94508b0dfd0a9f28810ef1cd996acfee7e70d6ee1d14834e4fb4785c",
+    "sha256:7476a076ed0d51bf7705075f7e35552391a366bc46373223bbd8ddeaca20db91",
+    "sha256:20803e4a00d939e2eca3c05d52506b0cf2862dfcb0989178d12b8282b3d6eb8a",
+    "sha256:acde1ef5ea56a0295b914c24397ec72350b9cdc2ad0c88f717e901dbd0464d52"
+  ],
+  "output_blind": true,
+  "prompt_manifest": "/mnt/tidal-alsh01/dataset/redone/RedKnot_Deepseekv4/test/srt/redknot/datasets/LongBench/cohorts/256k_3q_long50/multifieldqa_en/prompt_manifest.json",
+  "prompt_manifest_sha256": "be0fac98fd2b45481d580cd9ed51e20871ac44f394c7bf075bdef568333f176d",
+  "query_row_ids": [
+    0,
+    5,
+    10
+  ],
+  "query_start": 262144,
+  "row_offset": 0,
+  "target_tokens": 262144
+}

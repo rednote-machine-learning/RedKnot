@@ -1,0 +1,42 @@
+{
+  "answer_style": "mixed_short10_long5",
+  "cases_per_dataset": 0,
+  "created_utc": "20260830T074120Z",
+  "data_sha256": {
+    "2wikimqa": "dda279cf93a99e1e5bfa3291fb199fd55978d10a1feb31822953cf77a1742e37",
+    "hotpotqa": "a0005ab2a1bc2ac3a70352dccbf96cccc4e0aac6bb677f6a55180fa51b92ef6f",
+    "multifieldqa_en": "0aac182fd317dcf6d74f8e1e0f3e61029407435346c2e0b3ff9fb45ae49c5c3f",
+    "musique": "4ac69b91281c4ec6b21316cb7282e83fb6b4dda04fc68480bb8d8ed1e19ff7bd",
+    "triviaqa": "ed2529de2e10b12c00f49981870c23c7c51667069cdd8d0740e1423ff337d7fa"
+  },
+  "datasets": [
+    "hotpotqa",
+    "musique",
+    "multifieldqa_en"
+  ],
+  "format": "redknot_deepseek_v4_flash_release_run_v1",
+  "head_config": "/mnt/tidal-alsh01/dataset/redone/RedKnot_Deepseekv4/test/srt/redknot/head_class/deepseek_v4_flash_0731_redknot.json",
+  "head_config_sha256": "6110156cc787b7040552111c1ac15251d0c302279b21677298bee8436e0d506f",
+  "lengths": [
+    "256K"
+  ],
+  "long_output_showcase_sha256": {},
+  "long_output_target_tokens": "mixed",
+  "model": "/mnt/tidal-alsh01/dataset/redone/checkpoints/opensource/DeepSeek-V4-Flash-0731",
+  "model_repo_fallback": "deepseek-ai/DeepSeek-V4-Flash-0731",
+  "profile_sha256": {
+    "long_hotpotqa_2": "603ee90c1870ec0ef261b0306a4310e105531d91be6452fcfe1b2c2b72be4a79",
+    "long_multifieldqa_en_1": "1bb683be015bd5877e864430b27121f40b3b25a02380b576340628237ab9d4fc",
+    "long_musique_2": "033646ce8b8ea373bce7d240121db501c331d9f873b7e07c09b8028982a12b02",
+    "short_hotpotqa_10": "1f9162019a03c6cf636ded9a95d6b92494f93deb6d91826e0ec4f2477b420c71"
+  },
+  "python": "/mnt/tidal-alsh01/dataset/redone/RedKnot_Deepseekv4/.venv_tf5/bin/python",
+  "repo": "/mnt/tidal-alsh01/dataset/redone/RedKnot_Deepseekv4",
+  "run_mode": "release_256k_15case_suite",
+  "runs": [],
+  "sparse_config": "/mnt/tidal-alsh01/dataset/redone/RedKnot_Deepseekv4/test/srt/redknot/sparse_ffn_params/deepseek_v4_flash_0731.json",
+  "sparse_config_sha256": "0828a26de107abe5569beaf59272cb6f48ffdfe5136f767abb29e1d3016b8ff3",
+  "suite_case_count": 15,
+  "suite_jsonl": "/mnt/tidal-alsh01/dataset/redone/RedKnot_Deepseekv4/test/srt/redknot/datasets/LongBench/suites/release_256k_15case.jsonl",
+  "suite_jsonl_sha256": "fda5444c9a1fc00c12248340f6c064ac5963b5fbbdbc60830020c029ffd8a5e7"
+}

@@ -171,6 +171,23 @@ def install_torch_compiled(
                 if val is not None:
                     _mark_dynamic_on_value(val, dims)
 
+        # RedKnot fix: the model also reads token-shaped tensors off the
+        # ForwardBatch object (e.g. input_ids/positions/out_cache_loc) inside the
+        # compiled region. If these are not marked dynamic, dynamo guards on
+        # their static size and recompiles for every token count, which for
+        # piecewise CUDA graph triggers "PCG capture stream is not set". Mark the
+        # token dim (0) dynamic on the ForwardBatch tensor fields as well.
+        _fb = ba.arguments.get("forward_batch", None)
+        if _fb is not None:
+            for _fname in (
+                "input_ids",
+                "positions",
+                "out_cache_loc",
+            ):
+                _t = getattr(_fb, _fname, None)
+                if isinstance(_t, torch.Tensor) and _t.ndim >= 1:
+                    torch._dynamo.maybe_mark_dynamic(_t, 0)
+
         # Avoid cross-instance cache reuse
         torch._dynamo.eval_frame.remove_from_cache(unbound_fwd.__code__)
 

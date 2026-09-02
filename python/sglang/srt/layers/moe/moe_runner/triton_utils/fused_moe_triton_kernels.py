@@ -765,9 +765,9 @@ def invoke_fused_moe_kernel(
         assert B_scale is not None
         if block_shape is None:
             # activation channel-wise int8 quantization
-            assert (
-                per_channel_quant
-            ), "int8 quantization only supports channel-wise quantization except for block-wise quantization"
+            assert per_channel_quant, (
+                "int8 quantization only supports channel-wise quantization except for block-wise quantization"
+            )
             A, A_scale = per_token_quant_int8(A)
         else:
             # activation block-wise int8 quantization
@@ -801,21 +801,21 @@ def invoke_fused_moe_kernel(
     if fuse_sum_all_reduce:
         assert not c_sorted, "fuse_sum_all_reduce only supports c_sorted=False"
     if fuse_add_to_output:
-        assert (
-            not fuse_sum_all_reduce
-        ), "fuse_add_to_output and fuse_sum_all_reduce are mutually exclusive"
-        assert (
-            add_output_mask is not None
-        ), "add_output_mask required when fuse_add_to_output=True"
+        assert not fuse_sum_all_reduce, (
+            "fuse_add_to_output and fuse_sum_all_reduce are mutually exclusive"
+        )
+        assert add_output_mask is not None, (
+            "add_output_mask required when fuse_add_to_output=True"
+        )
 
     if (
         (use_int8_w8a16 or use_int4_w4a16)
         and block_shape is not None
         and block_shape[1] > 0
     ):
-        assert (
-            not fuse_sum_all_reduce
-        ), "fuse_sum_all_reduce is not supported for GPTQ/AWQ kernels"
+        assert not fuse_sum_all_reduce, (
+            "fuse_sum_all_reduce is not supported for GPTQ/AWQ kernels"
+        )
         assert B_scale is not None and B_scale.ndim == 3
         assert B_zp is None or B_zp.ndim == 3
         assert bias is None
@@ -963,9 +963,11 @@ def act_and_mul_kernel(
     down_input,
     hidden_size,
     expert_ids_ptr,
+    route_mask_ptr,
     expert_step: tl.constexpr,
     BLOCK_SIZE: tl.constexpr,
     ACTIVATION_TYPE: tl.constexpr,
+    HAS_ROUTE_MASK: tl.constexpr = False,
     SWIGLU_LIMIT: tl.constexpr = 0.0,
     HAS_SWIGLU_LIMIT: tl.constexpr = False,
 ):
@@ -983,6 +985,9 @@ def act_and_mul_kernel(
 
     if expert_id == -1:
         return
+    if HAS_ROUTE_MASK:
+        if not tl.load(route_mask_ptr + pid):
+            return
 
     gateup_output_ptr = gateup_output + pid * hidden_size
     down_input_ptr = down_input + pid * half_hidden_size
@@ -1017,6 +1022,7 @@ def act_and_mul_triton(
     down_moe_use_tma: bool = False,
     activation: str = "silu",
     swiglu_limit: Optional[float] = None,
+    route_mask: Optional[torch.Tensor] = None,
 ) -> None:
     """
     Args:
@@ -1035,14 +1041,18 @@ def act_and_mul_triton(
     expert_ids_row = topk_ids.view(-1) if not down_moe_use_tma else expert_ids
     expert_step = 1 if not down_moe_use_tma else config["BLOCK_SIZE_M"]
     has_swiglu_limit = swiglu_limit is not None
+    has_route_mask = route_mask is not None
+    route_mask_ptr = route_mask if has_route_mask else expert_ids_row
     act_and_mul_kernel[grid](
         gateup_output,
         down_input,
         hidden_size,
         expert_ids_row,
+        route_mask_ptr,
         expert_step,
         BLOCK_SIZE=512,
         ACTIVATION_TYPE=activation,
+        HAS_ROUTE_MASK=has_route_mask,
         SWIGLU_LIMIT=float(swiglu_limit) if has_swiglu_limit else 0.0,
         HAS_SWIGLU_LIMIT=has_swiglu_limit,
     )

@@ -578,7 +578,20 @@ class SchedulerReqTimeStats(ReqTimeStatsBase):
 
     def __getstate__(self) -> object:
         # send to detokenizer/tokenizer
-        if not self.enable_metrics:
+        # The scheduler -> detokenizer serialization intentionally clears the
+        # metrics collector state.  The resulting object is serialized once
+        # more from detokenizer -> tokenizer/Engine; do not discard the
+        # already-recorded request timestamps on that second hop merely
+        # because ``enable_metrics`` is now false.
+        has_recorded_scheduler_timing = any(
+            timestamp > 0.0
+            for timestamp in (
+                self.wait_queue_entry_time,
+                self.forward_entry_time,
+                self.prefill_finished_time,
+            )
+        )
+        if not self.enable_metrics and not has_recorded_scheduler_timing:
             return {}
 
         state = {

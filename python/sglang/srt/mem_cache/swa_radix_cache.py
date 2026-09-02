@@ -349,6 +349,11 @@ class SWARadixCache(KVCacheEventMixin, BasePrefixCache):
         self.disable = params.disable
         self.is_eagle = params.is_eagle
         self.enable_kv_cache_events = params.enable_kv_cache_events
+        # Hybrid-SWA historically maintained only linked LRU lists and silently
+        # ignored CacheInitParams.eviction_policy.  Honor LFU explicitly so a
+        # repeatedly reused long prefix is not displaced by one-shot request
+        # namespaces.  Other policies retain the existing LRU behavior.
+        self.eviction_policy = str(params.eviction_policy).strip().lower()
         self.kv_event_queue = []
 
         if self.token_to_kv_pool_allocator:
@@ -569,8 +574,9 @@ class SWARadixCache(KVCacheEventMixin, BasePrefixCache):
         full_num_evicted = 0
         swa_num_evicted = 0
         if full_num_tokens > 0:
-            # get the least recently used leaf node that is not locked
-            x = self.full_lru_list.get_leaf_lru_no_lock()
+            x = self._get_eviction_candidate(
+                self.full_lru_list, leaf_only=True
+            )
 
             while full_num_evicted < full_num_tokens and self.full_lru_list.in_list(x):
                 assert (
@@ -587,7 +593,11 @@ class SWARadixCache(KVCacheEventMixin, BasePrefixCache):
                     swa_num_evicted += len(x.value)
 
                 # 2. get the next leaf, update the lru lists
-                x_next = self.full_lru_list.get_prev_leaf_no_lock(x)
+                x_next = (
+                    self.full_lru_list.get_prev_leaf_no_lock(x)
+                    if self.eviction_policy != "lfu"
+                    else None
+                )
                 self.full_lru_list.remove_node(x)
                 if not x.swa_tombstone:
                     self.swa_lru_list.remove_node(x)
@@ -601,14 +611,21 @@ class SWARadixCache(KVCacheEventMixin, BasePrefixCache):
 
                 # 5. if parent has no more children, it is a leaf. It is possible that this node is lru, so
                 # we need to get the first leaf node in the lru list
-                if len(x.parent.children) == 0:
-                    x_next = self.full_lru_list.get_leaf_lru_no_lock()
-
-                x = x_next
+                if self.eviction_policy == "lfu":
+                    x = self._get_eviction_candidate(
+                        self.full_lru_list, leaf_only=True
+                    )
+                else:
+                    if len(x.parent.children) == 0:
+                        x_next = self.full_lru_list.get_leaf_lru_no_lock()
+                    x = x_next
 
         if swa_num_evicted < swa_num_tokens:
-            # get the least recently used node that is not locked, doesn't have to be a leaf
-            x = self.swa_lru_list.get_lru_no_lock()
+            # SWA eviction may tombstone an internal node, so it is not
+            # restricted to leaves.
+            x = self._get_eviction_candidate(
+                self.swa_lru_list, leaf_only=False
+            )
 
             # evict lru leaf nodes until swa_num_tokens is reached
             while swa_num_evicted < swa_num_tokens and (self.swa_lru_list.in_list(x)):
@@ -622,7 +639,11 @@ class SWARadixCache(KVCacheEventMixin, BasePrefixCache):
                     swa_num_evicted += len(x.value)
 
                     # 2. get the next node, update the lru lists
-                    x_next = self.swa_lru_list.get_prev_no_lock(x)
+                    x_next = (
+                        self.swa_lru_list.get_prev_no_lock(x)
+                        if self.eviction_policy != "lfu"
+                        else None
+                    )
                     self.swa_lru_list.remove_node(x)
 
                     # 3. tombstone the node
@@ -634,7 +655,11 @@ class SWARadixCache(KVCacheEventMixin, BasePrefixCache):
                     self.token_to_kv_pool_allocator.free_swa(x.value)
                     swa_num_evicted += len(x.value)
 
-                    x_next = self.swa_lru_list.get_prev_no_lock(x)
+                    x_next = (
+                        self.swa_lru_list.get_prev_no_lock(x)
+                        if self.eviction_policy != "lfu"
+                        else None
+                    )
                     self.swa_lru_list.remove_node(x)
 
                     self.swa_evictable_size_ -= len(x.value)
@@ -650,7 +675,11 @@ class SWARadixCache(KVCacheEventMixin, BasePrefixCache):
                     swa_num_evicted += len(x.value)
 
                     # 2. get the next node, update the lru lists
-                    x_next = self.swa_lru_list.get_prev_no_lock(x)
+                    x_next = (
+                        self.swa_lru_list.get_prev_no_lock(x)
+                        if self.eviction_policy != "lfu"
+                        else None
+                    )
                     self.full_lru_list.remove_node(x)
                     self.swa_lru_list.remove_node(x)
 
@@ -660,7 +689,13 @@ class SWARadixCache(KVCacheEventMixin, BasePrefixCache):
                     # 4. Iteratively delete tombstone leaves to maintain invariant that leaf nodes are not tombstone
                     self._iteratively_delete_tombstone_leaf(x)
 
-                x = x_next
+                x = (
+                    self._get_eviction_candidate(
+                        self.swa_lru_list, leaf_only=False
+                    )
+                    if self.eviction_policy == "lfu"
+                    else x_next
+                )
 
         self.update_eviction_metrics(full_num_evicted + swa_num_evicted, start_time)
         return EvictResult(
@@ -863,6 +898,39 @@ class SWARadixCache(KVCacheEventMixin, BasePrefixCache):
 
     ##### Internal Helper Functions #####
 
+    def _get_eviction_candidate(
+        self, lru_list: LRUList, *, leaf_only: bool
+    ) -> Optional[TreeNode]:
+        """Select the next unlocked victim under the configured policy.
+
+        The linked lists remain the ownership and lock-accounting authority.
+        LFU only changes victim ordering; ties retain deterministic LRU order.
+        Recomputing from the live list after each mutation also handles a
+        deleted child's parent becoming a newly evictable leaf.
+        """
+
+        if self.eviction_policy != "lfu":
+            return (
+                lru_list.get_leaf_lru_no_lock()
+                if leaf_only
+                else lru_list.get_lru_no_lock()
+            )
+        candidates = (
+            node
+            for node in lru_list.cache.values()
+            if getattr(node, lru_list.lock_ref) == 0
+            and (not leaf_only or len(node.children) == 0)
+        )
+        return min(
+            candidates,
+            key=lambda node: (
+                int(node.hit_count),
+                float(node.last_access_time),
+                int(node.id),
+            ),
+            default=None,
+        )
+
     def _match_prefix_helper(
         self, key: RadixKey
     ) -> Tuple[List[torch.Tensor], TreeNode, int]:
@@ -949,6 +1017,8 @@ class SWARadixCache(KVCacheEventMixin, BasePrefixCache):
         cur_time = get_last_access_time()
         while node_update:
             node_update.last_access_time = cur_time
+            if node_update is not self.root_node:
+                node_update.hit_count += 1
             cur_time -= (
                 0.00001  # assuming less than 100000 nodes in a branch of the tree
             )
@@ -1003,6 +1073,7 @@ class SWARadixCache(KVCacheEventMixin, BasePrefixCache):
 
             if child.swa_uuid is not None:
                 node.swa_uuid = child.swa_uuid
+            node.hit_count = max(node.hit_count, child.hit_count)
 
             if node.hash_value is not None and child.hash_value is not None:
                 node.hash_value = list(node.hash_value) + list(child.hash_value)
@@ -1058,6 +1129,7 @@ class SWARadixCache(KVCacheEventMixin, BasePrefixCache):
         new_node.swa_tombstone = child.swa_tombstone
         new_node.full_lock_ref = child.full_lock_ref
         new_node.swa_lock_ref = child.swa_lock_ref
+        new_node.hit_count = child.hit_count
         new_node.key = child.key[:split_len]
         assert len(new_node.key) > 0, f"new_node.key should not be empty"
         new_node.value = child.value[:split_len].clone()

@@ -1,0 +1,60 @@
+{
+  "answer_style": "direct_answer_plus_document_evidence_v1",
+  "cases": [
+    {
+      "answers_sha256": "sha256:d6fe67b5c8b10fc0785be630f575cbc1c36acea4986583cd710f0c2a8175a401",
+      "expected_source_chunk": 2,
+      "full_input_ids_sha256": "sha256:d94b1c8501c9960b6f489897bbcc52b137405684ccb78a244aa19c6a21c1e93c",
+      "online_suffix_hash": "sha256:0a2201b63f8dfd89e8dd9788cace074a0438833c6089a507189b10bd366e9bce",
+      "online_suffix_tokens": 90,
+      "query_index": 0,
+      "query_row_id": 6,
+      "question_sha256": "sha256:631c60162d33d7dd57db8df9c2efafd68282b800414d6ff11b0127d92c48d92b",
+      "text_sha256": "sha256:25ceb2ab5b8f1e120ec5a3bb81299794d844f6b7c0f5a4373f055466eea2fda2",
+      "total_tokens": 262234
+    },
+    {
+      "answers_sha256": "sha256:8b32558a6e1bd3da3f7c1de4bf874ce3bd6f1111f2d8979d183a5e6aca8b0549",
+      "expected_source_chunk": 0,
+      "full_input_ids_sha256": "sha256:c4fa88bfd107c525a41b9192ffa399c7f0941a1a7b0735648f7382c70ec29987",
+      "online_suffix_hash": "sha256:1c77162bbec712817285e479a1383145d9804368d385fdf91ff074051ea199d7",
+      "online_suffix_tokens": 94,
+      "query_index": 1,
+      "query_row_id": 0,
+      "question_sha256": "sha256:1186003136301bc0a6e00db82e2f445e2a25b50ef380f34090a324c494592d3e",
+      "text_sha256": "sha256:1e2df7e23979cbecbbe6d9ba7070edc386342ca36669020c25c5f363b7a9ffaa",
+      "total_tokens": 262238
+    }
+  ],
+  "chunk_tokens": 32768,
+  "cohort_index": 25600,
+  "data_manifest": "/mnt/tidal-alsh01/dataset/redone/RedKnot_Deepseekv4/test/srt/redknot/datasets/LongBench/cohorts/256k_suite15/long_hotpotqa_2/data_selection.json",
+  "data_selection_sha256": "d41530e33834912b6c93860acc6e7a2efc23280e239369227df81c626a205e49",
+  "dataset": "hotpotqa",
+  "exclude_manifests": [],
+  "format": "redknot_multidataset_profile_v2",
+  "long_output_target_tokens": 30,
+  "max_total_tokens": 262238,
+  "num_chunks": 8,
+  "num_queries": 2,
+  "offline_chunk_hashes": [
+    "sha256:39aba43af7b42ec17d002e0a6728b4b5b2a63c960c1a75793e3fdb462f05bcdb",
+    "sha256:ece881a8d92bda4e9ff29157f681a9e4e09e060f1d4152163852e81ff2e48af9",
+    "sha256:fad0b452cf2d425f397608da01cd9e77bbcbeb95c61b7a43e78c9359357ae27a",
+    "sha256:8523016dc1437d4026eddee6478bf780db0bea74c233ac8f5241dad502e1135c",
+    "sha256:06323b16d1f414977c9c3f467138227a9b9b2bb36366aaadfcd9f9db6e31c8f9",
+    "sha256:e6f3adeb541f924ea44d2fb8f8c5b30d23e38ba21eca9c8e1f8cd3ef3758a3b5",
+    "sha256:ef4530f73aaeaff3b4f174fa4d683683eb8a597f545a7d8175d99c54ef0938cf",
+    "sha256:721fde42f68ae08246834d2cd77a6a45b4fb432f96985333df1a0db718038f0f"
+  ],
+  "output_blind": true,
+  "prompt_manifest": "/mnt/tidal-alsh01/dataset/redone/RedKnot_Deepseekv4/test/srt/redknot/datasets/LongBench/cohorts/256k_suite15/long_hotpotqa_2/prompt_manifest.json",
+  "prompt_manifest_sha256": "aa7bf7576cbcfac11ebba3bd32b66fb8b0b26e9beb2adbc6f996cd77f2df61bd",
+  "query_row_ids": [
+    6,
+    0
+  ],
+  "query_start": 262144,
+  "row_offset": 0,
+  "target_tokens": 262144
+}

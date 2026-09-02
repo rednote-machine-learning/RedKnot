@@ -1,0 +1,64 @@
+{
+  "data_selection_sha256": "752af8d05e83495cc35e030c63f3ed73743a776eacd0b882d5e78b7bb15b5357",
+  "dataset": {
+    "bytes": 11483614,
+    "name": "hotpotqa",
+    "row_id_base": 0,
+    "sha256": "a0005ab2a1bc2ac3a70352dccbf96cccc4e0aac6bb677f6a55180fa51b92ef6f"
+  },
+  "format": "redknot_pure_mla_prompt_v1",
+  "geometry": {
+    "chunk_tokens": 32768,
+    "num_chunks": 4,
+    "online_suffix_tokens": 53,
+    "query_start": 131072,
+    "total_tokens": 131125
+  },
+  "output_blind": true,
+  "prompt": {
+    "answers_sha256": "sha256:47ed59efe544ba54c1f497e962a25f33e0402a6b56a6c0d20835b6b036bd71b6",
+    "full_input_ids_sha256": "sha256:43d44af7a74b2f0fd4fb1e7aa9983a26ada7af1da31f2509c2935b95bc99efac",
+    "offline_chunk_hashes": [
+      "sha256:b61ca3af72d0f01a9a495972b16d4f459e213ee36f96a1598a6294b552146ddd",
+      "sha256:dcd911c39fd452d90f57007acead8c1a43d8824bae7428784f6db1acb680f4b2",
+      "sha256:2269b997b08593edd7170f3b0a92eed7bf3ad305da85c8d1520f2d3ce3a0e77f",
+      "sha256:be4fb760db9d9f69783ba08230985a94547ed920df3f15bb61db1cfba690ad13"
+    ],
+    "offline_prefix_hash": "sha256:f0926d5ecfa4c9abf764a6084a266ed1119331b13b492fc8211168f64f115051",
+    "online_suffix_hash": "sha256:ac2c41ad86b6f98673bfc84d10f3739f6afb720b93713e9d2dac0ac472d3d6e4",
+    "question_sha256": "sha256:74a7e4699c8b25d735d8a820b3977a1439f260eac6c404cddb7270fdf7422277",
+    "text_sha256": "sha256:3f2bc704f1e79d459c109be5bd686306d6ae80fcafa598e492de4b9bee0ec773"
+  },
+  "prompt_manifest_sha256": "cd86a8512124f7b1261d75b8dbd8a4cdb2d24a5f00f06133f4601042008f7297",
+  "prompt_mode": "official_rag_v1",
+  "protocol": {
+    "add_default_bos_token": true,
+    "document_delimiter": "\n\n",
+    "drop_thinking": true,
+    "encoder_path": "/mnt/tidal-alsh01/dataset/redone/checkpoints/opensource/DeepSeek-V4-Flash-0731/encoding/encoding_dsv4.py",
+    "encoder_sha256": "sha256:abc0d26120250dda0ae077dc64aa28836026e61e970854aaeb792445e6a0dde6",
+    "query_instruction": "\n\nAnswer the question using only the documents above. Return the shortest exact answer span only, with no explanation.\nQuestion: Gary L. Bennett was a part of the space missions that have a primary destination of what celestial body?\nAnswer:",
+    "reasoning_effort": "low",
+    "thinking_mode": "chat",
+    "tokenizer_config_path": "/mnt/tidal-alsh01/dataset/redone/checkpoints/opensource/DeepSeek-V4-Flash-0731/tokenizer_config.json",
+    "tokenizer_config_sha256": "sha256:6ac8c8dc065ed118161d02dd532749ae3f52c243deac27872134fae2f50d8547",
+    "tokenizer_path": "/mnt/tidal-alsh01/dataset/redone/checkpoints/opensource/DeepSeek-V4-Flash-0731/tokenizer.json",
+    "tokenizer_sha256": "sha256:8f9f37ca37fdc4f5fd36d5cf4d3b0e8392edb4e894fd10cc0d70b4957c8633cf"
+  },
+  "source": {
+    "chunk_hashes": [
+      "sha256:8a83d35c6d3f9763b6b00197bb287b236ec9c2010d85f543a59d8ef6126b6dc5",
+      "sha256:dfbe924cf86a02a28d5e96afc14a7df9ff3c8b76d499a71794c78ef1785ddbe0",
+      "sha256:47e12012ec0a75be072a0705ff83d59398a67815bcaa62c5eef37f40140cbd5b",
+      "sha256:47b77cff0275d37708a7e8b453b6394a7e746eadb9f62542580f07a897b40ceb"
+    ],
+    "chunk_order": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "expected_source_chunk": 0,
+    "query_row_id": 3
+  }
+}

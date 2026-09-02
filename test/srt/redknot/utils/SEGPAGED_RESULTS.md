@@ -6,8 +6,10 @@
 - **H2O / Heavy-Hitter decode**：decode 阶段 per-head 稀疏 KV。
 - **DuoAttention prefill**：retrieval/global 头 + streaming/local 头的多头策略。
 
-所有数字在 **NVIDIA L20Y, bf16** 上实测，随机合成数据。脚本均自带数值等价校验
-（`h2o_dense vs h2o_segpaged` / `segpaged vs dense+mask` 的 cosine ≈ 1）。
+所有数字在 **单张 NVIDIA H200（Hopper profile）, bf16** 上实测，随机合成数据。
+NVIDIA B300 使用独立的 Blackwell SM103 profile，需单独计时，不与本页 H200
+延迟混报。脚本均自带数值等价校验（`h2o_dense vs h2o_segpaged` /
+`segpaged vs dense+mask` 的 cosine ≈ 1）。
 
 > 重要前提：延迟对比只覆盖 **attention 单算子**。端到端 TPOT/TTFT 还会被
 > QKV/O projection、MLP 等摊薄，真实端到端提速通常小于此处的算子倍数。

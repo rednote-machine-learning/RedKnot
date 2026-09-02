@@ -8,7 +8,9 @@
 - **速度**：TTFT（首 token 延迟）及 speedup、decode 吞吐（tok/s）
 - **后台开销**：每次 head-class 的 `online / rope / kv_build / query_fwd` 分项耗时；
   以及 prefill FLOPs 按 attn / ffn / proj 分解的节省比例
-- 硬件：NVIDIA L20Y ×8（每张 80GB） | 日期：2026-06-26
+- 2026-06-26 批次硬件 profile：NVIDIA H200 ×8 节点（Hopper；各脚本按模型
+  使用所需卡数）；NVIDIA B300 实验使用独立 Blackwell SM103 profile，
+  不混报延迟
 
 ---
 
@@ -32,7 +34,7 @@
 
 ### Mistral-7B-Instruct-v0.1 — native SWA KV 复用
 
-硬件：NVIDIA A800-SXM4-80GB ×1 | 日期：2026-08-16 | 模型：`mistralai/Mistral-7B-Instruct-v0.1`（`sliding_window=4096`）
+硬件：NVIDIA H200 ×1（Hopper profile） | 日期：2026-08-16 | 模型：`mistralai/Mistral-7B-Instruct-v0.1`（`sliding_window=4096`）
 
 默认评测集（`longbench_rag.jsonl`，4 文档 RAG，约 30K）：
 

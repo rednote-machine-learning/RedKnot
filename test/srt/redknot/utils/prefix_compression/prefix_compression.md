@@ -2,8 +2,10 @@
 
 Companion document for **`fig_combined.png`**. It describes the design, the
 experiments behind each panel, and how to read the results. Model: **Qwen3-32B**
-(64 layers, 8 KV heads, head_dim 128, GQA, native context 40 960), bf16 on
-NVIDIA L20Y (80 GB).
+(64 layers, 8 KV heads, head_dim 128, GQA, native context 40 960), on NVIDIA
+H200 under the Hopper/SM90 profile (bf16 for accuracy runs and NF4 for the
+concurrency profile). B300 reproductions use the separate Blackwell/SM103
+profile; timing results are not mixed across hardware profiles.
 
 ![combined figure](fig_combined.png)
 
@@ -102,7 +104,9 @@ transfer by up to 44 %.
 ### 3.2 Panel (b): the real win is concurrency-driven QPS
 
 Decode is memory-bound: smaller KV per request ⇒ more concurrent requests fit on
-one decode GPU ⇒ higher aggregate throughput. Under a fixed KV budget (~46 GiB):
+one decode GPU ⇒ higher aggregate throughput. For the reported H200 run, the
+KV allocation budget is held fixed at 45.7 GiB (an experiment-level control,
+not the GPU's physical capacity):
 
 | Prefix | max batch (base → trim) | QPS (base → trim) | speed-up |
 |-------:|:-----------------------:|:-----------------:|:--------:|
