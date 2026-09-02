@@ -196,6 +196,8 @@ class GenerateReqInput(BaseReq):
     redknot_offline_segments: Optional[Union[List[Optional[List[str]]], List[str]]] = (
         None
     )
+    # Experimental DeepSeek-V4 independent-segment snapshot/restore plan.
+    redknot_reuse_plan: Optional[Union[List[Optional[Dict]], Dict]] = None
 
     # Custom logit processor for advanced sampling control. Must be a serialized instance
     # of `CustomLogitProcessor` in python/sglang/srt/sampling/custom_logit_processor.py
@@ -407,6 +409,7 @@ class GenerateReqInput(BaseReq):
         self._normalize_rid(num)
         self._normalize_lora_paths(num)
         self._normalize_redknot_offline_segments(num)
+        self._normalize_redknot_reuse_plan(num)
         self._normalize_image_data(num)
         self._normalize_video_data(num)
         self._normalize_audio_data(num)
@@ -465,6 +468,17 @@ class GenerateReqInput(BaseReq):
                 "redknot_offline_segments should be None, a list of str, or a "
                 "list of per-request lists."
             )
+
+    def _normalize_redknot_reuse_plan(self, num):
+        plan = self.redknot_reuse_plan
+        if plan is None:
+            self.redknot_reuse_plan = [None] * num
+        elif isinstance(plan, dict):
+            self.redknot_reuse_plan = [plan] * num
+        elif isinstance(plan, list):
+            self.redknot_reuse_plan = plan * self.parallel_sample_num
+        else:
+            raise ValueError("redknot_reuse_plan should be None, a dict, or a list of dicts.")
 
     def _normalize_image_data(self, num):
         """Normalize image data for batch processing."""
@@ -698,6 +712,11 @@ class GenerateReqInput(BaseReq):
                 if self.redknot_offline_segments is not None
                 else None
             ),
+            redknot_reuse_plan=(
+                self.redknot_reuse_plan[i]
+                if self.redknot_reuse_plan is not None
+                else None
+            ),
             custom_logit_processor=(
                 self.custom_logit_processor[i]
                 if self.custom_logit_processor is not None
@@ -788,6 +807,7 @@ class TokenizedGenerateReqInput(BaseReq):
 
     # RedKnot offline (RAG) segment ids for this request (true sparse path).
     redknot_offline_segments: Optional[List[str]] = None
+    redknot_reuse_plan: Optional[Dict] = None
 
     # Custom logit processor for advanced sampling control. Must be a serialized instance
     # of `CustomLogitProcessor` in python/sglang/srt/sampling/custom_logit_processor.py

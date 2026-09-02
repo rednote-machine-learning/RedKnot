@@ -45,6 +45,7 @@ _is_hip = is_hip()
 _is_musa = is_musa()
 _is_npu = is_npu()
 _use_aiter = get_bool_env_var("SGLANG_USE_AITER") and _is_hip
+_use_jit_rmsnorm = get_bool_env_var("SGLANG_USE_JIT_RMSNORM") and _is_cuda
 _is_cpu_amx_available = cpu_has_amx_support()
 _is_cpu = is_cpu()
 _is_xpu = is_xpu()
@@ -86,6 +87,12 @@ if _is_cuda or _is_xpu or _is_musa:
         gemma_rmsnorm,
         rmsnorm,
     )
+    if _use_jit_rmsnorm:
+        from sglang.jit_kernel.norm import (
+            fused_add_rmsnorm as _jit_fused_add_rmsnorm,
+        )
+        from sglang.jit_kernel.norm import rmsnorm as _jit_rmsnorm
+
 _has_aiter_layer_norm = False
 _has_vllm_rms_norm = False
 if _use_aiter:
@@ -275,9 +282,25 @@ class RMSNorm(MultiPlatformOp):
             # we probably need to add another parameter to fused_add_rmsnorm
             if post_residual_addition is not None:
                 residual = residual + post_residual_addition
-            fused_add_rmsnorm(x, residual, self.weight.data, self.variance_epsilon)
+            if _use_jit_rmsnorm:
+                _jit_fused_add_rmsnorm(
+                    x, residual, self.weight.data, self.variance_epsilon
+                )
+            else:
+                fused_add_rmsnorm(
+                    x, residual, self.weight.data, self.variance_epsilon
+                )
             return x, residual
-        out = rmsnorm(x, self.weight.data, self.variance_epsilon)
+        if _use_jit_rmsnorm:
+            out = torch.empty_like(x)
+            _jit_rmsnorm(
+                x,
+                self.weight.data,
+                out=out,
+                eps=self.variance_epsilon,
+            )
+        else:
+            out = rmsnorm(x, self.weight.data, self.variance_epsilon)
         if needs_reshape:
             out = out.reshape(original_shape)
         return out

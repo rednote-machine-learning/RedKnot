@@ -1,0 +1,450 @@
+#!/usr/bin/env bash
+set -uo pipefail
+
+script_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)
+repo=$(cd "$script_dir/../../.." && pwd -P)
+holder_cwd="$script_dir"
+holder_python=${REDKNOT_HOLDER_PYTHON:-/root/miniconda3/bin/python}
+if [[ -n "${REDKNOT_PYTHON:-}" ]]; then
+  runtime_python=$REDKNOT_PYTHON
+elif [[ -x "$repo/.venv_tf5/bin/python" ]]; then
+  runtime_python="$repo/.venv_tf5/bin/python"
+else
+  runtime_python=$(command -v python3 || command -v python)
+fi
+export REDKNOT_PYTHON="$runtime_python"
+run_dir=${1:?usage: run_combined_supervisor.sh RUN_DIR HOLDER_PID [TIMING] [TTFT_WARMUP] [TTFT_ITERS] [MERGED_PREFILL] [TARGET_TOKENS] [FIRST_DOCUMENT_PREFIX] [GEOMETRY_TEMPLATE_CACHE] [MEM_FRACTION_STATIC] [QPS_CONCURRENCIES] [MEASURE_QPS] [QPS_WARMUP_WAVES] [QPS_WAVES] [ROW_SPARSE_ACTIVE_RATIO] [QUALIFICATION_PROFILE] [QUERY_PROTECTION_TOKENS] [GENERALIZED_ADAPTIVE_CONTROLLER] [QUALITY_REPEATS] [STRONG_RATIO] [MEDIUM_RATIO] [DIFFUSE_RATIO]}
+holder_pid=${2:?usage: run_combined_supervisor.sh RUN_DIR HOLDER_PID [TIMING] [TTFT_WARMUP] [TTFT_ITERS] [MERGED_PREFILL] [TARGET_TOKENS] [FIRST_DOCUMENT_PREFIX] [GEOMETRY_TEMPLATE_CACHE] [MEM_FRACTION_STATIC] [QPS_CONCURRENCIES] [MEASURE_QPS] [QPS_WARMUP_WAVES] [QPS_WAVES] [ROW_SPARSE_ACTIVE_RATIO] [QUALIFICATION_PROFILE] [QUERY_PROTECTION_TOKENS] [GENERALIZED_ADAPTIVE_CONTROLLER] [QUALITY_REPEATS] [STRONG_RATIO] [MEDIUM_RATIO] [DIFFUSE_RATIO]}
+timing_mode=${3:-1}
+ttft_warmup=${4:-0}
+ttft_iters=${5:-1}
+merged_prefill_tokens=${6:-0}
+target_tokens=${7:-65536}
+first_document_prefix=${8:-0}
+geometry_template_cache=${9:-0}
+mem_fraction_static=${10:-0.60}
+qps_concurrencies=${11:-1,2,4,8,16}
+measure_qps=${12:-0}
+qps_warmup_waves=${13:-0}
+qps_waves=${14:-1}
+row_sparse_active_ratio=${15:-0.20}
+qualification_profile=${16:-}
+query_protection_tokens=${17:-8192}
+generalized_adaptive_controller=${18:-0}
+quality_repeats=${19:-1}
+generalized_strong_ratio=${20:-0.15}
+generalized_medium_ratio=${21:-0.20}
+generalized_diffuse_ratio=${22:-0.25}
+adaptive_topk_mass=${REDKNOT_RELEASE_ADAPTIVE_TOPK_MASS:-0.50}
+adaptive_topk_buckets=${REDKNOT_RELEASE_ADAPTIVE_TOPK_BUCKETS:-3,4,5,6}
+if [[ "$timing_mode" != 0 && "$timing_mode" != 1 ]]; then
+  printf 'ERROR: TIMING must be 0 or 1, got %q\n' "$timing_mode"
+  exit 89
+fi
+if ! [[ "$ttft_warmup" =~ ^[0-9]+$ && "$ttft_iters" =~ ^[1-9][0-9]*$ ]]; then
+  printf 'ERROR: invalid TTFT sampling warmup=%q iters=%q\n' \
+    "$ttft_warmup" "$ttft_iters"
+  exit 89
+fi
+if [[ "$merged_prefill_tokens" != 0 \
+      && "$merged_prefill_tokens" != 32768 \
+      && "$merged_prefill_tokens" != 57344 \
+      && "$merged_prefill_tokens" != 65536 ]]; then
+  printf 'ERROR: MERGED_PREFILL must be 0, 32768, 57344 or 65536, got %q\n' \
+    "$merged_prefill_tokens"
+  exit 89
+fi
+if [[ "$target_tokens" != 65536 \
+      && "$target_tokens" != 131072 \
+      && "$target_tokens" != 262144 \
+      && "$target_tokens" != 450560 \
+      && "$target_tokens" != 524288 ]]; then
+  printf 'ERROR: TARGET_TOKENS must be 65536, 131072, 262144, 450560 or 524288, got %q\n' \
+    "$target_tokens"
+  exit 89
+fi
+if [[ "$first_document_prefix" != 0 && "$first_document_prefix" != 1 ]]; then
+  printf 'ERROR: FIRST_DOCUMENT_PREFIX must be 0 or 1, got %q\n' \
+    "$first_document_prefix"
+  exit 89
+fi
+if [[ "$geometry_template_cache" != 0 && "$geometry_template_cache" != 1 ]]; then
+  printf 'ERROR: GEOMETRY_TEMPLATE_CACHE must be 0 or 1, got %q\n' \
+    "$geometry_template_cache"
+  exit 89
+fi
+if ! [[ "$mem_fraction_static" =~ ^0\.[0-9]+$|^1\.0+$ ]]; then
+  printf 'ERROR: MEM_FRACTION_STATIC is invalid: %q\n' "$mem_fraction_static"
+  exit 89
+fi
+if ! [[ "$qps_concurrencies" =~ ^[1-9][0-9]*(,[1-9][0-9]*)*$ ]]; then
+  printf 'ERROR: QPS_CONCURRENCIES is invalid: %q\n' "$qps_concurrencies"
+  exit 89
+fi
+if [[ "$measure_qps" != 0 && "$measure_qps" != 1 ]]; then
+  printf 'ERROR: MEASURE_QPS must be 0 or 1, got %q\n' "$measure_qps"
+  exit 89
+fi
+if ! [[ "$qps_warmup_waves" =~ ^[0-9]+$ \
+        && "$qps_waves" =~ ^[1-9][0-9]*$ ]]; then
+  printf 'ERROR: invalid QPS sampling warmup=%q waves=%q\n' \
+    "$qps_warmup_waves" "$qps_waves"
+  exit 89
+fi
+if ! [[ "$row_sparse_active_ratio" =~ ^0\.[0-9]+$|^1\.0+$ ]]; then
+  printf 'ERROR: ROW_SPARSE_ACTIVE_RATIO is invalid: %q\n' \
+    "$row_sparse_active_ratio"
+  exit 89
+fi
+if ! [[ "$query_protection_tokens" =~ ^[1-9][0-9]*$ ]] \
+   || (( query_protection_tokens < 512 \
+         || query_protection_tokens % 512 != 0 )); then
+  printf 'ERROR: QUERY_PROTECTION_TOKENS must be a positive 512 multiple: %q\n' \
+    "$query_protection_tokens"
+  exit 89
+fi
+if [[ "$generalized_adaptive_controller" != 0 \
+      && "$generalized_adaptive_controller" != 1 ]]; then
+  printf 'ERROR: GENERALIZED_ADAPTIVE_CONTROLLER must be 0 or 1, got %q\n' \
+    "$generalized_adaptive_controller"
+  exit 89
+fi
+if ! [[ "$quality_repeats" =~ ^[1-9][0-9]*$ ]]; then
+  printf 'ERROR: QUALITY_REPEATS must be positive, got %q\n' "$quality_repeats"
+  exit 89
+fi
+for generalized_ratio in \
+  "$generalized_strong_ratio" \
+  "$generalized_medium_ratio" \
+  "$generalized_diffuse_ratio"; do
+  if ! [[ "$generalized_ratio" =~ ^0\.[0-9]+$ ]]; then
+    printf 'ERROR: generalized active ratio is invalid: %q\n' "$generalized_ratio"
+    exit 84
+  fi
+done
+if ! [[ "$adaptive_topk_mass" =~ ^0\.[0-9]+$|^1\.0+$ ]]; then
+  printf 'ERROR: adaptive Top-K mass is invalid: %q\n' "$adaptive_topk_mass"
+  exit 84
+fi
+if ! [[ "$adaptive_topk_buckets" =~ ^[1-6](,[1-6])*$ ]]; then
+  printf 'ERROR: adaptive Top-K buckets are invalid: %q\n' \
+    "$adaptive_topk_buckets"
+  exit 84
+fi
+benchmark_extra_args=()
+if [[ "$first_document_prefix" == 1 ]]; then
+  benchmark_extra_args+=(--first-document-prefix)
+fi
+if [[ "$geometry_template_cache" == 1 ]]; then
+  benchmark_extra_args+=(--geometry-template-cache)
+fi
+if [[ "$generalized_adaptive_controller" == 1 ]]; then
+  benchmark_extra_args+=(--generalized-adaptive-controller)
+fi
+if [[ "$measure_qps" == 1 ]]; then
+  benchmark_extra_args+=(
+    --measure-qps
+    --qps-warmup-waves "$qps_warmup_waves"
+    --qps-waves "$qps_waves"
+  )
+fi
+if [[ -n "$qualification_profile" ]]; then
+  if [[ ! -r "$qualification_profile" ]]; then
+    printf 'ERROR: QUALIFICATION_PROFILE is not readable: %q\n' \
+      "$qualification_profile"
+    exit 89
+  fi
+  benchmark_extra_args+=(--qualification-profile "$qualification_profile")
+fi
+worker_ready_dir="$run_dir/worker_gpu_ready"
+worker_go_file="$run_dir/worker_gpu_release.go"
+holder_pgid=""
+benchmark_pid=""
+benchmark_pgid=""
+server_pgid=""
+holder_restarted=0
+holder_stopped=0
+bootstrap_holder_active=0
+
+mkdir -p "$run_dir"
+exec > >(tee -a "$run_dir/supervisor.log") 2>&1
+
+gpu_pids() {
+  nvidia-smi --query-compute-apps=pid --format=csv,noheader,nounits \
+    2>/dev/null | sed '/^$/d' | sort -n -u
+}
+
+restart_holder() {
+  if [[ "$holder_restarted" == 1 ]]; then
+    return
+  fi
+  if [[ -n "$benchmark_pgid" ]]; then
+    kill -TERM -- "-$benchmark_pgid" 2>/dev/null || true
+  fi
+  if [[ -n "$server_pgid" ]]; then
+    kill -TERM -- "-$server_pgid" 2>/dev/null || true
+  fi
+  if [[ "$bootstrap_holder_active" == 1 && -n "$holder_pgid" ]]; then
+    kill -TERM -- "-$holder_pgid" 2>/dev/null || true
+    bootstrap_holder_active=0
+  fi
+  if [[ "$holder_stopped" != 1 ]]; then
+    return
+  fi
+  holder_restarted=1
+  for _ in $(seq 1 120); do
+    active_gpu_pids=$(gpu_pids)
+    [[ -z "$active_gpu_pids" ]] && break
+    sleep 1
+  done
+  if [[ -n "$active_gpu_pids" ]]; then
+    printf 'ERROR: refusing to overlap holder with residual GPU pids: %s\n' \
+      "$active_gpu_pids"
+    return
+  fi
+  cd "$holder_cwd" || return
+  setsid nohup "$holder_python" gpu_hold.py \
+    > "$run_dir/gpu_holder.log" 2>&1 < /dev/null &
+  new_holder=$!
+  for _ in $(seq 1 90); do
+    if kill -0 "$new_holder" 2>/dev/null; then
+      new_pgid=$(ps -o pgid= -p "$new_holder" 2>/dev/null | tr -d ' ')
+      new_sid=$(ps -o sid= -p "$new_holder" 2>/dev/null | tr -d ' ')
+      active_gpu_pids=$(gpu_pids)
+      gpu_count=$(printf '%s\n' "$active_gpu_pids" | sed '/^$/d' | wc -l | tr -d ' ')
+      same_group=1
+      while IFS= read -r gpu_pid; do
+        [[ -z "$gpu_pid" ]] && continue
+        gpu_pgid=$(ps -o pgid= -p "$gpu_pid" 2>/dev/null | tr -d ' ')
+        [[ "$gpu_pgid" == "$new_holder" ]] || same_group=0
+      done <<< "$active_gpu_pids"
+      if [[ "$new_pgid" == "$new_holder" && "$new_sid" == "$new_holder" \
+            && "$gpu_count" == 8 && "$same_group" == 1 ]]; then
+        printf 'holder_restarted pid=%s workers=%s\n' \
+          "$new_holder" "$gpu_count" \
+          | tee "$run_dir/holder_restore_status"
+        return
+      fi
+    fi
+    sleep 1
+  done
+  printf 'holder_restore_failed pid=%s\n' "$new_holder" \
+    | tee "$run_dir/holder_restore_status"
+}
+trap restart_holder EXIT INT TERM
+
+if [[ ! -r "/proc/$holder_pid/cmdline" ]]; then
+  printf 'ERROR: holder pid is absent: %s\n' "$holder_pid"
+  exit 90
+fi
+holder_cmd=$(tr '\0' ' ' < "/proc/$holder_pid/cmdline")
+holder_exe=$(readlink -f "/proc/$holder_pid/exe")
+expected_holder_exe=$(readlink -f "$holder_python")
+holder_script=$(tr '\0' '\n' < "/proc/$holder_pid/cmdline" | sed -n '2p')
+holder_actual_cwd=$(readlink -f "/proc/$holder_pid/cwd")
+holder_pgid=$(ps -o pgid= -p "$holder_pid" | tr -d ' ')
+if [[ "$holder_exe" != "$expected_holder_exe" \
+      || "$holder_script" != "gpu_hold.py" \
+      || "$holder_actual_cwd" != "$holder_cwd" \
+         || "$holder_pgid" != "$holder_pid" ]]; then
+  printf 'ERROR: holder identity mismatch pid=%s pgid=%s cwd=%s exe=%s script=%q cmd=%q\n' \
+    "$holder_pid" "$holder_pgid" "$holder_actual_cwd" "$holder_exe" \
+    "$holder_script" "$holder_cmd"
+  exit 91
+fi
+printf 'holder_retained_during_cpu_prelaunch pid=%s pgid=%s\n' \
+  "$holder_pid" "$holder_pgid"
+
+# A full-memory holder can block CUDA work performed indirectly by plugin
+# imports before the per-worker release hook is reached.  Replace it with a
+# compute-active, low-memory bootstrap holder before spawning the server.  GPU
+# utilization stays high, while each model worker still has enough memory for
+# incidental early CUDA initialization.  The EXIT trap always replaces this
+# bootstrap process with the original full holder.
+printf 'switching_to_light_bootstrap_holder old_pid=%s old_pgid=%s\n' \
+  "$holder_pid" "$holder_pgid"
+kill -TERM -- "-$holder_pgid"
+holder_stopped=1
+for _ in $(seq 1 90); do
+  active_gpu_pids=$(gpu_pids)
+  [[ -z "$active_gpu_pids" ]] && break
+  sleep 1
+done
+if [[ -n "$active_gpu_pids" ]]; then
+  printf 'ERROR: GPUs did not become free before bootstrap holder: %s\n' \
+    "$active_gpu_pids"
+  exit 98
+fi
+cd "$holder_cwd" || exit 92
+setsid nohup "$holder_python" gpu_hold.py --mem-frac 0.08 --size 8192 \
+  > "$run_dir/gpu_bootstrap_holder.log" 2>&1 < /dev/null &
+holder_pid=$!
+holder_pgid=$holder_pid
+bootstrap_holder_active=1
+bootstrap_ready=0
+for _ in $(seq 1 90); do
+  if kill -0 "$holder_pid" 2>/dev/null; then
+    active_gpu_pids=$(gpu_pids)
+    gpu_count=$(printf '%s\n' "$active_gpu_pids" | sed '/^$/d' | wc -l | tr -d ' ')
+    same_group=1
+    while IFS= read -r gpu_pid; do
+      [[ -z "$gpu_pid" ]] && continue
+      gpu_pgid=$(ps -o pgid= -p "$gpu_pid" 2>/dev/null | tr -d ' ')
+      [[ "$gpu_pgid" == "$holder_pgid" ]] || same_group=0
+    done <<< "$active_gpu_pids"
+    if [[ "$gpu_count" == 8 && "$same_group" == 1 ]]; then
+      bootstrap_ready=1
+      break
+    fi
+  fi
+  sleep 1
+done
+if [[ "$bootstrap_ready" != 1 ]]; then
+  printf 'ERROR: light bootstrap holder verification failed pid=%s\n' \
+    "$holder_pid"
+  exit 99
+fi
+printf 'light_bootstrap_holder_ready pid=%s workers=8 mem_frac=0.08\n' \
+  "$holder_pid"
+
+cd "$repo" || exit 92
+set +e
+# Histogram profiling launches reductions and emits a large JSON object for
+# every MoE layer.  It is an offline calibration tool, not part of the
+# physical adaptive-TopK serving path, so keep it out of TTFT/QPS runs.
+setsid env \
+  PYTHONPATH="$repo/python${PYTHONPATH:+:$PYTHONPATH}" \
+  REDKNOT_ADAPTIVE_TOPK_PROFILE=0 \
+  REDKNOT_V4_TIMING="$timing_mode" \
+  REDKNOT_GPU_HOLDER_WORKER_READY_DIR="$worker_ready_dir" \
+  REDKNOT_GPU_HOLDER_WORKER_GO_FILE="$worker_go_file" \
+  REDKNOT_GPU_HOLDER_EXPECTED_WORKERS=8 \
+  REDKNOT_GPU_HOLDER_RELEASE_TIMEOUT_S=300 \
+  REDKNOT_IH_SERVER_READY_TIMEOUT_S=1800 \
+  "$runtime_python" test/srt/redknot/benchmark_dsv4_redknot_http.py \
+    --mode redknot \
+    --combined-headsplit-row-sparse \
+    --row-sparse-active-ratio "$row_sparse_active_ratio" \
+    --generalized-strong-active-ratio "$generalized_strong_ratio" \
+    --generalized-medium-active-ratio "$generalized_medium_ratio" \
+    --generalized-diffuse-active-ratio "$generalized_diffuse_ratio" \
+    --query-protection-tokens "$query_protection_tokens" \
+    --adaptive-topk \
+    --adaptive-topk-mass "$adaptive_topk_mass" \
+    --adaptive-topk-buckets "$adaptive_topk_buckets" \
+    --target-tokens "$target_tokens" \
+    --max-new 64 \
+    --progressive-topk-schedule '' \
+    --quality-repeats "$quality_repeats" \
+    --ttft-warmup "$ttft_warmup" \
+    --ttft-iters "$ttft_iters" \
+    --merged-prefill-tokens "$merged_prefill_tokens" \
+    --mem-fraction-static "$mem_fraction_static" \
+    --qps-concurrencies "$qps_concurrencies" \
+    "${benchmark_extra_args[@]}" \
+    --out "$run_dir/result.json" \
+    --log "$run_dir/server.log" \
+    > "$run_dir/driver.log" 2>&1 &
+benchmark_pid=$!
+benchmark_pgid=$benchmark_pid
+
+barrier_ready=0
+for _ in $(seq 1 12000); do
+  ready_count=$(find "$worker_ready_dir" -maxdepth 1 -type f \
+    -name 'rank[0-9][0-9][0-9].ready' 2>/dev/null | wc -l | tr -d ' ')
+  if [[ "$ready_count" == 8 ]]; then
+    barrier_ready=1
+    break
+  fi
+  if ! kill -0 "$benchmark_pid" 2>/dev/null; then
+    break
+  fi
+  sleep 0.1
+done
+if [[ "$barrier_ready" != 1 ]]; then
+  wait "$benchmark_pid"
+  benchmark_exit=$?
+  benchmark_pid=""
+  benchmark_pgid=""
+  printf '%s\n' "$benchmark_exit" > "$run_dir/exit_code"
+  printf 'benchmark_exited_before_gpu_release exit=%s\n' "$benchmark_exit"
+  exit "$benchmark_exit"
+fi
+worker_pids=""
+for rank in $(seq 0 7); do
+  ready_path=$(printf '%s/rank%03d.ready' "$worker_ready_dir" "$rank")
+  if [[ ! -f "$ready_path" ]]; then
+    printf 'ERROR: missing worker ready file rank=%s\n' "$rank"
+    exit 93
+  fi
+  ready_line=$(tr -d '\r\n' < "$ready_path")
+  worker_pid=$(printf '%s\n' "$ready_line" | sed -n 's/^pid=\([0-9][0-9]*\) .*/\1/p')
+  # Each TP subprocess receives a rank-local CUDA_VISIBLE_DEVICES and therefore
+  # reports local gpu_id=0.  Global ownership is certified by unique tp_rank,
+  # unique PID, a common server PGID, and the later 8-device nvidia-smi check.
+  expected_tail=$(printf 'gpu_id=0 tp_rank=%s tp_size=8' "$rank")
+  if [[ -z "$worker_pid" || "$ready_line" != "pid=$worker_pid $expected_tail" \
+        || ! -r "/proc/$worker_pid/stat" ]]; then
+    printf 'ERROR: invalid worker ready record rank=%s record=%q\n' \
+      "$rank" "$ready_line"
+    exit 94
+  fi
+  this_pgid=$(ps -o pgid= -p "$worker_pid" 2>/dev/null | tr -d ' ')
+  if [[ -z "$server_pgid" ]]; then
+    server_pgid="$this_pgid"
+  elif [[ "$this_pgid" != "$server_pgid" ]]; then
+    printf 'ERROR: worker process groups differ rank=%s pgid=%s expected=%s\n' \
+      "$rank" "$this_pgid" "$server_pgid"
+    exit 95
+  fi
+  worker_pids+="$worker_pid "
+done
+unique_worker_count=$(printf '%s\n' $worker_pids | sed '/^$/d' | sort -n -u | wc -l | tr -d ' ')
+if [[ "$unique_worker_count" != 8 || "$server_pgid" == "$holder_pgid" ]]; then
+  printf 'ERROR: worker identity set is invalid workers=%s server_pgid=%s\n' \
+    "$worker_pids" "$server_pgid"
+  exit 96
+fi
+if ! kill -0 "$holder_pid" 2>/dev/null; then
+  printf 'ERROR: holder disappeared during CPU prelaunch pid=%s\n' "$holder_pid"
+  exit 97
+fi
+printf 'all_tp_workers_ready_before_cuda pids=%s server_pgid=%s\n' \
+  "$worker_pids" "$server_pgid"
+printf 'stopping_holder_after_tp_worker_import pid=%s pgid=%s\n' \
+  "$holder_pid" "$holder_pgid"
+kill -TERM -- "-$holder_pgid"
+bootstrap_holder_active=0
+holder_stopped=1
+unexpected_gpu_pids=""
+for _ in $(seq 1 90); do
+  active_gpu_pids=$(gpu_pids)
+  unexpected_gpu_pids=""
+  while IFS= read -r gpu_pid; do
+    [[ -z "$gpu_pid" ]] && continue
+    case " $worker_pids " in
+      *" $gpu_pid "*) ;;
+      *) unexpected_gpu_pids+="$gpu_pid " ;;
+    esac
+  done <<< "$active_gpu_pids"
+  [[ -z "$unexpected_gpu_pids" ]] && break
+  sleep 1
+done
+if [[ -n "$unexpected_gpu_pids" ]]; then
+  printf 'ERROR: unexpected GPU processes remain after stopping holder: %s\n' \
+    "$unexpected_gpu_pids"
+  exit 98
+fi
+worker_go_tmp="$worker_go_file.tmp.$$"
+printf 'release_workers=8\n' > "$worker_go_tmp"
+sync "$worker_go_tmp"
+mv "$worker_go_tmp" "$worker_go_file"
+printf 'gpu_release_acknowledged workers=8\n'
+
+wait "$benchmark_pid"
+benchmark_exit=$?
+benchmark_pid=""
+benchmark_pgid=""
+printf '%s\n' "$benchmark_exit" > "$run_dir/exit_code"
+printf 'benchmark_exit=%s\n' "$benchmark_exit"
+exit "$benchmark_exit"

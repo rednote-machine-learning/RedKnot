@@ -1,0 +1,45 @@
+{
+  "cases": [
+    {
+      "answers_sha256": "sha256:01fbf9dcd9d74dd5e64f9e147dc2c59cbe541b2224133b3effbe7ecc927502e5",
+      "expected_source_chunk": 0,
+      "full_input_ids_sha256": "sha256:f7550b76b519417933d0a67e05a6c4de923287aa477a35a4719da5219ca71881",
+      "online_suffix_hash": "sha256:e152a0549ce90c8875d0e876ff340559530968621816134dcc1830660adf8f67",
+      "online_suffix_tokens": 49,
+      "query_index": 0,
+      "query_row_id": 0,
+      "question_sha256": "sha256:fcdbb4ec61b2205c1471c7abafa7abb0eefda35584d2655c142548c8e8fa0c2c",
+      "text_sha256": "sha256:cc7236367e5a2bfc2060e49abc26bc5c791fe8aa900038f6d4f47a90d0f75c38",
+      "total_tokens": 450609
+    }
+  ],
+  "chunk_tokens": 56320,
+  "cohort_index": 4401,
+  "data_manifest": "/mnt/tidal-alsh01/dataset/redone/RedKnot_Deepseekv4/test/srt/redknot/profiles/440k/2wikimqa/data_selection.json",
+  "data_selection_sha256": "f143d5e30770861a3b7efd7c77fb6e3e0375922f1f6f10cc7dc0ac1d4721bd57",
+  "dataset": "2wikimqa",
+  "exclude_manifests": [],
+  "format": "redknot_multidataset_profile_v2",
+  "max_total_tokens": 450609,
+  "num_chunks": 8,
+  "num_queries": 1,
+  "offline_chunk_hashes": [
+    "sha256:dc2d6cafb772d55b812c9b2d52f34d153b5f08c7ea16170909fc81e836af7234",
+    "sha256:17747ab211bb8adec3572c960d47e41983f4002d2887422e0eacbc62c05aa6f9",
+    "sha256:0d7904ab158242fe43e3a6cafebfdc75536e94e392beddb23ba2ad594804486d",
+    "sha256:84da424fd833ecb3cb16c13550327e7a86c2084a071c30dee654966fc07da281",
+    "sha256:0b1eef2c1d3289c6f415ec99c9a662c7ee10ffb3dde83419c6f0391c78457f52",
+    "sha256:9804972bf55b747b07d4dd27d9a9fde4319b505f90c661139956edffdb3a350c",
+    "sha256:f1e1a418366ff7aaedf1c3193a141bdf7cd308dbbd44cf0332044d191faa5cd9",
+    "sha256:dc3765b59629e64f533dcd66577ffe2eb39519ba20fccdd69888d03dd8eb815f"
+  ],
+  "output_blind": true,
+  "prompt_manifest": "/mnt/tidal-alsh01/dataset/redone/RedKnot_Deepseekv4/test/srt/redknot/profiles/440k/2wikimqa/prompt_manifest.json",
+  "prompt_manifest_sha256": "07c0f4775aecff6a920de6d3dc40578974d4f096346f565b7b955fefda18d60e",
+  "query_row_ids": [
+    0
+  ],
+  "query_start": 450560,
+  "row_offset": 0,
+  "target_tokens": 450560
+}

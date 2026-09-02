@@ -28,6 +28,10 @@ from sglang.srt.layers.attention.redknot.head_config import (
 )
 
 
+DEFAULT_MLA_DENSE_PREFIX_LAYERS = 3
+DEFAULT_MLA_DENSE_SUFFIX_LAYERS = 3
+
+
 @dataclass(frozen=True)
 class MLAHeadStrategy:
     """Per-(layer, logical attention head) DeepSeek V4 MLA strategy."""
@@ -68,6 +72,7 @@ class DeepSeekV4MLAHeadConfig:
         default_sink_size: int = DEFAULT_SINK_SIZE,
         local_default_window: int = DEFAULT_LOCAL_WINDOW,
         dense_prefix_layers: int = 0,
+        dense_suffix_layers: int = 0,
     ) -> None:
         if len(head_class) != num_layers:
             raise ValueError(
@@ -92,6 +97,15 @@ class DeepSeekV4MLAHeadConfig:
         self.default_sink_size = int(default_sink_size)
         self.local_default_window = int(local_default_window)
         self.dense_prefix_layers = int(dense_prefix_layers)
+        self.dense_suffix_layers = int(dense_suffix_layers)
+        if self.dense_prefix_layers < 0 or self.dense_suffix_layers < 0:
+            raise ValueError("dense MLA boundary layer counts must be non-negative")
+        if self.dense_prefix_layers + self.dense_suffix_layers > self.num_layers:
+            raise ValueError(
+                "dense MLA prefix/suffix overlap: "
+                f"prefix={self.dense_prefix_layers} "
+                f"suffix={self.dense_suffix_layers} layers={self.num_layers}"
+            )
         self._cached_tensors: Dict[torch.device, Dict[str, torch.Tensor]] = {}
         self._normalize()
 
@@ -100,7 +114,8 @@ class DeepSeekV4MLAHeadConfig:
         cls,
         config: Any,
         *,
-        dense_prefix_layers: int = 2,
+        dense_prefix_layers: int = DEFAULT_MLA_DENSE_PREFIX_LAYERS,
+        dense_suffix_layers: int = DEFAULT_MLA_DENSE_SUFFIX_LAYERS,
         local_window: int = 4096,
         sink_size: int = DEFAULT_SINK_SIZE,
         global_head_stride: int = 8,
@@ -110,7 +125,9 @@ class DeepSeekV4MLAHeadConfig:
 
         Every ``global_head_stride``-th logical head is global. Optionally, every
         ``global_layer_stride``-th layer can be all-global. The first
-        ``dense_prefix_layers`` are dense/full to preserve early-layer signal.
+        ``dense_prefix_layers`` and ``dense_suffix_layers`` are dense/full.
+        For DeepSeek-V4-Flash-0731 the default 3+3 fence leaves exactly layers
+        3..39 eligible for local-head offline/online decomposition.
         """
 
         if not is_deepseek_v4_mla_config(config):
@@ -125,13 +142,16 @@ class DeepSeekV4MLAHeadConfig:
         head_distance: List[List[int]] = []
         sinks: List[List[int]] = []
         for layer in range(n_layers):
-            force_full_layer = layer < dense_prefix_layers or (
+            is_dense_boundary = layer < dense_prefix_layers or layer >= (
+                n_layers - dense_suffix_layers
+            )
+            force_full_layer = is_dense_boundary or (
                 global_layer_stride > 0 and layer % global_layer_stride == 0
             )
             row, dist = [], []
             for head in range(n_heads):
                 if force_full_layer:
-                    htype = HEAD_DENSE if layer < dense_prefix_layers else HEAD_GLOBAL
+                    htype = HEAD_DENSE if is_dense_boundary else HEAD_GLOBAL
                     row.append(htype)
                     dist.append(-1)
                 elif head % global_head_stride == 0:
@@ -154,10 +174,23 @@ class DeepSeekV4MLAHeadConfig:
             default_sink_size=sink_size,
             local_default_window=local_window,
             dense_prefix_layers=dense_prefix_layers,
+            dense_suffix_layers=dense_suffix_layers,
         )
 
     @classmethod
-    def from_json(cls, json_path: str) -> "DeepSeekV4MLAHeadConfig":
+    def from_json(
+        cls,
+        json_path: str,
+        *,
+        dense_prefix_layers: Optional[int] = None,
+        dense_suffix_layers: Optional[int] = None,
+    ) -> "DeepSeekV4MLAHeadConfig":
+        """Load a measured policy while applying runtime-owned dense fences.
+
+        Runtime overrides are intentional: an external head JSON may classify
+        middle-layer heads, but it cannot weaken the first/last dense layer
+        contract selected by the server.
+        """
         with open(json_path, "r", encoding="utf-8") as f:
             data = json.load(f)
         return cls(
@@ -169,16 +202,28 @@ class DeepSeekV4MLAHeadConfig:
             physical_kv_heads=data.get("physical_kv_heads", 1),
             default_sink_size=data.get("default_sink_size", DEFAULT_SINK_SIZE),
             local_default_window=data.get("local_default_window", DEFAULT_LOCAL_WINDOW),
-            dense_prefix_layers=data.get("dense_prefix_layers", 0),
+            dense_prefix_layers=(
+                data.get("dense_prefix_layers", 0)
+                if dense_prefix_layers is None
+                else int(dense_prefix_layers)
+            ),
+            dense_suffix_layers=(
+                data.get("dense_suffix_layers", 0)
+                if dense_suffix_layers is None
+                else int(dense_suffix_layers)
+            ),
         )
 
     def to_dict(self) -> Dict[str, Any]:
         return {
-            "format": "redknot_deepseek_v4_mla_head_config_v1",
+            "format": "redknot_deepseek_v4_mla_head_config_v2",
             "num_layers": self.num_layers,
             "num_attention_heads": self.num_attention_heads,
             "physical_kv_heads": self.physical_kv_heads,
             "dense_prefix_layers": self.dense_prefix_layers,
+            "dense_suffix_layers": self.dense_suffix_layers,
+            "dense_layer_ids": list(self.dense_layer_ids),
+            "offline_online_layer_ids": list(self.offline_online_layer_ids),
             "default_sink_size": self.default_sink_size,
             "local_default_window": self.local_default_window,
             "mla_head_classification": self.head_class,
@@ -192,7 +237,14 @@ class DeepSeekV4MLAHeadConfig:
             f.write("\n")
 
     def get_strategy(self, layer: int, logical_head: int) -> MLAHeadStrategy:
-        if layer < self.dense_prefix_layers:
+        if not 0 <= int(layer) < self.num_layers:
+            raise IndexError(f"MLA layer {layer} is outside [0, {self.num_layers})")
+        if not 0 <= int(logical_head) < self.num_attention_heads:
+            raise IndexError(
+                f"MLA logical head {logical_head} is outside "
+                f"[0, {self.num_attention_heads})"
+            )
+        if self.is_dense_boundary_layer(layer):
             return MLAHeadStrategy(
                 layer=layer,
                 logical_head=logical_head,
@@ -211,6 +263,28 @@ class DeepSeekV4MLAHeadConfig:
             head_type=htype,
             window=window,
             sink_size=self._sink_at(layer, logical_head),
+        )
+
+    def is_dense_boundary_layer(self, layer: int) -> bool:
+        layer = int(layer)
+        return layer < self.dense_prefix_layers or layer >= (
+            self.num_layers - self.dense_suffix_layers
+        )
+
+    @property
+    def dense_layer_ids(self) -> tuple[int, ...]:
+        return tuple(
+            layer
+            for layer in range(self.num_layers)
+            if self.is_dense_boundary_layer(layer)
+        )
+
+    @property
+    def offline_online_layer_ids(self) -> tuple[int, ...]:
+        return tuple(
+            layer
+            for layer in range(self.num_layers)
+            if not self.is_dense_boundary_layer(layer)
         )
 
     def set_local_window(self, new_window: int) -> int:
@@ -284,6 +358,10 @@ class DeepSeekV4MLAHeadConfig:
                     f"!= {self.num_attention_heads}"
                 )
             for head, htype in enumerate(self.head_class[layer]):
+                if self.is_dense_boundary_layer(layer):
+                    self.head_class[layer][head] = HEAD_DENSE
+                    self.head_max_distance[layer][head] = -1
+                    continue
                 if htype not in allowed:
                     raise ValueError(
                         f"invalid MLA head type {htype!r} at layer={layer}, head={head}"
@@ -304,11 +382,95 @@ def is_deepseek_v4_mla_config(config: Any) -> bool:
     )
 
 
+def deepseek_v4_redknot_topology(config: Any) -> Dict[str, Any]:
+    """Describe target and auxiliary attention layers for RedKnot.
+
+    DeepSeek-V4-Flash-0731 appends three ratio-0 entries for its D-Spark
+    stages to ``compress_ratios``.  They are auxiliary draft layers, not target
+    transformer layers, and must not participate in target RedKnot policies.
+    """
+
+    if not is_deepseek_v4_mla_config(config):
+        raise ValueError("config is not DeepSeek V4 MLA")
+
+    num_target_layers = int(config.num_hidden_layers)
+    raw_compress_ratios = getattr(config, "compress_ratios", None)
+    if raw_compress_ratios:
+        compress_ratios = tuple(int(x) for x in raw_compress_ratios)
+    else:
+        # Transformers 5 normalizes the checkpoint's compress_ratios into
+        # layer_types and compress_rates. SGLang's custom config keeps the raw
+        # list, so accept both representations.
+        layer_types = tuple(getattr(config, "layer_types", ()))
+        compress_rates = dict(getattr(config, "compress_rates", {}) or {})
+        type_to_ratio = {
+            "sliding_attention": 0,
+            "compressed_sparse_attention": int(
+                compress_rates.get("compressed_sparse_attention", 4)
+            ),
+            "heavily_compressed_attention": int(
+                compress_rates.get("heavily_compressed_attention", 128)
+            ),
+        }
+        unknown_layer_types = sorted(set(layer_types) - set(type_to_ratio))
+        if unknown_layer_types:
+            raise ValueError(
+                f"unsupported DeepSeek V4 layer types: {unknown_layer_types}"
+            )
+        compress_ratios = tuple(type_to_ratio[x] for x in layer_types)
+
+    if len(compress_ratios) < num_target_layers:
+        raise ValueError(
+            "DeepSeek V4 compress_ratios has "
+            f"{len(compress_ratios)} entries for {num_target_layers} target layers"
+        )
+
+    target_compress_ratios = compress_ratios[:num_target_layers]
+    unsupported = sorted(set(target_compress_ratios) - {0, 4, 128})
+    if unsupported:
+        raise ValueError(f"unsupported target compression ratios: {unsupported}")
+
+    dspark_target_layer_ids = tuple(
+        int(x) for x in getattr(config, "dspark_target_layer_ids", ())
+    )
+    invalid_target_layers = [
+        x for x in dspark_target_layer_ids if x < 0 or x >= num_target_layers
+    ]
+    if invalid_target_layers:
+        raise ValueError(
+            f"D-Spark target layers outside target model: {invalid_target_layers}"
+        )
+
+    num_dspark_stages = (
+        len(dspark_target_layer_ids)
+        if int(getattr(config, "dspark_block_size", 0) or 0) > 0
+        else 0
+    )
+    aux_compress_ratios = compress_ratios[num_target_layers:]
+    if not aux_compress_ratios and num_dspark_stages:
+        # Transformers drops auxiliary ratios when it normalizes layer_types.
+        # Official D-Spark stages are SWA-only.
+        aux_compress_ratios = (0,) * num_dspark_stages
+
+    return {
+        "num_target_layers": num_target_layers,
+        "target_compress_ratios": target_compress_ratios,
+        "num_swa_only_layers": target_compress_ratios.count(0),
+        "num_c4_layers": target_compress_ratios.count(4),
+        "num_c128_layers": target_compress_ratios.count(128),
+        "aux_compress_ratios": aux_compress_ratios,
+        "num_aux_layers": len(aux_compress_ratios),
+        "dspark_target_layer_ids": dspark_target_layer_ids,
+        "num_dspark_stages": num_dspark_stages,
+    }
+
+
 def deepseek_v4_mla_cache_descriptor(config: Any) -> Dict[str, int]:
     """Return the logical-vs-physical cache dimensions used by SGLang DSV4."""
 
     if not is_deepseek_v4_mla_config(config):
         raise ValueError("config is not DeepSeek V4 MLA")
+    topology = deepseek_v4_redknot_topology(config)
     head_dim = int(config.head_dim)
     rope_dim = int(config.qk_rope_head_dim)
     nope_dim = head_dim - rope_dim
@@ -321,6 +483,11 @@ def deepseek_v4_mla_cache_descriptor(config: Any) -> Dict[str, int]:
         "qk_rope_head_dim": rope_dim,
         "q_lora_rank": int(config.q_lora_rank),
         "o_lora_rank": int(config.o_lora_rank),
+        "swa_only_layers": topology["num_swa_only_layers"],
+        "c4_layers": topology["num_c4_layers"],
+        "c128_layers": topology["num_c128_layers"],
+        "auxiliary_layers": topology["num_aux_layers"],
+        "dspark_stages": topology["num_dspark_stages"],
     }
 
 
@@ -328,5 +495,6 @@ __all__ = [
     "DeepSeekV4MLAHeadConfig",
     "MLAHeadStrategy",
     "deepseek_v4_mla_cache_descriptor",
+    "deepseek_v4_redknot_topology",
     "is_deepseek_v4_mla_config",
 ]

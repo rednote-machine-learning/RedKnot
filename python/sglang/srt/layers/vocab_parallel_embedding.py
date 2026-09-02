@@ -132,7 +132,10 @@ class VocabParallelEmbeddingShardIndices:
         assert self.num_added_elements <= self.num_added_elements_padded
 
 
-@torch.compile(dynamic=True, backend=get_compiler_backend(), disable=_is_npu)
+# RedKnot: run eager (no nested torch.compile) so it does not recompile during
+# piecewise CUDA graph replay (which crashes with "PCG capture stream is not
+# set"). This is a cheap pointwise op; the eager cost is negligible.
+@torch.compiler.disable
 def get_masked_input_and_mask(
     input_: torch.Tensor,
     org_vocab_start_index: int,

@@ -1,0 +1,70 @@
+{
+  "data_selection_sha256": "6176e152b2f41e9b064240b48f5d283f8c87edf080a8505c8f5aec9c2bd3ca4f",
+  "dataset": {
+    "bytes": 6052108,
+    "name": "2wikimqa",
+    "row_id_base": 0,
+    "sha256": "dda279cf93a99e1e5bfa3291fb199fd55978d10a1feb31822953cf77a1742e37"
+  },
+  "format": "redknot_pure_mla_prompt_v1",
+  "geometry": {
+    "chunk_tokens": 16384,
+    "num_chunks": 4,
+    "online_suffix_tokens": 94,
+    "query_start": 65536,
+    "total_tokens": 65630
+  },
+  "output_blind": true,
+  "prompt": {
+    "answers_sha256": "sha256:91767efb1decc461105b427ab9c08fb48d31a5aedad2574af0fdff6a69df587c",
+    "full_input_ids_sha256": "sha256:6f4f38d866aae2312b4a66e72f5a209ab36b6cc6c4e23c8df86c67413b15ef8b",
+    "offline_chunk_hashes": [
+      "sha256:7d398e5acdd62cd8932ef1cf5a5475dfcc4edffcfb741e71ef899d8feac77ed8",
+      "sha256:3eb0f9bc8ea019537034f893e9bab0a18fa758a506c6e312fa1da91cf733fadc",
+      "sha256:d654787d99913fcbd415e2c293cfc05a137b451ca42c69eda1e92be3ccb1ad5d",
+      "sha256:9f1228e5181bc2d99b79a11d7abd512d09bc44cb33214715761dc480784dd087"
+    ],
+    "offline_prefix_hash": "sha256:746c62dc0e308531fd95a0bff2887d1ac2ad3cf75bf0e526737f1940329010d1",
+    "online_suffix_hash": "sha256:60b21b670182c6ca9d8d6a43b872278f86a9f60ccbe208f3d74e42a18b1d0eca",
+    "question_sha256": "sha256:1f3d9f99c2151aa2b2e2db6099f21cd185b680811b14b25451a415685d791c72",
+    "text_sha256": "sha256:bd1bd2443010f470b7470d141c95108ed0f4b2fd8ef8e3cbfc57e55f10174c1c"
+  },
+  "prompt_manifest_sha256": "fe6f1673a08a3cf4af84aba5276cfd7c554a9f8b17bd4c233a88d3f110d314c0",
+  "prompt_mode": "official_rag_v1",
+  "protocol": {
+    "add_default_bos_token": true,
+    "answer_style": "direct_answer_plus_document_evidence_v1",
+    "document_delimiter": "\n\n",
+    "drop_thinking": true,
+    "encoder_path": "/mnt/tidal-alsh01/dataset/redone/checkpoints/opensource/DeepSeek-V4-Flash-0731/encoding/encoding_dsv4.py",
+    "encoder_sha256": "sha256:abc0d26120250dda0ae077dc64aa28836026e61e970854aaeb792445e6a0dde6",
+    "query_instruction": "\n\nAnswer the question using only the documents above. Put the direct answer alone on the first line. Then give one or two concise sentences explaining the supporting evidence from the documents. Do not use bullets or introduce outside facts. Keep the complete response between 25 and 35 tokens (target: about 30 tokens).\nQuestion: What is the date of death of Humphrey De Bohun, 7Th Earl Of Hereford's father?\nAnswer:",
+    "reasoning_effort": "low",
+    "target_output_token_range": [
+      25,
+      35
+    ],
+    "target_output_tokens": 30,
+    "thinking_mode": "chat",
+    "tokenizer_config_path": "/mnt/tidal-alsh01/dataset/redone/checkpoints/opensource/DeepSeek-V4-Flash-0731/tokenizer_config.json",
+    "tokenizer_config_sha256": "sha256:6ac8c8dc065ed118161d02dd532749ae3f52c243deac27872134fae2f50d8547",
+    "tokenizer_path": "/mnt/tidal-alsh01/dataset/redone/checkpoints/opensource/DeepSeek-V4-Flash-0731/tokenizer.json",
+    "tokenizer_sha256": "sha256:8f9f37ca37fdc4f5fd36d5cf4d3b0e8392edb4e894fd10cc0d70b4957c8633cf"
+  },
+  "source": {
+    "chunk_hashes": [
+      "sha256:5ef0e8b547b01a9d353636434fbb5675617a3c8f8cb47ce1a9a50f5a1d584491",
+      "sha256:2d133bb9f6682ca2b0420113eb99d803f5807b77c5f112683d5c89e0cf1989dc",
+      "sha256:32792a2e811f0e991d7f4a74a153d8d025c41fa2be46427e704d7cba2efc8aa3",
+      "sha256:cab040a50983b586ee949a8378952488e2eaa8711aa327201157106214c84d3b"
+    ],
+    "chunk_order": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "expected_source_chunk": 0,
+    "query_row_id": 6
+  }
+}

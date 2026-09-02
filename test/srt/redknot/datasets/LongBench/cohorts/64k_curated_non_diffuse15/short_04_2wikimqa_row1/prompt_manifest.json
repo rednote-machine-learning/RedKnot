@@ -1,0 +1,64 @@
+{
+  "data_selection_sha256": "a2f961b808ec384cdb9723542961b08b13de3f793a3c5763e9fcbf169e065c61",
+  "dataset": {
+    "bytes": 6052108,
+    "name": "2wikimqa",
+    "row_id_base": 0,
+    "sha256": "dda279cf93a99e1e5bfa3291fb199fd55978d10a1feb31822953cf77a1742e37"
+  },
+  "format": "redknot_pure_mla_prompt_v1",
+  "geometry": {
+    "chunk_tokens": 16384,
+    "num_chunks": 4,
+    "online_suffix_tokens": 48,
+    "query_start": 65536,
+    "total_tokens": 65584
+  },
+  "output_blind": true,
+  "prompt": {
+    "answers_sha256": "sha256:2da24e04c55e81eefb771da46749fba2eef045a728852bc0bbb6059f94da9800",
+    "full_input_ids_sha256": "sha256:91bedaf67d7e77e1f498e42a58a37b6ebd65c8ff963af0d82b2443e47d363de3",
+    "offline_chunk_hashes": [
+      "sha256:424f74951d4997aa3a944089bbacc62cf05cf37bb6d9cb1a1448e0e2434855d4",
+      "sha256:17fa47c806393a7fff56a4706df3cecd94bd6b1f5fab48c9ce4d607d0d36ff4d",
+      "sha256:2b155eff19f844dece4a1b53c76a6cbf985acc4b1d8fd42916f16cd2fc570474",
+      "sha256:8763992cab68b6bc53b87e17e896740fb5511b1b3f421dfd7da46ea41cb649b0"
+    ],
+    "offline_prefix_hash": "sha256:e844bc8174b42972db27c5b2953815f15d8de825da4166129f5337d024ebf268",
+    "online_suffix_hash": "sha256:d052a98bddfffb07831028c7b49ac73c4ea258271eccb49b0fa8c689da614d22",
+    "question_sha256": "sha256:86140184a996b7287b6389683c85709c68d823a30d4db735162943cfba6e52c3",
+    "text_sha256": "sha256:1e57d93771c0d233c7855acd1478e4624bc3dff0012394c57c81f58894cbe684"
+  },
+  "prompt_manifest_sha256": "6dadc4ce35017c9f6727f38a0b6bc75f2a2c41401db90eb5e55cac7298c77d3c",
+  "prompt_mode": "official_rag_v1",
+  "protocol": {
+    "add_default_bos_token": true,
+    "document_delimiter": "\n\n",
+    "drop_thinking": true,
+    "encoder_path": "/mnt/tidal-alsh01/dataset/redone/checkpoints/opensource/DeepSeek-V4-Flash-0731/encoding/encoding_dsv4.py",
+    "encoder_sha256": "sha256:abc0d26120250dda0ae077dc64aa28836026e61e970854aaeb792445e6a0dde6",
+    "query_instruction": "\n\nAnswer the question using only the documents above. Return the shortest exact answer span only, with no explanation.\nQuestion: Who is Sobe (Sister Of Saint Anne)'s grandchild?\nAnswer:",
+    "reasoning_effort": "low",
+    "thinking_mode": "chat",
+    "tokenizer_config_path": "/mnt/tidal-alsh01/dataset/redone/checkpoints/opensource/DeepSeek-V4-Flash-0731/tokenizer_config.json",
+    "tokenizer_config_sha256": "sha256:6ac8c8dc065ed118161d02dd532749ae3f52c243deac27872134fae2f50d8547",
+    "tokenizer_path": "/mnt/tidal-alsh01/dataset/redone/checkpoints/opensource/DeepSeek-V4-Flash-0731/tokenizer.json",
+    "tokenizer_sha256": "sha256:8f9f37ca37fdc4f5fd36d5cf4d3b0e8392edb4e894fd10cc0d70b4957c8633cf"
+  },
+  "source": {
+    "chunk_hashes": [
+      "sha256:86690509d6fd53e80da4145ae83489744bbdeaedd786d5f703063c7276ca0bad",
+      "sha256:d9eb987ee4dbd00ff92a1ad227dd27f9f287e8051e2ac97bcc3e03d4ec9ad41f",
+      "sha256:489394fe4d5337e1bf46e91d05124b701fc46b267338d2138972f981fd393ebc",
+      "sha256:dbdb5b59375604c0f348128a9f97c5a24df3b0eeebd71e4243c5ef76d69b1f91"
+    ],
+    "chunk_order": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "expected_source_chunk": 0,
+    "query_row_id": 1
+  }
+}

@@ -178,6 +178,13 @@ def fused_marlin_moe(
     intermediate_cache3 = intermediate_cache13[: M * topk_ids.shape[1] * K]
     intermediate_cache3 = intermediate_cache3.view(-1, K)
 
+    # moe_align_block_size maps a filtered route (-1 in topk_ids) to an
+    # expert_ids=-1 block.  The Marlin CUDA kernel skips that block only when
+    # its is_ep/filtered-expert guard is enabled.  Dynamic Top-K uses the same
+    # filtered-route contract even though tensor-parallel expert_map is absent.
+    has_route_mask = getattr(topk_ids, "_sglang_moe_route_mask", None) is not None
+    has_filtered_routes = expert_map is not None or has_route_mask
+
     use_atomic_add = (
         hidden_states.dtype == torch.half
         or torch.cuda.get_device_capability(hidden_states.device)[0] >= 9
@@ -201,7 +208,7 @@ def fused_marlin_moe(
         moe_block_size=block_size_m,
         top_k=topk,
         mul_topk_weights=False,
-        is_ep=expert_map is not None,
+        is_ep=has_filtered_routes,
         b_q_type=scalar_type1,
         size_m=M,
         size_n=2 * N,
@@ -221,7 +228,12 @@ def fused_marlin_moe(
     else:
         silu_and_mul(intermediate_cache1.view(-1, 2 * N), intermediate_cache2)
 
-    if expert_map is not None:
+    # Expert id -1 is a filtered route: the alignment and both Marlin GEMMs
+    # skip its block.  The down-projection output for that slot is therefore
+    # unwritten and must be zero before the final Top-K reduction.  A side-car
+    # marker avoids a device-to-host predicate and keeps the hot path fully
+    # asynchronous.
+    if has_filtered_routes:
         intermediate_cache3.zero_()
 
     intermediate_cache3 = moe_wna16_marlin_gemm(
@@ -242,7 +254,7 @@ def fused_marlin_moe(
         moe_block_size=block_size_m,
         top_k=1,
         mul_topk_weights=True,
-        is_ep=expert_map is not None,
+        is_ep=has_filtered_routes,
         b_q_type=scalar_type2,
         size_m=M * topk,
         size_n=K,

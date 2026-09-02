@@ -182,7 +182,15 @@ ATTENTION_BACKEND_CHOICES = [
     "intel_xpu",
 ]
 
-DETERMINISTIC_ATTENTION_BACKEND_CHOICES = ["flashinfer", "fa3", "triton"]
+DETERMINISTIC_ATTENTION_BACKEND_CHOICES = [
+    "flashinfer",
+    "fa3",
+    "triton",
+    # RedKnot MLA uses deterministic Triton attention kernels. Registering it
+    # here also enables the deterministic router, MoE and sampling paths that
+    # are required for meaningful dense-vs-reuse fidelity measurements.
+    "redknot_mla",
+]
 
 RADIX_SUPPORTED_DETERMINISTIC_ATTENTION_BACKEND = ["fa3", "triton"]
 
@@ -592,10 +600,13 @@ class ServerArgs:
     # sparsity with RedKnot's FFN-side token sparsity.
     redknot_sparse_ffn_enable: bool = False
     redknot_sparse_ffn_dense_until: int = 4
-    redknot_sparse_ffn_mass_thresh: float = 0.30
+    redknot_sparse_ffn_mass_thresh: float = 0.60
     redknot_sparse_ffn_deep_start: int = 24
-    redknot_sparse_ffn_mass_thresh_deep: float = 0.10
+    redknot_sparse_ffn_mass_thresh_deep: float = 0.60
     redknot_sparse_ffn_recent_n: int = 256
+    redknot_sparse_ffn_min_seq_len: int = 16384
+    redknot_sparse_ffn_min_full_ratio: float = 0.20
+    redknot_sparse_ffn_max_full_ratio: float = 0.80
     # Source of the per-token importance signal that drives sparse-FFN token
     # selection. ``"activation"`` (default, backward compatible) uses the
     # post-attention activation L2 norm as a heuristic proxy. ``"indexer"``
@@ -606,11 +617,35 @@ class ServerArgs:
     # The indexer/blend modes fall back to ``"activation"`` whenever the
     # indexer signal is unavailable for the current layer/forward mode.
     redknot_sparse_ffn_importance: str = "activation"
+    # --- RedKnot Token-Sparse MoE (spec-grade path; see
+    # RedKnot_Qwen3_5_397B_Sparse_MoE_Technical_Design.md). Config-driven; the
+    # executor lives on Qwen2MoeSparseMoeBlock and the mask resolver in
+    # models/redknot_sparse_moe.py. Disabled by default -> dense MoE unchanged.
+    enable_redknot_sparse_moe: bool = False
+    redknot_moe_prefill_only: bool = True
+    redknot_moe_dense_until_layer: int = 24
+    redknot_moe_selector: str = "mean_ratio"
+    redknot_moe_alpha: float = 0.3
+    redknot_moe_recent_tokens: int = 256
+    redknot_moe_min_keep_tokens: int = 128
+    redknot_moe_min_keep_ratio: float = 0.20
+    redknot_moe_dense_fallback_ratio: float = 0.85
+    redknot_moe_fallback_mode: str = "shared_only"
+    # Progressive Assignment-Sparse MoE: per-layer routed Top-K schedule.
+    # Format: "start-end:k,start-end:k" (inclusive layer ranges). Empty -> native.
+    # Example: "24-35:8,36-47:6,48-59:4" (Qwen3.5-397B native top-k=10).
+    # All tokens keep their routed update; deeper layers use fewer experts.
+    redknot_progressive_topk_schedule: str = ""
     # DeepSeek V4 MLA logical-head policy used by ``redknot_mla`` backend.
-    redknot_mla_dense_prefix_layers: int = 2
+    # DeepSeek-V4-Flash-0731 target layers are 0..42.  The first and last
+    # three layers are hard dense fences; only 3..39 may use MLA-offline local
+    # heads plus MLA-online global heads.
+    redknot_mla_dense_prefix_layers: int = 3
+    redknot_mla_dense_suffix_layers: int = 3
     redknot_mla_local_window: int = 128
     redknot_mla_global_head_stride: int = 8
     redknot_mla_global_layer_stride: int = 0
+    redknot_mla_pass_mode: str = "global"
     # DeepSeek V4 MLA offline head-locality profiler (analysis mode). When
     # enabled, a single-sequence prefill records per-(layer, head) attention
     # mass-vs-distance and exports a head config JSON to
@@ -940,6 +975,10 @@ class ServerArgs:
         # Validate --prefill-only-disable-kv-cache args early (before dummy-model
         # short-circuit). The backend check is run later after backends settle.
         self._validate_prefill_only_disable_kv_cache_args()
+
+        # Validate the RedKnot progressive top-K schedule early: a typo must not
+        # survive to a run that silently measures the dense baseline.
+        self._handle_redknot_progressive_topk()
 
         if self.model_path.lower() in ["none", "dummy"]:
             # Skip for dummy models
@@ -4085,6 +4124,7 @@ class ServerArgs:
                         "DeepseekV2ForCausalLM",
                         "DeepseekV3ForCausalLM",
                         "DeepseekV32ForCausalLM",
+                        "DeepseekV4ForCausalLM",
                         "MistralLarge3ForCausalLM",
                         "PixtralForConditionalGeneration",
                         "GlmMoeDsaForCausalLM",
@@ -4118,7 +4158,11 @@ class ServerArgs:
                 )
 
             if is_deepseek_model:
-                if self.attention_backend not in ["fa3", "triton"]:
+                if self.attention_backend not in [
+                    "fa3",
+                    "triton",
+                    "redknot_mla",
+                ]:
                     raise ValueError(
                         f"Currently only {RADIX_SUPPORTED_DETERMINISTIC_ATTENTION_BACKEND} attention backends are supported for deterministic inference with DeepSeek models. But you're using {self.attention_backend}."
                     )
@@ -4225,6 +4269,27 @@ class ServerArgs:
                 "Mixed chunked prefill is disabled because of using diffusion LLM inference."
             )
             self.enable_mixed_chunk = False
+
+    def _handle_redknot_progressive_topk(self):
+        """Reject a malformed progressive top-K schedule at launch time.
+
+        A typo would otherwise resolve to native top-K on every layer and the
+        run would look healthy while measuring the dense baseline. Parse here so
+        the failure surfaces before the (multi-minute) weight load.
+        """
+        schedule = getattr(self, "redknot_progressive_topk_schedule", "") or ""
+        if not schedule.strip():
+            return
+        from sglang.srt.layers.moe.redknot_progressive_topk import (
+            parse_progressive_topk_schedule,
+        )
+
+        bands = parse_progressive_topk_schedule(schedule)
+        logger.info(
+            "RedKnot progressive assignment-sparse MoE enabled with %d band(s): %s",
+            len(bands),
+            ", ".join(f"layers {b.start}-{b.end} -> top_k {b.top_k}" for b in bands),
+        )
 
     def _handle_other_validations(self):
         # Handle model inference tensor dump.
@@ -5456,8 +5521,8 @@ class ServerArgs:
             type=str,
             default=ServerArgs.redknot_head_config_path,
             help=(
-                "Path to a RedKnot head classification JSON. Only used when "
-                "--attention-backend redknot is selected. See "
+                "Path to a RedKnot head classification JSON. Used by the "
+                "redknot and redknot_mla attention backends. See "
                 "RedCacheV0.2/configs/*.json for examples."
             ),
         )
@@ -5484,7 +5549,8 @@ class ServerArgs:
             default=ServerArgs.redknot_sparse_ffn_enable,
             help=(
                 "Enable token-selective FFN sparsity for DeepSeek V4 RedKnot MLA. "
-                "Selected tokens run the MoE; unselected tokens take the residual identity path."
+                "FULL tokens run native Shared + Top-6 routed experts; "
+                "SHARED_ONLY tokens run only the shared expert."
             ),
         )
         parser.add_argument(
@@ -5518,9 +5584,34 @@ class ServerArgs:
             help="Always keep this many most-recent tokens in sparse FFN.",
         )
         parser.add_argument(
+            "--redknot-sparse-ffn-min-seq-len",
+            type=int,
+            default=ServerArgs.redknot_sparse_ffn_min_seq_len,
+            help=(
+                "Only enable sparse FFN when the current request sequence length "
+                "reaches this threshold. The V4 default is 16384 because the "
+                "compact dispatch overhead dominates shorter requests."
+            ),
+        )
+        parser.add_argument(
+            "--redknot-sparse-ffn-min-full-ratio",
+            type=float,
+            default=ServerArgs.redknot_sparse_ffn_min_full_ratio,
+            help="Minimum fraction of tokens that execute native full MoE.",
+        )
+        parser.add_argument(
+            "--redknot-sparse-ffn-max-full-ratio",
+            type=float,
+            default=ServerArgs.redknot_sparse_ffn_max_full_ratio,
+            help=(
+                "Maximum fraction of tokens that execute native full MoE; "
+                "protected tokens may exceed this bound."
+            ),
+        )
+        parser.add_argument(
             "--redknot-sparse-ffn-importance",
             type=str,
-            choices=["activation", "indexer", "indexer_indegree", "blend"],
+            choices=["activation", "indexer", "indexer_indegree", "blend", "attn_mass"],
             default=ServerArgs.redknot_sparse_ffn_importance,
             help=(
                 "Per-token importance source for sparse-FFN selection. "
@@ -5532,6 +5623,84 @@ class ServerArgs:
                 "page); 'blend' = indexer-mass-weighted activation norm. Falls "
                 "back to 'activation' when the indexer signal is unavailable."
             ),
+        )
+        # --- RedKnot Token-Sparse MoE (spec-grade) ---
+        parser.add_argument(
+            "--enable-redknot-sparse-moe",
+            action="store_true",
+            default=ServerArgs.enable_redknot_sparse_moe,
+            help="Enable RedKnot Token-Sparse MoE: low-importance tokens keep "
+            "only the shared expert while important tokens run the native "
+            "Top-K routed experts. Disabled by default (dense MoE unchanged).",
+        )
+        parser.add_argument(
+            "--redknot-moe-prefill-only",
+            action="store_true",
+            default=ServerArgs.redknot_moe_prefill_only,
+            help="Restrict RedKnot sparse MoE to prefill/extend; decode stays dense.",
+        )
+        parser.add_argument(
+            "--redknot-moe-dense-until-layer",
+            type=int,
+            default=ServerArgs.redknot_moe_dense_until_layer,
+            help="Layers below this id run dense MoE; this layer and above may "
+            "run token-sparse MoE (Qwen3.5-397B sweet spot ~= 24).",
+        )
+        parser.add_argument(
+            "--redknot-moe-selector",
+            type=str,
+            default=ServerArgs.redknot_moe_selector,
+            choices=["mean_ratio"],
+            help="Token importance selector type (per-request mean-ratio).",
+        )
+        parser.add_argument(
+            "--redknot-moe-alpha",
+            type=float,
+            default=ServerArgs.redknot_moe_alpha,
+            help="mean_ratio selector threshold: keep token if score >= "
+            "alpha * per-request mean score. Larger alpha = more sparse.",
+        )
+        parser.add_argument(
+            "--redknot-moe-recent-tokens",
+            type=int,
+            default=ServerArgs.redknot_moe_recent_tokens,
+            help="Always keep the most recent N tokens per request on the "
+            "routed path.",
+        )
+        parser.add_argument(
+            "--redknot-moe-min-keep-tokens",
+            type=int,
+            default=ServerArgs.redknot_moe_min_keep_tokens,
+            help="Minimum routed-kept tokens per request.",
+        )
+        parser.add_argument(
+            "--redknot-moe-min-keep-ratio",
+            type=float,
+            default=ServerArgs.redknot_moe_min_keep_ratio,
+            help="Minimum routed-kept token ratio per request.",
+        )
+        parser.add_argument(
+            "--redknot-moe-dense-fallback-ratio",
+            type=float,
+            default=ServerArgs.redknot_moe_dense_fallback_ratio,
+            help="If a request's keep ratio exceeds this, it runs dense routed "
+            "MoE (compact/scatter overhead would exceed the savings).",
+        )
+        parser.add_argument(
+            "--redknot-moe-fallback-mode",
+            type=str,
+            default=ServerArgs.redknot_moe_fallback_mode,
+            choices=["shared_only"],
+            help="Behaviour for unselected tokens (shared expert only).",
+        )
+        parser.add_argument(
+            "--redknot-progressive-topk-schedule",
+            type=str,
+            default=ServerArgs.redknot_progressive_topk_schedule,
+            help="Progressive Assignment-Sparse MoE: per-layer routed Top-K "
+            "schedule as 'start-end:k,start-end:k' (inclusive). All tokens keep "
+            "their routed update; deeper layers use fewer experts. "
+            "Example: '24-35:8,36-47:6,48-59:4'. Empty -> native top-k.",
         )
         parser.add_argument(
             "--redknot-mla-profile-enable",
@@ -5575,7 +5744,13 @@ class ServerArgs:
             "--redknot-mla-dense-prefix-layers",
             type=int,
             default=ServerArgs.redknot_mla_dense_prefix_layers,
-            help="Number of initial layers kept dense (all heads global) in RedKnot MLA.",
+            help="Number of initial layers kept in native full recomputation.",
+        )
+        parser.add_argument(
+            "--redknot-mla-dense-suffix-layers",
+            type=int,
+            default=ServerArgs.redknot_mla_dense_suffix_layers,
+            help="Number of final layers kept in native full recomputation.",
         )
         parser.add_argument(
             "--redknot-mla-local-window",
@@ -5589,6 +5764,24 @@ class ServerArgs:
             default=ServerArgs.redknot_mla_global_head_stride,
             help="Every Nth head per layer is global when deriving a default "
             "RedKnot MLA head classification.",
+        )
+        parser.add_argument(
+            "--redknot-mla-global-layer-stride",
+            type=int,
+            default=ServerArgs.redknot_mla_global_layer_stride,
+            help="Every Nth layer is all-global when deriving a default "
+            "RedKnot MLA head classification; zero disables the rule.",
+        )
+        parser.add_argument(
+            "--redknot-mla-pass-mode",
+            choices=["dual", "global", "headwise", "local"],
+            default=ServerArgs.redknot_mla_pass_mode,
+            help=(
+                "MLA execution mode: headwise computes only this TP rank's "
+                "logical-head groups with Triton while sharing one physical KV "
+                "stream; dual is the full-head FlashMLA correctness oracle; "
+                "global delegates native DSV4; local forces one SWA scope."
+            ),
         )
         parser.add_argument(
             "--redknot-segpaged-decode",

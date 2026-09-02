@@ -2,7 +2,8 @@
 
 This document records the system that delivers the **highest TTFT speedup** for
 the RedKnot head-class KV-reuse path, the optimizations that got there, and the
-exact measurements (INT4 Qwen3-32B, single L20Y GPU, HotpotQA long-context).
+exact measurements (INT4 Qwen3-32B, single NVIDIA H200 GPU under the Hopper
+hardware profile, HotpotQA long-context).
 
 ## TL;DR
 

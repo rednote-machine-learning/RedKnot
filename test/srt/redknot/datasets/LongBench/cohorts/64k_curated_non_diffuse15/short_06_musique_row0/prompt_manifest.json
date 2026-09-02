@@ -1,0 +1,64 @@
+{
+  "data_selection_sha256": "3566853a39d41c08725bc79b3223c1a8d7a0456a89f1d480a69b73a973510147",
+  "dataset": {
+    "bytes": 14085077,
+    "name": "musique",
+    "row_id_base": 0,
+    "sha256": "4ac69b91281c4ec6b21316cb7282e83fb6b4dda04fc68480bb8d8ed1e19ff7bd"
+  },
+  "format": "redknot_pure_mla_prompt_v1",
+  "geometry": {
+    "chunk_tokens": 16384,
+    "num_chunks": 4,
+    "online_suffix_tokens": 50,
+    "query_start": 65536,
+    "total_tokens": 65586
+  },
+  "output_blind": true,
+  "prompt": {
+    "answers_sha256": "sha256:b9235a6b98c21ce84c11800f62b627155ac186bf893a9798060ba2633c189436",
+    "full_input_ids_sha256": "sha256:9a195df65df604e3593c3092eca7ac522c4376c4bcf3572fafb920306c5f931c",
+    "offline_chunk_hashes": [
+      "sha256:064ae7b112e9203479b001d1ed71e04870e8cc0fb8a69334e78adbad2f0effc9",
+      "sha256:56ba92f28afe29984785db91ae0634e9ec217a40f68c7b46215d75e0560e88cc",
+      "sha256:fc45b6fc296036d7a75805fc0d48c12b54b856ab456dd4d47747e5be2e2b4090",
+      "sha256:1efe131456f4923c05f7267119e279d8d8ec165e2c9252db85a4855f350bbd07"
+    ],
+    "offline_prefix_hash": "sha256:60a496e2dc45a1fc8f39e81ed63422de8622bf0493cfdcbdc29fc324d772dd9a",
+    "online_suffix_hash": "sha256:72cd07d211432f48813ea9d7f4ea6650c95113e2c0aa8f99387a2080be052b5f",
+    "question_sha256": "sha256:f7a574da3d57d1c64701963bfa4618d7083acd318d5cae528af4a10873a3f079",
+    "text_sha256": "sha256:3a2b93c164f3f935a3012f4bf09762d4bd990f89130d17ee3a1f2b9d30df88ba"
+  },
+  "prompt_manifest_sha256": "0668820d7abab62bb1b01e0f7e56d50edec396eb3d1e0ea296dcc91dafdd9fcd",
+  "prompt_mode": "official_rag_v1",
+  "protocol": {
+    "add_default_bos_token": true,
+    "document_delimiter": "\n\n",
+    "drop_thinking": true,
+    "encoder_path": "/mnt/tidal-alsh01/dataset/redone/checkpoints/opensource/DeepSeek-V4-Flash-0731/encoding/encoding_dsv4.py",
+    "encoder_sha256": "sha256:abc0d26120250dda0ae077dc64aa28836026e61e970854aaeb792445e6a0dde6",
+    "query_instruction": "\n\nAnswer the question using only the documents above. Return the shortest exact answer span only, with no explanation.\nQuestion: Who plays the wife of the producer of Here Comes the Boom in Grown Ups?\nAnswer:",
+    "reasoning_effort": "low",
+    "thinking_mode": "chat",
+    "tokenizer_config_path": "/mnt/tidal-alsh01/dataset/redone/checkpoints/opensource/DeepSeek-V4-Flash-0731/tokenizer_config.json",
+    "tokenizer_config_sha256": "sha256:6ac8c8dc065ed118161d02dd532749ae3f52c243deac27872134fae2f50d8547",
+    "tokenizer_path": "/mnt/tidal-alsh01/dataset/redone/checkpoints/opensource/DeepSeek-V4-Flash-0731/tokenizer.json",
+    "tokenizer_sha256": "sha256:8f9f37ca37fdc4f5fd36d5cf4d3b0e8392edb4e894fd10cc0d70b4957c8633cf"
+  },
+  "source": {
+    "chunk_hashes": [
+      "sha256:1e5f9049fe04e8d29b33828b654580021d56127e015df264f173913fe516b064",
+      "sha256:133e265bcddc240d4638220ff034b08b2552d68dad707f94831d70ff2fed3113",
+      "sha256:66a155c030642e2969721294a85fef5be17c647bf238f957f8da9250f809dfcc",
+      "sha256:15d4a892e0ef2cc4e438199ce09c9136dc1149fa9272167ac4178f6df61883d3"
+    ],
+    "chunk_order": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "expected_source_chunk": 0,
+    "query_row_id": 0
+  }
+}

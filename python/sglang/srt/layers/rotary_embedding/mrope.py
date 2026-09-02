@@ -236,10 +236,15 @@ class MRotaryEmbedding(RotaryEmbedding):
         self.position_sin = sin.repeat(1, 2).view(-1, 1, 1, last_dim).contiguous()
 
     def _match_cos_sin_cache_dtype(self, query: torch.Tensor) -> None:
+        # Keep the buffer already at the right dtype/device (pre-converted before
+        # piecewise capture). Only convert in eager mode; never mutate during
+        # torch.compile tracing (would desync capture vs replay dtype guards).
         if (
             self.cos_sin_cache.device != query.device
             or self.cos_sin_cache.dtype != query.dtype
         ):
+            if torch.compiler.is_compiling():
+                return
             self.cos_sin_cache = self.cos_sin_cache.to(query.device, dtype=query.dtype)
 
     def forward_native(

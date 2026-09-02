@@ -1,0 +1,263 @@
+[rank6] run_scheduler_process ENTER gpu=0
+[2026-08-30 11:14:31 TP6] RedKnot TP worker ready before CUDA: rank=6 gpu=0 pid=1046825
+[2026-08-30 11:14:32 TP6] RedKnot TP worker GPU release acknowledged: rank=6 pid=1046825
+Unrecognized keys in `rope_scaling` for 'rope_type'='yarn': {'rope_theta'}
+Unrecognized keys in `rope_scaling` for 'rope_type'='yarn': {'rope_theta'}
+[2026-08-30 11:14:32 TP6] Auto-detected DSV4 routed-expert layout: is_fp4_experts=True
+[2026-08-30 11:14:32 TP6] Hybrid swa model: self.hf_config.architectures=['DeepseekV4ForCausalLM']
+[2026-08-30 11:14:33 TP6] Auto-detected DSV4 routed-expert layout: is_fp4_experts=True
+[2026-08-30 11:14:33 TP6] Hybrid swa model: self.hf_config.architectures=['DeepseekV4ForCausalLM']
+[2026-08-30 11:14:35 TP6] Init torch distributed begin.
+[Gloo] Rank 6 is connected to 7 peer ranks. Expected number of connected peer ranks is : 7
+[Gloo] Rank 6 is connected to 7 peer ranks. Expected number of connected peer ranks is : 7
+lshb-qs-cfa0-26:1046825:1046825 [0] NCCL INFO cudaDriverVersion 12090
+lshb-qs-cfa0-26:1046825:1046825 [0] NCCL INFO NCCL_SOCKET_IFNAME set by environment to eth0
+lshb-qs-cfa0-26:1046825:1046825 [0] NCCL INFO Bootstrap: Using eth0:10.144.205.133<0>
+lshb-qs-cfa0-26:1046825:1046825 [0] NCCL INFO NCCL version 2.27.5+cuda12.9
+lshb-qs-cfa0-26:1046825:1046825 [0] NCCL INFO NET/Plugin: Could not find: none libnccl-net-none.so. 
+lshb-qs-cfa0-26:1046825:1046825 [0] NCCL INFO NCCL_IB_DISABLE set by environment to 1.
+lshb-qs-cfa0-26:1046825:1046825 [0] NCCL INFO NCCL_SOCKET_IFNAME set by environment to eth0
+lshb-qs-cfa0-26:1046825:1046825 [0] NCCL INFO NET/Socket : Using [0]eth0:10.144.205.133<0>
+lshb-qs-cfa0-26:1046825:1046825 [0] NCCL INFO Initialized NET plugin Socket
+lshb-qs-cfa0-26:1046825:1046825 [0] NCCL INFO Assigned NET plugin Socket to comm
+lshb-qs-cfa0-26:1046825:1046825 [0] NCCL INFO Using network Socket
+lshb-qs-cfa0-26:1046825:1046825 [0] NCCL INFO ncclCommInitRank comm 0x163fe190 rank 6 nranks 8 cudaDev 0 nvmlDev 6 busId ca000 commId 0xeaf083488a97a4e2 - Init START
+lshb-qs-cfa0-26:1046825:1046825 [0] NCCL INFO RAS client listening socket at ::1<28028>
+lshb-qs-cfa0-26:1046825:1046825 [0] NCCL INFO Bootstrap timings total 0.058276 (create 0.000026, send 0.000138, recv 0.000083, ring 0.000271, delay 0.000001)
+lshb-qs-cfa0-26:1046825:1046825 [0] NCCL INFO NCCL_CUMEM_ENABLE set by environment to 0.
+lshb-qs-cfa0-26:1046825:1046825 [0] NCCL INFO MNNVL busId 0xca000 fabric UUID 0.0 cliqueId 0x0 state 3 healthMask 0x0
+lshb-qs-cfa0-26:1046825:1046825 [0] NCCL INFO Setting affinity for GPU 6 to 48-95,144-191
+lshb-qs-cfa0-26:1046825:1046825 [0] NCCL INFO NCCL_NVLS_ENABLE set by environment to 0.
+lshb-qs-cfa0-26:1046825:1046825 [0] NCCL INFO comm 0x163fe190 rank 6 nRanks 8 nNodes 1 localRanks 8 localRank 6 MNNVL 0
+lshb-qs-cfa0-26:1046825:1046825 [0] NCCL INFO NCCL_MIN_NCHANNELS set by environment to 4.
+lshb-qs-cfa0-26:1046825:1046825 [0] NCCL INFO Trees [0] 7/-1/-1->6->5 [1] 7/-1/-1->6->5 [2] 7/-1/-1->6->5 [3] 7/-1/-1->6->5 [4] 7/-1/-1->6->5 [5] 7/-1/-1->6->5 [6] 7/-1/-1->6->5 [7] 7/-1/-1->6->5 [8] 7/-1/-1->6->5 [9] 7/-1/-1->6->5 [10] 7/-1/-1->6->5 [11] 7/-1/-1->6->5 [12] 7/-1/-1->6->5 [13] 7/-1/-1->6->5 [14] 7/-1/-1->6->5 [15] 7/-1/-1->6->5 [16] 7/-1/-1->6->5 [17] 7/-1/-1->6->5 [18] 7/-1/-1->6->5 [19] 7/-1/-1->6->5 [20] 7/-1/-1->6->5 [21] 7/-1/-1->6->5 [22] 7/-1/-1->6->5 [23] 7/-1/-1->6->5
+lshb-qs-cfa0-26:1046825:1046825 [0] NCCL INFO P2P Chunksize set to 524288
+lshb-qs-cfa0-26:1046825:1046825 [0] NCCL INFO PROFILER/Plugin: Could not find: libnccl-profiler.so. 
+lshb-qs-cfa0-26:1046825:1050084 [0] NCCL INFO [Proxy Service] Device 0 CPU core 81
+lshb-qs-cfa0-26:1046825:1050085 [0] NCCL INFO [Proxy Service UDS] Device 0 CPU core 145
+lshb-qs-cfa0-26:1046825:1046825 [0] NCCL INFO Channel 00/0 : 6[6] -> 7[7] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1046825 [0] NCCL INFO Channel 01/0 : 6[6] -> 7[7] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1046825 [0] NCCL INFO Channel 02/0 : 6[6] -> 7[7] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1046825 [0] NCCL INFO Channel 03/0 : 6[6] -> 7[7] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1046825 [0] NCCL INFO Channel 04/0 : 6[6] -> 7[7] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1046825 [0] NCCL INFO Channel 05/0 : 6[6] -> 7[7] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1046825 [0] NCCL INFO Channel 06/0 : 6[6] -> 7[7] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1046825 [0] NCCL INFO Channel 07/0 : 6[6] -> 7[7] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1046825 [0] NCCL INFO Channel 08/0 : 6[6] -> 7[7] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1046825 [0] NCCL INFO Channel 09/0 : 6[6] -> 7[7] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1046825 [0] NCCL INFO Channel 10/0 : 6[6] -> 7[7] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1046825 [0] NCCL INFO Channel 11/0 : 6[6] -> 7[7] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1046825 [0] NCCL INFO Channel 12/0 : 6[6] -> 7[7] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1046825 [0] NCCL INFO Channel 13/0 : 6[6] -> 7[7] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1046825 [0] NCCL INFO Channel 14/0 : 6[6] -> 7[7] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1046825 [0] NCCL INFO Channel 15/0 : 6[6] -> 7[7] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1046825 [0] NCCL INFO Channel 16/0 : 6[6] -> 7[7] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1046825 [0] NCCL INFO Channel 17/0 : 6[6] -> 7[7] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1046825 [0] NCCL INFO Channel 18/0 : 6[6] -> 7[7] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1046825 [0] NCCL INFO Channel 19/0 : 6[6] -> 7[7] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1046825 [0] NCCL INFO Channel 20/0 : 6[6] -> 7[7] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1046825 [0] NCCL INFO Channel 21/0 : 6[6] -> 7[7] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1046825 [0] NCCL INFO Channel 22/0 : 6[6] -> 7[7] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1046825 [0] NCCL INFO Channel 23/0 : 6[6] -> 7[7] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1046825 [0] NCCL INFO Connected all rings, use ring PXN 0 GDR 1
+lshb-qs-cfa0-26:1046825:1046825 [0] NCCL INFO Channel 00/0 : 6[6] -> 5[5] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1046825 [0] NCCL INFO Channel 01/0 : 6[6] -> 5[5] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1046825 [0] NCCL INFO Channel 02/0 : 6[6] -> 5[5] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1046825 [0] NCCL INFO Channel 03/0 : 6[6] -> 5[5] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1046825 [0] NCCL INFO Channel 04/0 : 6[6] -> 5[5] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1046825 [0] NCCL INFO Channel 05/0 : 6[6] -> 5[5] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1046825 [0] NCCL INFO Channel 06/0 : 6[6] -> 5[5] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1046825 [0] NCCL INFO Channel 07/0 : 6[6] -> 5[5] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1046825 [0] NCCL INFO Channel 08/0 : 6[6] -> 5[5] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1046825 [0] NCCL INFO Channel 09/0 : 6[6] -> 5[5] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1046825 [0] NCCL INFO Channel 10/0 : 6[6] -> 5[5] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1046825 [0] NCCL INFO Channel 11/0 : 6[6] -> 5[5] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1046825 [0] NCCL INFO Channel 12/0 : 6[6] -> 5[5] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1046825 [0] NCCL INFO Channel 13/0 : 6[6] -> 5[5] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1046825 [0] NCCL INFO Channel 14/0 : 6[6] -> 5[5] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1046825 [0] NCCL INFO Channel 15/0 : 6[6] -> 5[5] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1046825 [0] NCCL INFO Channel 16/0 : 6[6] -> 5[5] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1046825 [0] NCCL INFO Channel 17/0 : 6[6] -> 5[5] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1046825 [0] NCCL INFO Channel 18/0 : 6[6] -> 5[5] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1046825 [0] NCCL INFO Channel 19/0 : 6[6] -> 5[5] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1046825 [0] NCCL INFO Channel 20/0 : 6[6] -> 5[5] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1046825 [0] NCCL INFO Channel 21/0 : 6[6] -> 5[5] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1046825 [0] NCCL INFO Channel 22/0 : 6[6] -> 5[5] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1046825 [0] NCCL INFO Channel 23/0 : 6[6] -> 5[5] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1046825 [0] NCCL INFO Connected all trees
+lshb-qs-cfa0-26:1046825:1050090 [0] NCCL INFO [Proxy Progress] Device 0 CPU core 81
+lshb-qs-cfa0-26:1046825:1046825 [0] NCCL INFO threadThresholds 8/8/64 | 64/8/64 | 512 | 512
+lshb-qs-cfa0-26:1046825:1046825 [0] NCCL INFO 24 coll channels, 24 collnet channels, 0 nvls channels, 32 p2p channels, 32 p2p channels per peer
+lshb-qs-cfa0-26:1046825:1046825 [0] NCCL INFO TUNER/Plugin: Could not find: libnccl-tuner.so. Using internal tuner plugin.
+lshb-qs-cfa0-26:1046825:1046825 [0] NCCL INFO ncclCommInitRank comm 0x163fe190 rank 6 nranks 8 cudaDev 0 nvmlDev 6 busId ca000 commId 0xeaf083488a97a4e2 - Init COMPLETE
+lshb-qs-cfa0-26:1046825:1046825 [0] NCCL INFO Init timings - ncclCommInitRank: rank 6 nranks 8 total 1.61 (kernels 0.21, alloc 0.99, bootstrap 0.06, allgathers 0.01, topo 0.05, graphs 0.01, connections 0.27, rest 0.01)
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[2026-08-30 11:14:41 TP6] Init torch distributed ends. elapsed=5.54 s, mem usage=1.28 GB
+/root/miniconda3/lib/python3.11/site-packages/pydantic/_internal/_generate_schema.py:2249: UnsupportedFieldAttributeWarning: The 'repr' attribute with value False was provided to the `Field()` function, which has no effect in the context it was used. 'repr' is field-specific metadata, and can only be attached to a model field using `Annotated` metadata or by assignment. This may have happened because an `Annotated` type alias using the `type` statement was used, or if the `Field()` function was attached to a single member of a union type.
+  warnings.warn(
+/root/miniconda3/lib/python3.11/site-packages/pydantic/_internal/_generate_schema.py:2249: UnsupportedFieldAttributeWarning: The 'frozen' attribute with value True was provided to the `Field()` function, which has no effect in the context it was used. 'frozen' is field-specific metadata, and can only be attached to a model field using `Annotated` metadata or by assignment. This may have happened because an `Annotated` type alias using the `type` statement was used, or if the `Field()` function was attached to a single member of a union type.
+  warnings.warn(
+[2026-08-30 11:14:46 TP6] Ignore import error when loading sglang.srt.models.gemma4_audio: cannot import name 'Gemma4AudioConfig' from 'transformers' (/root/miniconda3/lib/python3.11/site-packages/transformers/__init__.py)
+[2026-08-30 11:14:46 TP6] Ignore import error when loading sglang.srt.models.gemma4_causal: cannot import name 'Gemma4TextConfig' from 'transformers' (/root/miniconda3/lib/python3.11/site-packages/transformers/__init__.py)
+[2026-08-30 11:14:46 TP6] Ignore import error when loading sglang.srt.models.gemma4_mm: cannot import name 'Gemma4AudioConfig' from 'transformers' (/root/miniconda3/lib/python3.11/site-packages/transformers/__init__.py)
+[2026-08-30 11:14:46 TP6] Ignore import error when loading sglang.srt.models.gemma4_mtp: cannot import name 'Gemma4TextConfig' from 'transformers' (/root/miniconda3/lib/python3.11/site-packages/transformers/__init__.py)
+[2026-08-30 11:14:46 TP6] Ignore import error when loading sglang.srt.models.gemma4_vision: cannot import name 'Gemma4VisionConfig' from 'transformers' (/root/miniconda3/lib/python3.11/site-packages/transformers/__init__.py)
+[2026-08-30 11:14:47 TP6] Ignore import error when loading sglang.srt.models.glm_ocr: No module named 'transformers.models.glm_ocr'
+[2026-08-30 11:14:47 TP6] Ignore import error when loading sglang.srt.models.glm_ocr_nextn: No module named 'transformers.models.glm_ocr'
+[2026-08-30 11:14:47 TP6] Ignore import error when loading sglang.srt.models.glmasr: cannot import name 'GlmAsrConfig' from 'transformers' (/root/miniconda3/lib/python3.11/site-packages/transformers/__init__.py)
+🚨 Config not found for parakeet. You can manually add it to HARDCODED_CONFIG_FOR_MODELS in utils/auto_docstring.py
+🚨 Config not found for parakeet. You can manually add it to HARDCODED_CONFIG_FOR_MODELS in utils/auto_docstring.py
+🚨 Config not found for parakeet. You can manually add it to HARDCODED_CONFIG_FOR_MODELS in utils/auto_docstring.py
+[2026-08-30 11:14:50 TP6] Load weight begin. avail mem=137.98 GB
+[2026-08-30 11:14:54 TP6] Execute dequant fp8 wo_a
+[2026-08-30 11:16:36 TP6] Using FP8 KV cache but no scaling factors provided. Defaulting to scaling factors of 1.0. This may lead to less accurate results!
+[2026-08-30 11:16:36 TP6] Load weight end. elapsed=105.93 s, type=DeepseekV4ForCausalLM, quant=fp8, fmt=e4m3, avail mem=113.51 GB, mem usage=24.47 GB.
+[2026-08-30 11:16:36 TP6] DSV4 memory calculation: bytes_per_full_token=15897.45, available_bytes=23.76 GB, full_token=1604352
+[2026-08-30 11:16:36 TP6] DSV4 pool sizes: full=1604352, swa=160256, c4=401088, c128=12534, c4_state=10016, c128_state=160256
+[2026-08-30 11:16:36 TP6] Max concurrent requests (per dp worker) from the finalized token capacity: max_num_reqs=256.
+[2026-08-30 11:16:36 TP6] Initialize DeepSeekV4TokenToKVPool with max_num_reqs=256 swa_size=160256 c4_size=401088 c4_logical_size=401088 c128_size=12534 c4_state_pool_size=10016 c128_state_pool_size=160256
+[2026-08-30 11:16:37 TP6] Memory pool end. avail mem=88.64 GB
+[2026-08-30 11:16:37 TP6] Using RedKnotMLAAttnBackend for DeepSeek V4 MLA attention.
+lshb-qs-cfa0-26:1046825:1046825 [0] NCCL INFO Comm config Blocking set to 1
+lshb-qs-cfa0-26:1046825:1051353 [0] NCCL INFO Assigned NET plugin Socket to comm
+lshb-qs-cfa0-26:1046825:1051353 [0] NCCL INFO Using network Socket
+lshb-qs-cfa0-26:1046825:1051353 [0] NCCL INFO ncclCommInitRankConfig comm 0x4fef0b10 rank 6 nranks 8 cudaDev 0 nvmlDev 6 busId ca000 commId 0x7880323665f912f6 - Init START
+lshb-qs-cfa0-26:1046825:1051353 [0] NCCL INFO Bootstrap timings total 0.002704 (create 0.000023, send 0.000109, recv 0.001618, ring 0.000117, delay 0.000000)
+lshb-qs-cfa0-26:1046825:1051353 [0] NCCL INFO MNNVL busId 0xca000 fabric UUID 0.0 cliqueId 0x0 state 3 healthMask 0x0
+lshb-qs-cfa0-26:1046825:1051353 [0] NCCL INFO Setting affinity for GPU 6 to 48-95,144-191
+lshb-qs-cfa0-26:1046825:1051353 [0] NCCL INFO comm 0x4fef0b10 rank 6 nRanks 8 nNodes 1 localRanks 8 localRank 6 MNNVL 0
+lshb-qs-cfa0-26:1046825:1051353 [0] NCCL INFO Trees [0] 7/-1/-1->6->5 [1] 7/-1/-1->6->5 [2] 7/-1/-1->6->5 [3] 7/-1/-1->6->5 [4] 7/-1/-1->6->5 [5] 7/-1/-1->6->5 [6] 7/-1/-1->6->5 [7] 7/-1/-1->6->5 [8] 7/-1/-1->6->5 [9] 7/-1/-1->6->5 [10] 7/-1/-1->6->5 [11] 7/-1/-1->6->5 [12] 7/-1/-1->6->5 [13] 7/-1/-1->6->5 [14] 7/-1/-1->6->5 [15] 7/-1/-1->6->5 [16] 7/-1/-1->6->5 [17] 7/-1/-1->6->5 [18] 7/-1/-1->6->5 [19] 7/-1/-1->6->5 [20] 7/-1/-1->6->5 [21] 7/-1/-1->6->5 [22] 7/-1/-1->6->5 [23] 7/-1/-1->6->5
+lshb-qs-cfa0-26:1046825:1051353 [0] NCCL INFO P2P Chunksize set to 524288
+lshb-qs-cfa0-26:1046825:1051360 [0] NCCL INFO [Proxy Service] Device 0 CPU core 183
+lshb-qs-cfa0-26:1046825:1051365 [0] NCCL INFO [Proxy Service UDS] Device 0 CPU core 188
+lshb-qs-cfa0-26:1046825:1051353 [0] NCCL INFO Channel 00/0 : 6[6] -> 7[7] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1051353 [0] NCCL INFO Channel 01/0 : 6[6] -> 7[7] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1051353 [0] NCCL INFO Channel 02/0 : 6[6] -> 7[7] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1051353 [0] NCCL INFO Channel 03/0 : 6[6] -> 7[7] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1051353 [0] NCCL INFO Channel 04/0 : 6[6] -> 7[7] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1051353 [0] NCCL INFO Channel 05/0 : 6[6] -> 7[7] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1051353 [0] NCCL INFO Channel 06/0 : 6[6] -> 7[7] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1051353 [0] NCCL INFO Channel 07/0 : 6[6] -> 7[7] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1051353 [0] NCCL INFO Channel 08/0 : 6[6] -> 7[7] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1051353 [0] NCCL INFO Channel 09/0 : 6[6] -> 7[7] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1051353 [0] NCCL INFO Channel 10/0 : 6[6] -> 7[7] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1051353 [0] NCCL INFO Channel 11/0 : 6[6] -> 7[7] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1051353 [0] NCCL INFO Channel 12/0 : 6[6] -> 7[7] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1051353 [0] NCCL INFO Channel 13/0 : 6[6] -> 7[7] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1051353 [0] NCCL INFO Channel 14/0 : 6[6] -> 7[7] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1051353 [0] NCCL INFO Channel 15/0 : 6[6] -> 7[7] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1051353 [0] NCCL INFO Channel 16/0 : 6[6] -> 7[7] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1051353 [0] NCCL INFO Channel 17/0 : 6[6] -> 7[7] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1051353 [0] NCCL INFO Channel 18/0 : 6[6] -> 7[7] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1051353 [0] NCCL INFO Channel 19/0 : 6[6] -> 7[7] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1051353 [0] NCCL INFO Channel 20/0 : 6[6] -> 7[7] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1051353 [0] NCCL INFO Channel 21/0 : 6[6] -> 7[7] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1051353 [0] NCCL INFO Channel 22/0 : 6[6] -> 7[7] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1051353 [0] NCCL INFO Channel 23/0 : 6[6] -> 7[7] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1051353 [0] NCCL INFO Connected all rings, use ring PXN 0 GDR 1
+lshb-qs-cfa0-26:1046825:1051353 [0] NCCL INFO Channel 00/0 : 6[6] -> 5[5] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1051353 [0] NCCL INFO Channel 01/0 : 6[6] -> 5[5] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1051353 [0] NCCL INFO Channel 02/0 : 6[6] -> 5[5] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1051353 [0] NCCL INFO Channel 03/0 : 6[6] -> 5[5] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1051353 [0] NCCL INFO Channel 04/0 : 6[6] -> 5[5] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1051353 [0] NCCL INFO Channel 05/0 : 6[6] -> 5[5] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1051353 [0] NCCL INFO Channel 06/0 : 6[6] -> 5[5] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1051353 [0] NCCL INFO Channel 07/0 : 6[6] -> 5[5] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1051353 [0] NCCL INFO Channel 08/0 : 6[6] -> 5[5] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1051353 [0] NCCL INFO Channel 09/0 : 6[6] -> 5[5] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1051353 [0] NCCL INFO Channel 10/0 : 6[6] -> 5[5] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1051353 [0] NCCL INFO Channel 11/0 : 6[6] -> 5[5] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1051353 [0] NCCL INFO Channel 12/0 : 6[6] -> 5[5] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1051353 [0] NCCL INFO Channel 13/0 : 6[6] -> 5[5] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1051353 [0] NCCL INFO Channel 14/0 : 6[6] -> 5[5] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1051353 [0] NCCL INFO Channel 15/0 : 6[6] -> 5[5] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1051353 [0] NCCL INFO Channel 16/0 : 6[6] -> 5[5] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1051353 [0] NCCL INFO Channel 17/0 : 6[6] -> 5[5] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1051353 [0] NCCL INFO Channel 18/0 : 6[6] -> 5[5] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1051353 [0] NCCL INFO Channel 19/0 : 6[6] -> 5[5] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1051353 [0] NCCL INFO Channel 20/0 : 6[6] -> 5[5] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1051353 [0] NCCL INFO Channel 21/0 : 6[6] -> 5[5] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1051353 [0] NCCL INFO Channel 22/0 : 6[6] -> 5[5] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1051353 [0] NCCL INFO Channel 23/0 : 6[6] -> 5[5] via P2P/IPC
+lshb-qs-cfa0-26:1046825:1051353 [0] NCCL INFO Connected all trees
+lshb-qs-cfa0-26:1046825:1051380 [0] NCCL INFO [Proxy Progress] Device 0 CPU core 71
+lshb-qs-cfa0-26:1046825:1051353 [0] NCCL INFO threadThresholds 8/8/64 | 64/8/64 | 512 | 512
+lshb-qs-cfa0-26:1046825:1051353 [0] NCCL INFO 24 coll channels, 24 collnet channels, 0 nvls channels, 32 p2p channels, 32 p2p channels per peer
+lshb-qs-cfa0-26:1046825:1051353 [0] NCCL INFO ncclCommInitRankConfig comm 0x4fef0b10 rank 6 nranks 8 cudaDev 0 nvmlDev 6 busId ca000 commId 0x7880323665f912f6 - Init COMPLETE
+lshb-qs-cfa0-26:1046825:1051353 [0] NCCL INFO Init timings - ncclCommInitRankConfig: rank 6 nranks 8 total 0.23 (kernels 0.00, alloc 0.00, bootstrap 0.00, allgathers 0.01, topo 0.06, graphs 0.01, connections 0.15, rest 0.00)
+[2026-08-30 11:17:23 TP6] RedKnot MLA policy loaded: {'dense': 384, 'global': 296, 'local': 2072, 'total': 2752, 'physical_kv_heads': 1}; DSV4 topology: {'num_target_layers': 43, 'target_compress_ratios': (0, 0, 4, 128, 4, 128, 4, 128, 4, 128, 4, 128, 4, 128, 4, 128, 4, 128, 4, 128, 4, 128, 4, 128, 4, 128, 4, 128, 4, 128, 4, 128, 4, 128, 4, 128, 4, 128, 4, 128, 4, 128, 4), 'num_swa_only_layers': 2, 'num_c4_layers': 21, 'num_c128_layers': 20, 'aux_compress_ratios': (0, 0, 0), 'num_aux_layers': 3, 'dspark_target_layer_ids': (40, 41, 42), 'num_dspark_stages': 3}; physical_kv_streams=1 swa_capacity=128 pass_mode=headwise tp_head_shard=6/8 promoted_heads=0 reuse_heads_full_scope=True certified_max_context_tokens=262222 qualification_only=False qualification_max_context_tokens=0
+[2026-08-30 11:17:23 TP6] RedKnot context-bound MLA-off qualification is enabled; numerical equivalence remains gated by the real benchmark: local_layers=(3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39) model_hash=5807a2aca678 policy_hash=3b043a6fd910
+[2026-08-30 11:17:24 TP6] Disable piecewise CUDA graph because --disable-piecewise-cuda-graph is set
+[2026-08-30 11:17:24 TP6] Tree cache initialized: source=default impl=SWARadixCache hybrid_swa=True hybrid_ssm=False hierarchical=False streaming_wrapped=False
+[2026-08-30 11:18:13 TP6] RedKnot V2 snapshot: seg=sha256:dfa7a912dec0acd2be98b81be5355b52a28560f023aa342b21f963fab66f9e9f layer=0 cr=0 len=32768
+[2026-08-30 11:23:30 TP6] RedKnot indexer-KV-reuse SNAPSHOT store: seg=sha256:dfa7a912dec0acd2be98b81be5355b52a28560f023aa342b21f963fab66f9e9f n_q=32768 n_units=8192 selected_units=8192 seg_len=32768 | in-seg-dist 10%:1249[15%] 25%:107[1%] 50%:19[0%] 75%:9[0%] 90%:4[0%]
+[2026-08-30 11:23:57 TP6] REDKNOT_MLA_OFF_FORWARD request_id=snapshot-0-1788059848062585117 forward_id=f670ff90fcc964f27 forward_mode=extend q_rows=32768 position_start=0 position_end=32768 position_contiguous=1 plan_mode=snapshot diagnostic_ablation=full
+[REDKNOT_ADAPTIVE_TOPK] layer=3/43 native_k=6 mass=0.500000 buckets=3,4,5,6 min_tokens=512 renormalize=false plan_scoped=true compact_marlin=physical_width_3
+[REDKNOT_ADAPTIVE_TOPK] layer=4/43 native_k=6 mass=0.500000 buckets=3,4,5,6 min_tokens=512 renormalize=false plan_scoped=true compact_marlin=physical_width_3
+[REDKNOT_ADAPTIVE_TOPK] layer=5/43 native_k=6 mass=0.500000 buckets=3,4,5,6 min_tokens=512 renormalize=false plan_scoped=true compact_marlin=physical_width_3
+[REDKNOT_ADAPTIVE_TOPK] layer=6/43 native_k=6 mass=0.500000 buckets=3,4,5,6 min_tokens=512 renormalize=false plan_scoped=true compact_marlin=physical_width_3
+[REDKNOT_ADAPTIVE_TOPK] layer=7/43 native_k=6 mass=0.500000 buckets=3,4,5,6 min_tokens=512 renormalize=false plan_scoped=true compact_marlin=physical_width_3
+[REDKNOT_ADAPTIVE_TOPK] layer=8/43 native_k=6 mass=0.500000 buckets=3,4,5,6 min_tokens=512 renormalize=false plan_scoped=true compact_marlin=physical_width_3
+[REDKNOT_ADAPTIVE_TOPK] layer=9/43 native_k=6 mass=0.500000 buckets=3,4,5,6 min_tokens=512 renormalize=false plan_scoped=true compact_marlin=physical_width_3
+[REDKNOT_ADAPTIVE_TOPK] layer=10/43 native_k=6 mass=0.500000 buckets=3,4,5,6 min_tokens=512 renormalize=false plan_scoped=true compact_marlin=physical_width_3
+[REDKNOT_ADAPTIVE_TOPK] layer=11/43 native_k=6 mass=0.500000 buckets=3,4,5,6 min_tokens=512 renormalize=false plan_scoped=true compact_marlin=physical_width_3
+[REDKNOT_ADAPTIVE_TOPK] layer=12/43 native_k=6 mass=0.500000 buckets=3,4,5,6 min_tokens=512 renormalize=false plan_scoped=true compact_marlin=physical_width_3
+[REDKNOT_ADAPTIVE_TOPK] layer=13/43 native_k=6 mass=0.500000 buckets=3,4,5,6 min_tokens=512 renormalize=false plan_scoped=true compact_marlin=physical_width_3
+[REDKNOT_ADAPTIVE_TOPK] layer=14/43 native_k=6 mass=0.500000 buckets=3,4,5,6 min_tokens=512 renormalize=false plan_scoped=true compact_marlin=physical_width_3
+[REDKNOT_ADAPTIVE_TOPK] layer=15/43 native_k=6 mass=0.500000 buckets=3,4,5,6 min_tokens=512 renormalize=false plan_scoped=true compact_marlin=physical_width_3
+[REDKNOT_ADAPTIVE_TOPK] layer=16/43 native_k=6 mass=0.500000 buckets=3,4,5,6 min_tokens=512 renormalize=false plan_scoped=true compact_marlin=physical_width_3
+[REDKNOT_ADAPTIVE_TOPK] layer=17/43 native_k=6 mass=0.500000 buckets=3,4,5,6 min_tokens=512 renormalize=false plan_scoped=true compact_marlin=physical_width_3
+[REDKNOT_ADAPTIVE_TOPK] layer=18/43 native_k=6 mass=0.500000 buckets=3,4,5,6 min_tokens=512 renormalize=false plan_scoped=true compact_marlin=physical_width_3
+[REDKNOT_ADAPTIVE_TOPK] layer=19/43 native_k=6 mass=0.500000 buckets=3,4,5,6 min_tokens=512 renormalize=false plan_scoped=true compact_marlin=physical_width_3
+[REDKNOT_ADAPTIVE_TOPK] layer=20/43 native_k=6 mass=0.500000 buckets=3,4,5,6 min_tokens=512 renormalize=false plan_scoped=true compact_marlin=physical_width_3
+[REDKNOT_ADAPTIVE_TOPK] layer=21/43 native_k=6 mass=0.500000 buckets=3,4,5,6 min_tokens=512 renormalize=false plan_scoped=true compact_marlin=physical_width_3
+[REDKNOT_ADAPTIVE_TOPK] layer=22/43 native_k=6 mass=0.500000 buckets=3,4,5,6 min_tokens=512 renormalize=false plan_scoped=true compact_marlin=physical_width_3
+[REDKNOT_ADAPTIVE_TOPK] layer=23/43 native_k=6 mass=0.500000 buckets=3,4,5,6 min_tokens=512 renormalize=false plan_scoped=true compact_marlin=physical_width_3
+[REDKNOT_ADAPTIVE_TOPK] layer=24/43 native_k=6 mass=0.500000 buckets=3,4,5,6 min_tokens=512 renormalize=false plan_scoped=true compact_marlin=physical_width_3
+[REDKNOT_ADAPTIVE_TOPK] layer=25/43 native_k=6 mass=0.500000 buckets=3,4,5,6 min_tokens=512 renormalize=false plan_scoped=true compact_marlin=physical_width_3
+[REDKNOT_ADAPTIVE_TOPK] layer=26/43 native_k=6 mass=0.500000 buckets=3,4,5,6 min_tokens=512 renormalize=false plan_scoped=true compact_marlin=physical_width_3
+[REDKNOT_ADAPTIVE_TOPK] layer=27/43 native_k=6 mass=0.500000 buckets=3,4,5,6 min_tokens=512 renormalize=false plan_scoped=true compact_marlin=physical_width_3
+[REDKNOT_ADAPTIVE_TOPK] layer=28/43 native_k=6 mass=0.500000 buckets=3,4,5,6 min_tokens=512 renormalize=false plan_scoped=true compact_marlin=physical_width_3
+[REDKNOT_ADAPTIVE_TOPK] layer=29/43 native_k=6 mass=0.500000 buckets=3,4,5,6 min_tokens=512 renormalize=false plan_scoped=true compact_marlin=physical_width_3
+[REDKNOT_ADAPTIVE_TOPK] layer=30/43 native_k=6 mass=0.500000 buckets=3,4,5,6 min_tokens=512 renormalize=false plan_scoped=true compact_marlin=physical_width_3
+[REDKNOT_ADAPTIVE_TOPK] layer=31/43 native_k=6 mass=0.500000 buckets=3,4,5,6 min_tokens=512 renormalize=false plan_scoped=true compact_marlin=physical_width_3
+[REDKNOT_ADAPTIVE_TOPK] layer=32/43 native_k=6 mass=0.500000 buckets=3,4,5,6 min_tokens=512 renormalize=false plan_scoped=true compact_marlin=physical_width_3
+[REDKNOT_ADAPTIVE_TOPK] layer=33/43 native_k=6 mass=0.500000 buckets=3,4,5,6 min_tokens=512 renormalize=false plan_scoped=true compact_marlin=physical_width_3
+[REDKNOT_ADAPTIVE_TOPK] layer=34/43 native_k=6 mass=0.500000 buckets=3,4,5,6 min_tokens=512 renormalize=false plan_scoped=true compact_marlin=physical_width_3
+[REDKNOT_ADAPTIVE_TOPK] layer=35/43 native_k=6 mass=0.500000 buckets=3,4,5,6 min_tokens=512 renormalize=false plan_scoped=true compact_marlin=physical_width_3
+[REDKNOT_ADAPTIVE_TOPK] layer=36/43 native_k=6 mass=0.500000 buckets=3,4,5,6 min_tokens=512 renormalize=false plan_scoped=true compact_marlin=physical_width_3
+[REDKNOT_ADAPTIVE_TOPK] layer=37/43 native_k=6 mass=0.500000 buckets=3,4,5,6 min_tokens=512 renormalize=false plan_scoped=true compact_marlin=physical_width_3
+[REDKNOT_ADAPTIVE_TOPK] layer=38/43 native_k=6 mass=0.500000 buckets=3,4,5,6 min_tokens=512 renormalize=false plan_scoped=true compact_marlin=physical_width_3
+REDKNOT_SHARED_SNAPSHOT_AUDIT {"published_total":1,"schema":"redknot_shared_snapshot_publication_v1","segment_hash":"sha256:dfa7a912dec0acd2be98b81be5355b52a28560f023aa342b21f963fab66f9e9f","stores":{"cpu":{"active":true,"pending":false,"ready":true},"gpu":{"active":true,"pending":false,"ready":true},"z_off":{"active":true,"pending":false,"ready":true}},"tp_rank":6,"tp_size":8}
+[REDKNOT_ADAPTIVE_TOPK] layer=39/43 native_k=6 mass=0.500000 buckets=3,4,5,6 min_tokens=512 renormalize=false plan_scoped=true compact_marlin=physical_width_3
+[2026-08-30 11:25:10 TP6] RedKnot V2 snapshot: seg=sha256:b7fedc576d6b28620ac0d5d3c3f0bfeade97a27025763a54be8b27757f095fd8 layer=0 cr=0 len=32768
+[2026-08-30 11:25:10 TP6] RedKnot indexer-KV-reuse SNAPSHOT store: seg=sha256:b7fedc576d6b28620ac0d5d3c3f0bfeade97a27025763a54be8b27757f095fd8 n_q=32768 n_units=8192 selected_units=8192 seg_len=32768 | in-seg-dist 10%:1291[16%] 25%:97[1%] 50%:11[0%] 75%:4[0%] 90%:2[0%]
+[2026-08-30 11:25:10 TP6] REDKNOT_MLA_OFF_FORWARD request_id=snapshot-1-1788060309701291581 forward_id=fc6f7ad830132afea forward_mode=extend q_rows=32768 position_start=0 position_end=32768 position_contiguous=1 plan_mode=snapshot diagnostic_ablation=full
+REDKNOT_SHARED_SNAPSHOT_AUDIT {"published_total":2,"schema":"redknot_shared_snapshot_publication_v1","segment_hash":"sha256:b7fedc576d6b28620ac0d5d3c3f0bfeade97a27025763a54be8b27757f095fd8","stores":{"cpu":{"active":true,"pending":false,"ready":true},"gpu":{"active":true,"pending":false,"ready":true},"z_off":{"active":true,"pending":false,"ready":true}},"tp_rank":6,"tp_size":8}
+[2026-08-30 11:25:25 TP6] RedKnot V2 snapshot: seg=sha256:6eb0a0ffb7f6572ee84d8431fa81069c1e43fb4f4da40a6d8b1a7966a59ded53 layer=0 cr=0 len=32768
+[2026-08-30 11:25:26 TP6] RedKnot indexer-KV-reuse SNAPSHOT store: seg=sha256:6eb0a0ffb7f6572ee84d8431fa81069c1e43fb4f4da40a6d8b1a7966a59ded53 n_q=32768 n_units=8192 selected_units=8192 seg_len=32768 | in-seg-dist 10%:1377[17%] 25%:134[2%] 50%:12[0%] 75%:3[0%] 90%:2[0%]
+[2026-08-30 11:25:26 TP6] REDKNOT_MLA_OFF_FORWARD request_id=snapshot-2-1788060325516907607 forward_id=f55a486097a767959 forward_mode=extend q_rows=32768 position_start=0 position_end=32768 position_contiguous=1 plan_mode=snapshot diagnostic_ablation=full
+REDKNOT_SHARED_SNAPSHOT_AUDIT {"published_total":3,"schema":"redknot_shared_snapshot_publication_v1","segment_hash":"sha256:6eb0a0ffb7f6572ee84d8431fa81069c1e43fb4f4da40a6d8b1a7966a59ded53","stores":{"cpu":{"active":true,"pending":false,"ready":true},"gpu":{"active":true,"pending":false,"ready":true},"z_off":{"active":true,"pending":false,"ready":true}},"tp_rank":6,"tp_size":8}
+[2026-08-30 11:25:41 TP6] RedKnot V2 snapshot: seg=sha256:dd4ddd88c3635c2f6a61d427ed70e51478dbdac72f98bd68f34a109375f686ec layer=0 cr=0 len=32768
+[2026-08-30 11:25:42 TP6] RedKnot indexer-KV-reuse SNAPSHOT store: seg=sha256:dd4ddd88c3635c2f6a61d427ed70e51478dbdac72f98bd68f34a109375f686ec n_q=32768 n_units=8192 selected_units=8192 seg_len=32768 | in-seg-dist 10%:1265[15%] 25%:101[1%] 50%:14[0%] 75%:5[0%] 90%:1[0%]
+[2026-08-30 11:25:42 TP6] REDKNOT_MLA_OFF_FORWARD request_id=snapshot-3-1788060341364422295 forward_id=f2b2cf14f2946b719 forward_mode=extend q_rows=32768 position_start=0 position_end=32768 position_contiguous=1 plan_mode=snapshot diagnostic_ablation=full
+REDKNOT_SHARED_SNAPSHOT_AUDIT {"published_total":4,"schema":"redknot_shared_snapshot_publication_v1","segment_hash":"sha256:dd4ddd88c3635c2f6a61d427ed70e51478dbdac72f98bd68f34a109375f686ec","stores":{"cpu":{"active":true,"pending":false,"ready":true},"gpu":{"active":true,"pending":false,"ready":true},"z_off":{"active":true,"pending":false,"ready":true}},"tp_rank":6,"tp_size":8}
+[2026-08-30 11:25:57 TP6] RedKnot V2 snapshot: seg=sha256:6f989a345a4524cc7890139ba46a563195a6c9a55b1681574e0acea6f5527994 layer=0 cr=0 len=32768
+[2026-08-30 11:25:58 TP6] RedKnot indexer-KV-reuse SNAPSHOT store: seg=sha256:6f989a345a4524cc7890139ba46a563195a6c9a55b1681574e0acea6f5527994 n_q=32768 n_units=8192 selected_units=8192 seg_len=32768 | in-seg-dist 10%:1258[15%] 25%:105[1%] 50%:14[0%] 75%:6[0%] 90%:3[0%]
+[2026-08-30 11:25:58 TP6] REDKNOT_MLA_OFF_FORWARD request_id=snapshot-4-1788060357198077530 forward_id=ff3e4c62e442562ce forward_mode=extend q_rows=32768 position_start=0 position_end=32768 position_contiguous=1 plan_mode=snapshot diagnostic_ablation=full
+REDKNOT_SHARED_SNAPSHOT_AUDIT {"published_total":5,"schema":"redknot_shared_snapshot_publication_v1","segment_hash":"sha256:6f989a345a4524cc7890139ba46a563195a6c9a55b1681574e0acea6f5527994","stores":{"cpu":{"active":true,"pending":false,"ready":true},"gpu":{"active":true,"pending":false,"ready":true},"z_off":{"active":true,"pending":false,"ready":true}},"tp_rank":6,"tp_size":8}
+[2026-08-30 11:26:14 TP6] RedKnot V2 snapshot: seg=sha256:da70bfd17922b727eafe41fc9425157f8be49d820d46d9c46ca36fe08ec51107 layer=0 cr=0 len=32768
+[2026-08-30 11:26:14 TP6] RedKnot indexer-KV-reuse SNAPSHOT store: seg=sha256:da70bfd17922b727eafe41fc9425157f8be49d820d46d9c46ca36fe08ec51107 n_q=32768 n_units=8192 selected_units=8192 seg_len=32768 | in-seg-dist 10%:1211[15%] 25%:106[1%] 50%:16[0%] 75%:7[0%] 90%:2[0%]
+[2026-08-30 11:26:14 TP6] REDKNOT_MLA_OFF_FORWARD request_id=snapshot-5-1788060373761699471 forward_id=f70a6f6a46314579a forward_mode=extend q_rows=32768 position_start=0 position_end=32768 position_contiguous=1 plan_mode=snapshot diagnostic_ablation=full
+REDKNOT_SHARED_SNAPSHOT_AUDIT {"published_total":6,"schema":"redknot_shared_snapshot_publication_v1","segment_hash":"sha256:da70bfd17922b727eafe41fc9425157f8be49d820d46d9c46ca36fe08ec51107","stores":{"cpu":{"active":true,"pending":false,"ready":true},"gpu":{"active":true,"pending":false,"ready":true},"z_off":{"active":true,"pending":false,"ready":true}},"tp_rank":6,"tp_size":8}
+[2026-08-30 11:26:31 TP6] RedKnot V2 snapshot: seg=sha256:e438b23c8a10ccd4f225484c8b0b5854a9645c9430315a3ea14cc4030a16aba3 layer=0 cr=0 len=32768
+[2026-08-30 11:26:31 TP6] RedKnot indexer-KV-reuse SNAPSHOT store: seg=sha256:e438b23c8a10ccd4f225484c8b0b5854a9645c9430315a3ea14cc4030a16aba3 n_q=32768 n_units=8192 selected_units=8192 seg_len=32768 | in-seg-dist 10%:1274[16%] 25%:118[1%] 50%:18[0%] 75%:6[0%] 90%:3[0%]
+[2026-08-30 11:26:31 TP6] REDKNOT_MLA_OFF_FORWARD request_id=snapshot-6-1788060391114435283 forward_id=fe7d33ef7bb2c7599 forward_mode=extend q_rows=32768 position_start=0 position_end=32768 position_contiguous=1 plan_mode=snapshot diagnostic_ablation=full
+REDKNOT_SHARED_SNAPSHOT_AUDIT {"published_total":7,"schema":"redknot_shared_snapshot_publication_v1","segment_hash":"sha256:e438b23c8a10ccd4f225484c8b0b5854a9645c9430315a3ea14cc4030a16aba3","stores":{"cpu":{"active":true,"pending":false,"ready":true},"gpu":{"active":true,"pending":false,"ready":true},"z_off":{"active":true,"pending":false,"ready":true}},"tp_rank":6,"tp_size":8}
+[2026-08-30 11:26:47 TP6] RedKnot V2 snapshot: seg=sha256:1a5650522e516dd0cfc15375c7b1824feb47222d79a178f84834b837e914f8fb layer=0 cr=0 len=32768
+[2026-08-30 11:26:47 TP6] RedKnot indexer-KV-reuse SNAPSHOT store: seg=sha256:1a5650522e516dd0cfc15375c7b1824feb47222d79a178f84834b837e914f8fb n_q=32768 n_units=8192 selected_units=8192 seg_len=32768 | in-seg-dist 10%:1334[16%] 25%:81[1%] 50%:9[0%] 75%:4[0%] 90%:3[0%]
+[2026-08-30 11:26:47 TP6] REDKNOT_MLA_OFF_FORWARD request_id=snapshot-7-1788060406825582446 forward_id=f4e03f2112d6b2e00 forward_mode=extend q_rows=32768 position_start=0 position_end=32768 position_contiguous=1 plan_mode=snapshot diagnostic_ablation=full
+REDKNOT_SHARED_SNAPSHOT_AUDIT {"published_total":8,"schema":"redknot_shared_snapshot_publication_v1","segment_hash":"sha256:1a5650522e516dd0cfc15375c7b1824feb47222d79a178f84834b837e914f8fb","stores":{"cpu":{"active":true,"pending":false,"ready":true},"gpu":{"active":true,"pending":false,"ready":true},"z_off":{"active":true,"pending":false,"ready":true}},"tp_rank":6,"tp_size":8}

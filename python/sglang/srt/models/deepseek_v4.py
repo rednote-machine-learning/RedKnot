@@ -4,6 +4,7 @@ import concurrent.futures
 import logging
 import os
 import time
+from collections.abc import Mapping
 from contextlib import nullcontext
 from typing import (
     TYPE_CHECKING,
@@ -85,6 +86,7 @@ from sglang.srt.model_executor.forward_context import (
     get_attn_backend,
     get_token_to_kv_pool,
 )
+
 from sglang.srt.model_loader.utils import maybe_executor_submit, should_async_load
 from sglang.srt.model_loader.weight_utils import default_weight_loader
 from sglang.srt.models.dbrx import ReplicatedLinear
@@ -108,6 +110,85 @@ from sglang.srt.utils.hf_transformers_utils import get_rope_config
 
 logger = logging.getLogger(__name__)
 
+# Keep the production path independent of the optional timing module.  The
+# environment is fixed before worker startup; when timing is disabled every
+# callsite reuses one stateless no-op context without importing timing state.
+_REDKNOT_V4_TIMING_NOOP = nullcontext()
+if os.environ.get("REDKNOT_V4_TIMING", "0") == "1":
+    from sglang.srt.layers.attention.redknot.dsv4_timing import (
+        timed as _redknot_v4_timed,
+    )
+else:
+
+    def _redknot_v4_timed(*_args, **_kwargs):
+        return _REDKNOT_V4_TIMING_NOOP
+
+
+def _pack_positionless_swa_record(pack: object) -> torch.Tensor:
+    """Materialize the native DSV4 pack as canonical 584-byte rows.
+
+    ``quant_to_nope_fp8_rope_bf16_pack_triton`` returns a structured pack,
+    while the shared-latent artifact deliberately owns the byte-exact storage
+    representation consumed by FlashMLA.  Preserve every native bit here; in
+    particular, casting FP8/UE8M0 values to uint8 would change their values
+    instead of exposing their storage bytes.
+    """
+
+    field_names = (
+        "k_nope_fp8",
+        "k_rope_bf16",
+        "scale_k_nope_ue8m0",
+    )
+    try:
+        k_nope_fp8, k_rope_bf16, scale_k_nope_ue8m0 = (
+            getattr(pack, field_name) for field_name in field_names
+        )
+    except AttributeError as error:
+        raise TypeError("native DSV4 SWA pack is missing a tensor field") from error
+
+    components = (k_nope_fp8, k_rope_bf16, scale_k_nope_ue8m0)
+    if not all(isinstance(component, torch.Tensor) for component in components):
+        raise TypeError("native DSV4 SWA pack fields must be tensors")
+    if k_nope_fp8.ndim != 2 or int(k_nope_fp8.shape[1]) != 448:
+        raise ValueError("native DSV4 no-PE FP8 pack must have shape [rows, 448]")
+    rows = int(k_nope_fp8.shape[0])
+    if k_rope_bf16.ndim != 2 or tuple(k_rope_bf16.shape) != (rows, 64):
+        raise ValueError("native DSV4 RoPE pack must have shape [rows, 64]")
+    if (
+        scale_k_nope_ue8m0.ndim != 2
+        or tuple(scale_k_nope_ue8m0.shape) != (rows, 7)
+    ):
+        raise ValueError("native DSV4 no-PE scale pack must have shape [rows, 7]")
+    if int(k_nope_fp8.element_size()) != 1:
+        raise TypeError("native DSV4 no-PE FP8 values must occupy one byte")
+    if k_rope_bf16.dtype != torch.bfloat16:
+        raise TypeError("native DSV4 RoPE values must be bfloat16")
+    if int(scale_k_nope_ue8m0.element_size()) != 1:
+        raise TypeError("native DSV4 UE8M0 scales must occupy one byte")
+    if any(component.device != k_nope_fp8.device for component in components[1:]):
+        raise ValueError("native DSV4 SWA pack fields must share one device")
+
+    nope_bytes = k_nope_fp8.contiguous().view(torch.uint8).reshape(rows, 448)
+    rope_bytes = k_rope_bf16.contiguous().view(torch.uint8).reshape(rows, 128)
+    scale_bytes = (
+        scale_k_nope_ue8m0.contiguous().view(torch.uint8).reshape(rows, 7)
+    )
+    scale_pad = torch.zeros(
+        (rows, 1), dtype=torch.uint8, device=k_nope_fp8.device
+    )
+    canonical = torch.cat(
+        (nope_bytes, rope_bytes, scale_bytes, scale_pad), dim=1
+    ).contiguous()
+    if (
+        canonical.dtype != torch.uint8
+        or canonical.ndim != 2
+        or tuple(canonical.shape) != (rows, 584)
+        or not canonical.is_contiguous()
+    ):
+        raise RuntimeError("canonical DSV4 SWA pack geometry changed")
+    return canonical
+
+
 # Process-local accumulator for RedKnot sparse-FFN statistics. Tracks the number
 # of tokens that actually ran the MoE vs the total tokens seen on sparse-eligible
 # layers, so a benchmark can report the *measured* MoE-FLOPs saving (keep ratio)
@@ -119,11 +200,21 @@ _REDKNOT_FFN_STATS = {"kept": 0, "total": 0, "sparse_layer_calls": 0}
 def redknot_ffn_stats_snapshot() -> dict:
     s = _REDKNOT_FFN_STATS
     kept, total = s["kept"], s["total"]
+    full_ratio = (kept / total) if total > 0 else 1.0
+    # DSV4 activates one shared plus six routed experts for FULL tokens;
+    # SHARED_ONLY tokens retain one of those seven expert FFNs.
+    expert_compute_ratio = (
+        (kept * 7 + (total - kept)) / (total * 7) if total > 0 else 1.0
+    )
     return {
         "kept_tokens": kept,
+        "shared_only_tokens": total - kept,
         "total_tokens": total,
         "sparse_layer_calls": s["sparse_layer_calls"],
-        "keep_ratio": (kept / total) if total > 0 else 1.0,
+        "keep_ratio": full_ratio,
+        "full_ratio": full_ratio,
+        "expert_compute_ratio": expert_compute_ratio,
+        "expert_compute_saving": 1.0 - expert_compute_ratio,
     }
 
 
@@ -143,13 +234,15 @@ def _redknot_ffn_stats_record(kept: int, total: int) -> None:
     ):
         snap = redknot_ffn_stats_snapshot()
         logger.info(
-            "[RedKnot sparse-FFN STATS] sparse_layer_calls=%d kept=%d total=%d "
-            "keep_ratio=%.4f (MoE FLOPs on sparse layers ~= %.1f%% of dense)",
+            "[RedKnot sparse-FFN STATS] sparse_layer_calls=%d full=%d "
+            "shared_only=%d total=%d full_ratio=%.4f "
+            "expert_compute_ratio=%.4f",
             snap["sparse_layer_calls"],
             snap["kept_tokens"],
+            snap["shared_only_tokens"],
             snap["total_tokens"],
-            snap["keep_ratio"],
-            snap["keep_ratio"] * 100.0,
+            snap["full_ratio"],
+            snap["expert_compute_ratio"],
         )
 
 
@@ -470,34 +563,384 @@ class MQALayer(nn.Module):
         fused_q_norm_rope(q, q_out, self.eps, self.freqs_cis, positions)
         return q_out
 
+    def _compute_q_b_sparse_restore(
+        self,
+        q_lora: torch.Tensor,
+        positions: torch.Tensor,
+        mla_off_context,
+    ):
+        """Project rank-local global/dirty-local Q domains exactly once.
+
+        ``wq_b`` is already column-parallel, but the native implementation
+        still evaluates all eight owned heads on every row.  For a certified
+        MLA restore, global heads remain full-row while offline-local heads
+        need Q only on the boundary/query rows that attention will execute.
+        Canonical checkpoint block scales are sliced on output-block rows.
+        When startup has instead converted them to DeepGEMM's N-dependent
+        packed UE8M0 layout, each contiguous head run is inverse-laid-out,
+        sliced in canonical block space, and repacked for its new output width.
+        Direct packed-scale slicing is forbidden.
+        """
+
+        if not (
+            mla_off_context is not None
+            and getattr(mla_off_context, "is_restore", False)
+            and int(getattr(mla_off_context, "reused_row_count", 0)) > 0
+        ):
+            raise ValueError("sparse-Q requires a reusable MLA restore context")
+        if self.use_fused_qk_norm_rope:
+            raise ValueError("sparse-Q does not support the fused HIP Q path")
+        if q_lora.ndim != 2 or positions.ndim != 1:
+            raise ValueError("sparse-Q requires flat prefill tensors")
+        if int(q_lora.shape[0]) != int(positions.numel()):
+            raise ValueError("sparse-Q rows do not match positions")
+
+        from sglang.srt.layers.attention.redknot.dsv4_sparse_q import (
+            build_sparse_q_plan,
+            materialize_sparse_q_run_scale,
+            ue8m0_scale_slice_for_head_run,
+        )
+
+        online_rows = mla_off_context.online_local_row_indices
+        online_rows_cpu = mla_off_context.online_local_row_indices_cpu
+        if (
+            not isinstance(online_rows, torch.Tensor)
+            or online_rows.ndim != 1
+            or online_rows.dtype != torch.long
+            or online_rows.device != q_lora.device
+            or not isinstance(online_rows_cpu, torch.Tensor)
+            or online_rows_cpu.ndim != 1
+            or online_rows_cpu.dtype != torch.long
+            or online_rows_cpu.device.type != "cpu"
+        ):
+            raise ValueError("sparse-Q online row certificate is incomplete")
+        plan = build_sparse_q_plan(
+            self.tp_rank,
+            self.tp_size,
+            self.n_heads,
+            tuple(int(axis) for axis in mla_off_context.local_head_axes),
+            int(q_lora.shape[0]),
+            tuple(int(value) for value in online_rows_cpu.tolist()),
+            layer_id=self.layer_id,
+            head_dim=self.head_dim,
+        )
+        if plan.owned_head_count != self.n_local_heads:
+            raise ValueError("sparse-Q plan does not match wq_b TP sharding")
+        mla_off_context.sparse_q_plan = plan
+
+        method = getattr(self.wq_b, "quant_method", None)
+        quant_config = getattr(method, "quant_config", None)
+        block_size = getattr(quant_config, "weight_block_size", None)
+        partial_linear = getattr(method, "w8a8_block_fp8_linear", None)
+        if method is None:
+            raise ValueError("sparse-Q requires an FP8 wq_b quantization method")
+        if bool(getattr(method, "use_marlin", False)):
+            raise ValueError("sparse-Q does not support Marlin-repacked wq_b weights")
+        if (
+            not bool(getattr(method, "block_quant", False))
+            or bool(getattr(method, "use_mxfp8", False))
+            or not callable(partial_linear)
+            or tuple(block_size or ()) != (128, 128)
+            or not hasattr(self.wq_b, "weight_scale_inv")
+        ):
+            raise ValueError("sparse-Q requires block-FP8 wq_b with 128x128 scales")
+
+        from sglang.srt.layers.quantization.fp8_utils import (
+            _use_aiter_bpreshuffle_gfx95,
+            aiter_w8a8_block_fp8_linear,
+            inverse_transform_scale_ue8m0,
+            transform_scale_ue8m0,
+        )
+
+        # AITER's gfx95 bpreshuffle mutates the full weight in place, and the
+        # kernel decision is N-dependent.  A sparse head run can therefore
+        # select a different layout than the original full-N linear.  Do not
+        # reinterpret or partially slice that backend-specific representation.
+        if (
+            _use_aiter_bpreshuffle_gfx95
+            and partial_linear is aiter_w8a8_block_fp8_linear
+        ):
+            raise ValueError("sparse-Q does not support AITER-bpreshuffled wq_b weights")
+
+        weight = self.wq_b.weight
+        weight_scale = self.wq_b.weight_scale_inv
+        if not isinstance(weight, torch.Tensor) or weight.ndim != 2:
+            raise ValueError("sparse-Q requires a two-dimensional wq_b weight")
+        if not isinstance(weight_scale, torch.Tensor) or weight_scale.ndim != 2:
+            raise ValueError("sparse-Q requires a two-dimensional wq_b scale")
+        full_output_rows = int(weight.shape[0])
+        input_size = int(weight.shape[1])
+        fp8_weight_dtypes = (torch.float8_e4m3fn,)
+        fp8_fnuz_dtype = getattr(torch, "float8_e4m3fnuz", None)
+        if fp8_fnuz_dtype is not None:
+            fp8_weight_dtypes += (fp8_fnuz_dtype,)
+        if (
+            full_output_rows != self.n_local_heads * self.head_dim
+            or input_size != self.q_lora_rank
+            or full_output_rows % 128
+            or input_size % 128
+        ):
+            raise ValueError("sparse-Q wq_b weight geometry changed")
+        if (
+            weight.dtype not in fp8_weight_dtypes
+            or not weight.is_contiguous()
+            or tuple(int(value) for value in weight.stride()) != (input_size, 1)
+            or bool(getattr(weight, "is_shuffled", False))
+        ):
+            raise ValueError(
+                "sparse-Q requires an ordinary contiguous E4M3 wq_b weight layout"
+            )
+        canonical_scale = bool(
+            weight_scale.dtype == torch.float32
+            and weight_scale.ndim == 2
+            and tuple(int(value) for value in weight_scale.shape)
+            == (full_output_rows // 128, input_size // 128)
+        )
+        packed_scale_shape = (
+            full_output_rows,
+            ((input_size // 128) + 3) // 4,
+        )
+        packed_scale_stride = (1, full_output_rows)
+        packed_scale = bool(
+            weight_scale.dtype == torch.int32
+            and bool(getattr(weight_scale, "format_ue8m0", False))
+            and weight_scale.ndim == 2
+            and tuple(int(value) for value in weight_scale.shape)
+            == packed_scale_shape
+            and tuple(int(value) for value in weight_scale.stride())
+            == packed_scale_stride
+        )
+        if not (canonical_scale or packed_scale):
+            raise ValueError(
+                "sparse-Q requires canonical FP32 or packed UE8M0 wq_b scales"
+            )
+
+        scale_cache = getattr(self, "_redknot_sparse_q_scale_cache", None)
+        cache_identity = (
+            int(weight.data_ptr()),
+            int(weight_scale.data_ptr()),
+            tuple(int(value) for value in weight.shape),
+            tuple(int(value) for value in weight_scale.shape),
+            tuple(int(value) for value in weight_scale.stride()),
+            str(weight_scale.dtype),
+            bool(getattr(weight_scale, "format_ue8m0", False)),
+        )
+        if not isinstance(scale_cache, dict) or scale_cache.get(
+            "identity"
+        ) != cache_identity:
+            scale_cache = {"identity": cache_identity, "runs": {}}
+            self._redknot_sparse_q_scale_cache = scale_cache
+
+        def project_run(
+            source: torch.Tensor,
+            run,
+            run_positions: torch.Tensor,
+        ) -> torch.Tensor:
+            run_key = (int(run.start_axis), int(run.end_axis))
+            run_scales = scale_cache["runs"]
+            run_scale = run_scales.get(run_key)
+            if run_scale is None:
+                geometry = ue8m0_scale_slice_for_head_run(
+                    run,
+                    full_output_rows=full_output_rows,
+                    input_size=input_size,
+                    block_shape=(128, 128),
+                )
+                run_scale = materialize_sparse_q_run_scale(
+                    weight_scale,
+                    geometry,
+                    inverse_transform=inverse_transform_scale_ue8m0,
+                    transform=transform_scale_ue8m0,
+                )
+                run_scales[run_key] = run_scale
+            run_weight = weight.narrow(
+                0, int(run.output_row_start), int(run.output_rows)
+            )
+            projected = partial_linear(
+                input=source,
+                weight=run_weight,
+                block_size=block_size,
+                weight_scale=run_scale,
+                input_scale=None,
+                bias=None,
+            ).view(-1, int(run.head_count), self.head_dim)
+            normalized = torch.empty_like(projected)
+            fused_q_norm_rope(
+                projected,
+                normalized,
+                self.eps,
+                self.freqs_cis,
+                run_positions,
+            )
+            return normalized
+
+        # Materialize only projected head rows.  In particular, do not allocate
+        # either [T,64,D] or a holey rank-local [T,H_owned,D] activation whose
+        # clean-local slots are never consumed.
+        from sglang.srt.layers.attention.redknot.dsv4_sparse_q_runtime import (
+            PackedSparseQBuilder,
+        )
+
+        transaction = getattr(
+            mla_off_context, "_redknot_forward_composite_transaction", None
+        )
+        sequential_arena = getattr(transaction, "q_arena", None)
+        if sequential_arena is not None:
+            reservation = sequential_arena.reservation_for(self.layer_id)
+            if str(reservation.plan.digest) != str(plan.digest):
+                raise ValueError(
+                    "sequential Q reservation differs from the live sparse plan"
+                )
+            plan = reservation.plan
+            mla_off_context.sparse_q_plan = plan
+            sparse_q = sequential_arena.begin_layer(
+                self.layer_id, online_rows
+            )
+            packed_values = reservation.values
+        else:
+            packed_values = torch.empty(
+                (int(plan.projected_head_rows), self.head_dim),
+                device=q_lora.device,
+                dtype=q_lora.dtype,
+            )
+            sparse_q = PackedSparseQBuilder(
+                plan=plan,
+                values=packed_values,
+                local_rows=online_rows,
+            )
+        for run in plan.global_runs:
+            run_q = project_run(q_lora, run, positions)
+            sparse_q.write(
+                scope="global",
+                start_axis=int(run.start_axis),
+                end_axis=int(run.end_axis),
+                projected=run_q,
+            )
+        if int(online_rows.numel()) > 0:
+            local_source = q_lora.index_select(0, online_rows)
+            local_positions = positions.index_select(0, online_rows)
+            for run in plan.local_runs:
+                run_q = project_run(local_source, run, local_positions)
+                sparse_q.write(
+                    scope="local",
+                    start_axis=int(run.start_axis),
+                    end_axis=int(run.end_axis),
+                    projected=run_q,
+                )
+        elif plan.local_runs:
+            # Zero-row local runs occupy no arena space, but still belong to
+            # the immutable layout and must be marked complete.  Construct
+            # their exact logical shape directly: a zero-sized dimension
+            # cannot be expanded from 0 to the run's nonzero head count.
+            for run in plan.local_runs:
+                empty = q_lora.new_empty(
+                    (0, int(run.head_count), self.head_dim)
+                )
+                sparse_q.write(
+                    scope="local",
+                    start_axis=int(run.start_axis),
+                    end_axis=int(run.end_axis),
+                    projected=empty,
+                )
+        if sequential_arena is not None:
+            return sparse_q.finish()
+        return sparse_q.finish(
+            projection_token=(
+                f"layer:{self.layer_id}:plan:{plan.digest}:"
+                f"storage:{int(packed_values.data_ptr())}"
+            )
+        )
+
     def _compute_kv_to_cache(
         self,
         x: torch.Tensor,
         positions: torch.Tensor,
         forward_batch: ForwardBatch,
         qkv_a: Optional[torch.Tensor] = None,
-    ) -> None:
+        row_indices: Optional[torch.Tensor] = None,
+        capture_positionless: bool = False,
+    ) -> Optional[torch.Tensor]:
         """Fused: rmsnorm + RoPE + write directly to FlashMLA paged cache.
 
         Replaces the bf16-kv-intermediate path. Used everywhere except the DSA
         prefill-CP case (which needs bf16 kv for the cross-rank all-gather).
         """
+        raw_loc = forward_batch.out_cache_loc
+        if row_indices is not None:
+            if (
+                row_indices.ndim != 1
+                or row_indices.dtype != torch.long
+                or row_indices.device != x.device
+            ):
+                raise ValueError("dirty KV rows must be a device int64 vector")
+            if qkv_a is not None:
+                raise ValueError(
+                    "dirty-only KV is incompatible with fused wqkv_a; "
+                    "the shared-latent profile must de-fuse wq_a/wkv"
+                )
+            if int(row_indices.numel()) == 0:
+                return None
+            x = x.index_select(0, row_indices)
+            positions = positions.index_select(0, row_indices)
+            raw_loc = raw_loc.index_select(0, row_indices)
         if qkv_a is not None:
             kv = qkv_a[..., self.q_lora_rank :]
         else:
             kv, _ = self.wkv(x)
+        positionless_packed = None
+        if bool(capture_positionless):
+            if row_indices is not None:
+                raise ValueError(
+                    "snapshot canonical KV capture requires the complete row set"
+                )
+            # Snapshot is an offline producer, so it may materialize one
+            # canonical packed copy while the serving restore path remains
+            # dirty-only.  Applying the exact native norm/RoPE kernel at
+            # position zero yields the position-independent 584-byte record;
+            # this avoids rereading an SWA ring after an 8K fused writer may
+            # already have recycled physical slots.
+            canonical = kv.contiguous().clone()
+            zero_positions = torch.zeros_like(positions)
+            fused_norm_rope_inplace(
+                canonical,
+                self.kv_norm.weight.data,
+                self.eps,
+                self.freqs_cis,
+                zero_positions,
+            )
+            from sglang.srt.layers.attention.dsv4.quant_k_cache import (
+                quant_to_nope_fp8_rope_bf16_pack_triton,
+            )
+
+            native_positionless_pack = quant_to_nope_fp8_rope_bf16_pack_triton(
+                canonical.bfloat16()
+            )
+            positionless_packed = _pack_positionless_swa_record(
+                native_positionless_pack
+            )
+            if (
+                positionless_packed.dtype != torch.uint8
+                or positionless_packed.ndim != 2
+                or int(positionless_packed.shape[0]) != int(x.shape[0])
+                or int(positionless_packed.shape[1]) != 584
+            ):
+                raise RuntimeError(
+                    "canonical shared-latent SWA pack geometry changed"
+                )
         token_to_kv_pool = get_token_to_kv_pool()
         if TYPE_CHECKING:
             assert isinstance(token_to_kv_pool, DeepSeekV4TokenToKVPool)
         token_to_kv_pool.set_swa_key_buffer_radix_fused_norm_rope(
             layer_id=self.layer_id,
-            raw_loc=forward_batch.out_cache_loc,
+            raw_loc=raw_loc,
             kv=kv,
             kv_weight=self.kv_norm.weight.data,
             eps=self.eps,
             freqs_cis=self.freqs_cis,
             positions=positions,
+            cache_translation=row_indices is None,
         )
+        return positionless_packed
 
     def _compute_kv_bf16(
         self,
@@ -678,8 +1121,6 @@ class MQALayer(nn.Module):
             q = self._compute_q_b(q_lora, positions, q_out)
             self._compute_kv_to_cache(x_linear, positions, forward_batch, qkv_a=qkv_a)
 
-        del qkv_a
-
         if self.indexer is not None:
             current_stream.wait_stream(stream_compressor)
             if stream_indexer_compressor is not None:
@@ -703,8 +1144,59 @@ class MQALayer(nn.Module):
         attn_backend,
         q_out: Optional[torch.Tensor] = None,
         x_quant=None,
+        mla_off_context=None,
     ) -> Tuple[torch.Tensor, Optional[torch.Tensor]]:
         x_linear = x_quant if x_quant is not None else x
+        diagnostic_ablation = str(
+            getattr(mla_off_context, "diagnostic_ablation", "full") or "full"
+        )
+        diagnostic_zoff_only = diagnostic_ablation == "zoff_only"
+        diagnostic_shared_only = diagnostic_ablation == "shared_only"
+        shared_restore_requested = bool(
+            mla_off_context is not None
+            and getattr(mla_off_context, "is_restore", False)
+            and tuple(getattr(mla_off_context, "shared_restore_states", ()) or ())
+        )
+        shared_snapshot_requested = bool(
+            mla_off_context is not None
+            and getattr(mla_off_context, "is_snapshot", False)
+            and getattr(mla_off_context, "shared_snapshot_enabled", False)
+            and callable(
+                getattr(
+                    attn_backend,
+                    "capture_mla_off_shared_snapshot_chunk",
+                    None,
+                )
+            )
+        )
+        if shared_snapshot_requested:
+            # A context must never carry a prior layer/attempt's activation
+            # into this KV producer.  The current layer installs a fresh value
+            # only after its canonical position-zero write succeeds.
+            self._clear_mla_off_ephemeral_snapshot_state(mla_off_context)
+        if shared_restore_requested and self.fuse_wqa_wkv:
+            # A fused wqkv_a evaluates the 512 KV output columns for every
+            # clean row before sparse-Q/shared-cache preflight can omit them.
+            # Production shared-latent mode therefore requires the launcher to
+            # expose independent wq_a and wkv modules.  Silently using the
+            # fused tensor would preserve correctness while destroying the
+            # claimed KV saving.
+            raise RuntimeError(
+                "shared-latent restore requires SGLANG_OPT_FUSE_WQA_WKV=0"
+            )
+        if (
+            (shared_restore_requested or shared_snapshot_requested)
+            and self.use_fused_qk_norm_rope
+        ):
+            # The HIP fused helper owns a single all-row Q+KV invocation and
+            # cannot represent packed global/all-row plus local/dirty-row Q,
+            # nor a dirty-only KV destination.  Falling through would be
+            # numerically correct but would silently pay the full projection
+            # and overwrite the clean shared-latent rows.
+            raise RuntimeError(
+                "shared-latent restore is incompatible with the fused HIP "
+                "QK-normalize/RoPE path"
+            )
         if self.fuse_wqa_wkv:
             qkv_a, _ = self.wqkv_a(x_linear)
             q_lora = qkv_a[..., : self.q_lora_rank]
@@ -713,7 +1205,18 @@ class MQALayer(nn.Module):
             qkv_a = None
 
         use_cp = self.dsa_enable_prefill_cp and dsa_use_prefill_cp(forward_batch)
+        if shared_restore_requested and use_cp:
+            # CP all-gathers the complete bf16 latent before writing cache.
+            # A dirty-row collective and matching destination permutation are
+            # not implemented, so advertising clean-row KV omission here
+            # would be false.  Keep this a hard serving contract.
+            raise RuntimeError(
+                "shared-latent restore does not support DSA prefill context "
+                "parallelism"
+            )
         kv: Optional[torch.Tensor]
+        shared_restore_committed = False
+        zoff_restore_committed = False
 
         if self.use_fused_qk_norm_rope:
             if _is_gfx95_supported:
@@ -774,46 +1277,433 @@ class MQALayer(nn.Module):
                 )
         else:
             q_lora = self.q_norm(q_lora)
-            q = self._compute_q_b(q_lora, positions, q_out)
-            if use_cp:
+            sparse_q_requested = bool(
+                mla_off_context is not None
+                and getattr(mla_off_context, "is_restore", False)
+                and int(getattr(mla_off_context, "reused_row_count", 0)) > 0
+                and not diagnostic_shared_only
+            )
+            commit_reuse_layer = getattr(
+                attn_backend, "commit_mla_off_reuse_layer", None
+            )
+            if diagnostic_shared_only and shared_restore_requested:
+                if not callable(commit_reuse_layer):
+                    raise RuntimeError(
+                        "shared-only backend has no cache receipt path"
+                    )
+                with _redknot_v4_timed(
+                    "shared_restore_commit", layer_id=self.layer_id
+                ):
+                    shared_only_committed = bool(
+                        commit_reuse_layer(
+                            mla_off_context=mla_off_context,
+                            projection=None,
+                            local_success=True,
+                            positions=positions,
+                            forward_batch=forward_batch,
+                            layer=self.attn_mqa,
+                            compress_ratio=self.compress_ratio,
+                            freqs_cis=self.freqs_cis,
+                            compressor=self.compressor,
+                            indexer=self.indexer,
+                            wo_a_weight=self.wo_a.weight,
+                            owned_heads=self.n_local_heads,
+                            groups=self.n_local_groups,
+                            head_dim=self.head_dim,
+                            o_lora_rank=self.o_lora_rank,
+                            device=x.device,
+                        )
+                    )
+                if not shared_only_committed:
+                    raise RuntimeError(
+                        "shared-only forward rejected its cache receipt"
+                    )
+            if sparse_q_requested:
+                sparse_q = None
+                sparse_q_error = None
+                try:
+                    with _redknot_v4_timed(
+                        "q_sparse_projection", layer_id=self.layer_id
+                    ):
+                        sparse_q = self._compute_q_b_sparse_restore(
+                            q_lora, positions, mla_off_context
+                        )
+                except BaseException as error:
+                    sparse_q_error = error
+                # v3 binds packed Q, every shared cache/state target, the
+                # persistent z_off views and the ragged batch in one TP vote.
+                # It also restores clean cache rows only after that vote.  The
+                # legacy Q-only protocol remains available solely for an old
+                # z_off artifact that has no shared-latent state.
+                if diagnostic_zoff_only:
+                    commit_zoff_only = getattr(
+                        attn_backend, "commit_mla_off_zoff_only_layer", None
+                    )
+                    if not callable(commit_zoff_only):
+                        raise RuntimeError(
+                            "zoff_only diagnostic has no certified commit path"
+                        )
+                    sparse_q_committed = bool(
+                        commit_zoff_only(
+                            mla_off_context=mla_off_context,
+                            projection=sparse_q,
+                            local_success=sparse_q_error is None,
+                            forward_batch=forward_batch,
+                            wo_a_weight=self.wo_a.weight,
+                            owned_heads=self.n_local_heads,
+                            groups=self.n_local_groups,
+                            head_dim=self.head_dim,
+                            o_lora_rank=self.o_lora_rank,
+                            device=x.device,
+                        )
+                    )
+                elif shared_restore_requested:
+                    if not callable(commit_reuse_layer):
+                        raise RuntimeError(
+                            "shared-latent backend has no composite commit path"
+                        )
+                    with _redknot_v4_timed(
+                        "shared_restore_commit", layer_id=self.layer_id
+                    ):
+                        sparse_q_committed = bool(
+                            commit_reuse_layer(
+                                mla_off_context=mla_off_context,
+                                projection=sparse_q,
+                                local_success=sparse_q_error is None,
+                                positions=positions,
+                                forward_batch=forward_batch,
+                                layer=self.attn_mqa,
+                                compress_ratio=self.compress_ratio,
+                                freqs_cis=self.freqs_cis,
+                                compressor=self.compressor,
+                                indexer=self.indexer,
+                                wo_a_weight=self.wo_a.weight,
+                                owned_heads=self.n_local_heads,
+                                groups=self.n_local_groups,
+                                head_dim=self.head_dim,
+                                o_lora_rank=self.o_lora_rank,
+                                device=x.device,
+                            )
+                        )
+                else:
+                    commit_sparse_q = getattr(
+                        attn_backend, "commit_mla_off_sparse_q", None
+                    )
+                    with _redknot_v4_timed(
+                        "sparse_q_commit", layer_id=self.layer_id
+                    ):
+                        sparse_q_committed = bool(
+                            callable(commit_sparse_q)
+                            and commit_sparse_q(
+                                mla_off_context=mla_off_context,
+                                projection=sparse_q,
+                                local_success=sparse_q_error is None,
+                                device=x.device,
+                            )
+                        )
+                if sparse_q_committed:
+                    try:
+                        if shared_restore_requested:
+                            # The composite preflight already covered attention
+                            # metadata and every cache builder before its only TP
+                            # collective; a second readiness vote here would put
+                            # the old per-layer synchronization tax back.
+                            backend_ready = bool(
+                                getattr(
+                                    mla_off_context,
+                                    "sparse_q_backend_preflight_complete",
+                                    False,
+                                )
+                            )
+                        else:
+                            preflight_sparse_q = getattr(
+                                attn_backend,
+                                "preflight_mla_off_sparse_q_backend",
+                                None,
+                            )
+                            backend_ready = bool(
+                                callable(preflight_sparse_q)
+                                and preflight_sparse_q(
+                                    mla_off_context=mla_off_context,
+                                    q=sparse_q,
+                                    layer=self.attn_mqa,
+                                    forward_batch=forward_batch,
+                                    device=x.device,
+                                )
+                            )
+                        if not backend_ready:
+                            raise RuntimeError(
+                                "sparse-Q backend preflight failed after commit"
+                            )
+                        q = sparse_q
+                    except BaseException as postcommit_q_error:
+                        if not (
+                            shared_restore_requested or diagnostic_zoff_only
+                        ):
+                            raise
+                        # Omitted slots are already committed.  Preserve a
+                        # shape/identity carrier and defer this failure to the
+                        # single post-pipeline TP rendezvous; no rank may leave
+                        # while peers enter attention or wo_b.
+                        q = sparse_q
+                        mla_off_context.record_pipeline_error(
+                            postcommit_q_error
+                        )
+                else:
+                    # Every TP rank reaches this branch after the collective
+                    # rejected the partial proposal. Recompute a complete
+                    # rank-local Q before the ordinary padded/native fallback.
+                    with _redknot_v4_timed(
+                        "q_dense_fallback", layer_id=self.layer_id
+                    ):
+                        q = self._compute_q_b(q_lora, positions, q_out)
+                    if sparse_q_error is not None:
+                        logger.warning(
+                            "RedKnot sparse-Q fell back at layer %d: %s",
+                            self.layer_id,
+                            sparse_q_error,
+                        )
+            else:
+                with _redknot_v4_timed(
+                    "q_dense_projection", layer_id=self.layer_id
+                ):
+                    if diagnostic_shared_only and shared_restore_requested:
+                        try:
+                            prior_pipeline_error = getattr(
+                                mla_off_context,
+                                "composite_pipeline_error",
+                                None,
+                            )
+                            if prior_pipeline_error is not None:
+                                raise prior_pipeline_error
+                            q = self._compute_q_b(q_lora, positions, q_out)
+                        except BaseException as full_q_error:
+                            # Cache omissions are already certified.  Carry
+                            # only the ordinary rank-local Q shape; attention
+                            # observes the sticky context error before reading
+                            # any value and every TP rank reaches finalization.
+                            make_carrier = getattr(
+                                attn_backend,
+                                "make_mla_off_failure_carrier",
+                                None,
+                            )
+                            if not callable(make_carrier):
+                                raise
+                            q = make_carrier(
+                                mla_off_context=mla_off_context,
+                                reference=x,
+                                shape=(
+                                    int(x.shape[0]),
+                                    int(self.n_local_heads),
+                                    int(self.head_dim),
+                                ),
+                                stage="shared_only_full_q",
+                                error=full_q_error,
+                            )
+                            mla_off_context.record_pipeline_error(full_q_error)
+                    else:
+                        q = self._compute_q_b(q_lora, positions, q_out)
+            shared_restore_committed = bool(
+                shared_restore_requested
+                and bool(
+                    getattr(
+                        mla_off_context, "composite_irreversible", False
+                    )
+                    or getattr(
+                        mla_off_context, "composite_certificate", None
+                    )
+                    is not None
+                )
+            )
+            zoff_restore_committed = bool(
+                diagnostic_zoff_only
+                and mla_off_context is not None
+                and getattr(
+                    mla_off_context, "diagnostic_irreversible", False
+                )
+                and getattr(mla_off_context, "sparse_q_committed", False)
+            )
+            postcommit_prepare_failed = bool(
+                (shared_restore_committed or zoff_restore_committed)
+                and getattr(mla_off_context, "composite_pipeline_error", None)
+                is not None
+            )
+            if postcommit_prepare_failed:
+                # Clean rows are already restored and dirty rows are missing;
+                # do not mutate any cache after a local committed-path error.
+                # Attention is skipped below and the fixed final vote aborts
+                # all TP ranks together.
+                kv = None
+            elif use_cp:
                 # NSA CP: keep bf16 kv around for the cross-rank all-gather, then
                 # write to the FlashMLA cache after gather.
-                kv = self._compute_kv_bf16(x_linear, positions, qkv_a=qkv_a)
-                kv = cp_all_gather_rerange_output(
-                    kv.contiguous(),
-                    self.cp_size,
-                    forward_batch,
-                    torch.cuda.current_stream(),
-                )
-                attn_backend.store_cache(
-                    layer_id=self.layer_id,
-                    swa_k=kv,
-                    forward_batch=forward_batch,
-                )
+                try:
+                    kv = self._compute_kv_bf16(
+                        x_linear, positions, qkv_a=qkv_a
+                    )
+                    kv = cp_all_gather_rerange_output(
+                        kv.contiguous(),
+                        self.cp_size,
+                        forward_batch,
+                        torch.cuda.current_stream(),
+                    )
+                    attn_backend.store_cache(
+                        layer_id=self.layer_id,
+                        swa_k=kv,
+                        forward_batch=forward_batch,
+                    )
+                except BaseException as kv_store_error:
+                    if not zoff_restore_committed:
+                        raise
+                    kv = None
+                    mla_off_context.record_pipeline_error(kv_store_error)
             else:
-                self._compute_kv_to_cache(
-                    x_linear, positions, forward_batch, qkv_a=qkv_a
-                )
+                try:
+                    canonical_snapshot_kv = self._compute_kv_to_cache(
+                        x_linear,
+                        positions,
+                        forward_batch,
+                        qkv_a=qkv_a,
+                        row_indices=(
+                            mla_off_context.online_local_row_indices
+                            if shared_restore_requested
+                            and bool(
+                                getattr(
+                                    mla_off_context,
+                                    "composite_irreversible",
+                                    False,
+                                )
+                                or getattr(
+                                    mla_off_context,
+                                    "composite_certificate",
+                                    None,
+                                )
+                                is not None
+                            )
+                            else None
+                        ),
+                        capture_positionless=shared_snapshot_requested,
+                    )
+                except BaseException as dirty_kv_error:
+                    if not (
+                        shared_restore_committed or zoff_restore_committed
+                    ):
+                        raise
+                    canonical_snapshot_kv = None
+                    mla_off_context.record_pipeline_error(dirty_kv_error)
+                if shared_snapshot_requested:
+                    if canonical_snapshot_kv is None:
+                        raise RuntimeError(
+                            "shared snapshot produced no canonical SWA rows"
+                        )
+                    mla_off_context.shared_snapshot_canonical_swa = (
+                        canonical_snapshot_kv
+                    )
                 kv = None
 
+        if shared_restore_committed:
+            dirty_builders = getattr(
+                attn_backend, "forward_mla_off_dirty_cache_builders", None
+            )
+            try:
+                if getattr(
+                    mla_off_context, "composite_pipeline_error", None
+                ) is None:
+                    if not callable(dirty_builders):
+                        raise RuntimeError(
+                            "shared-latent backend has no dirty-only cache builders"
+                        )
+                    with _redknot_v4_timed(
+                        "dirty_kv_indexer_compressor",
+                        layer_id=self.layer_id,
+                    ):
+                        dirty_builders(
+                            x=x,
+                            q_lora=q_lora,
+                            forward_batch=forward_batch,
+                            mla_off_context=mla_off_context,
+                            layer_id=self.layer_id,
+                            compressor=self.compressor,
+                            indexer=self.indexer,
+                        )
+            except BaseException as dirty_builder_error:
+                # The composite certificate has already authorized omission.
+                # Carry every local failure, including validation before the
+                # backend's inner kernel try-block, to the one post-merge TP
+                # rendezvous instead of abandoning peers mid-pipeline.
+                if getattr(
+                    mla_off_context, "composite_pipeline_error", None
+                ) is None:
+                    mla_off_context.record_pipeline_error(dirty_builder_error)
+        else:
+            if zoff_restore_committed:
+                # These producers have no attention-TP collective.  After the
+                # sparse-Q commit, run them in order until the first local
+                # BaseException, then skip all subsequent cache/state writes
+                # and carry that exact error to the fixed final consumer vote.
+                if (
+                    getattr(
+                        mla_off_context, "composite_pipeline_error", None
+                    )
+                    is None
+                    and self.indexer is not None
+                ):
+                    try:
+                        self.indexer(
+                            x=x,
+                            q_lora=q_lora,
+                            forward_batch=forward_batch,
+                            attn_backend=attn_backend,
+                        )
+                    except BaseException as indexer_error:
+                        mla_off_context.record_pipeline_error(indexer_error)
+                if (
+                    getattr(
+                        mla_off_context, "composite_pipeline_error", None
+                    )
+                    is None
+                    and self.compressor is not None
+                ):
+                    try:
+                        attn_backend.forward_core_compressor(
+                            x,
+                            forward_batch,
+                            self.layer_id,
+                            self.compressor,
+                        )
+                    except BaseException as compressor_error:
+                        mla_off_context.record_pipeline_error(
+                            compressor_error
+                        )
+            else:
+                if self.indexer is not None:
+                    self.indexer(
+                        x=x,
+                        q_lora=q_lora,
+                        forward_batch=forward_batch,
+                        attn_backend=attn_backend,
+                    )
+                if self.compressor is not None:
+                    attn_backend.forward_core_compressor(
+                        x,
+                        forward_batch,
+                        self.layer_id,
+                        self.compressor,
+                    )
+
+        # Keep the fused qkv_a projection alive through the profiling hook.  In
+        # the normal NVIDIA path ``fuse_wqa_wkv`` is true and the cache-writing
+        # kernel does not return a bf16 latent KV tensor; dropping qkv_a here
+        # made the profiler fall back to ``self.wkv``, which does not exist for
+        # the fused module layout.
+        if not bool(
+            mla_off_context is not None
+            and getattr(mla_off_context, "sparse_q_committed", False)
+        ):
+            self._maybe_profile_mla_heads(
+                x, positions, forward_batch, q, kv, qkv_a=qkv_a
+            )
         del qkv_a
-
-        if self.indexer is not None:
-            self.indexer(
-                x=x,
-                q_lora=q_lora,
-                forward_batch=forward_batch,
-                attn_backend=attn_backend,
-            )
-        if self.compressor is not None:
-            attn_backend.forward_core_compressor(
-                x,
-                forward_batch,
-                self.layer_id,
-                self.compressor,
-            )
-
-        self._maybe_profile_mla_heads(x, positions, forward_batch, q, kv, qkv_a=None)
 
         return q, kv
 
@@ -846,6 +1736,29 @@ class MQALayer(nn.Module):
         seq_lens_cpu = getattr(forward_batch, "seq_lens_cpu", None)
         if seq_lens_cpu is not None and len(seq_lens_cpu) != 1:
             return
+
+        def _single_cpu_int(name: str) -> Optional[int]:
+            values = getattr(forward_batch, name, None)
+            if values is None or len(values) != 1:
+                return None
+            if torch.is_tensor(values):
+                # These fields are explicitly the scheduler's CPU mirrors.
+                # Refuse a mislabeled CUDA tensor rather than introducing an
+                # in-forward device synchronization via .item()/.cpu().
+                if values.device.type != "cpu":
+                    return None
+                return int(values.tolist()[0])
+            return int(values[0])
+
+        actual_extend = _single_cpu_int("extend_seq_lens_cpu")
+        sequence_end = _single_cpu_int("seq_lens_cpu")
+        prefix_len = _single_cpu_int("extend_prefix_lens_cpu")
+        if actual_extend is None or sequence_end is None:
+            return
+        if prefix_len is None:
+            prefix_len = sequence_end - actual_extend
+        if prefix_len < 0 or prefix_len + actual_extend != sequence_end:
+            return
         # At TP>1 each rank holds only its local head shard. The full head-class
         # JSON requires all heads on one rank, so it is only exported at TP=1.
         # The token-mass concentration curve is a per-head average and works at
@@ -854,36 +1767,60 @@ class MQALayer(nn.Module):
         tp_single = self.tp_size <= 1
 
         try:
-            # Reuse the latent KV already produced by the (non-fused) forward
-            # when available; only recompute as a fallback. Recomputing via
-            # _compute_kv_bf16 can trigger an invalid all-gather at TP>1 (it is
-            # meant for the DSA prefill-CP path), so prefer the passed `kv`.
-            if kv is not None:
+            # Prefer the fused projection from this exact forward.  Slicing its
+            # KV portion and applying the same norm+RoPE transformation gives
+            # the real shared MLA latent without rerunning a linear layer.  A
+            # passed ``kv`` is already transformed only on the non-fused bf16
+            # path; in the fused-qk-normalization path it may still be raw.
+            if qkv_a is not None:
+                latent_kv = self._compute_kv_bf16(
+                    x, positions, qkv_a=qkv_a
+                )
+            elif kv is not None and not self.use_fused_qk_norm_rope:
                 latent_kv = kv
             else:
-                latent_kv = self._compute_kv_bf16(x, positions, qkv_a=qkv_a)
+                latent_kv = self._compute_kv_bf16(x, positions)
             q_heads = q.view(q.shape[0], self.n_local_heads, self.head_dim)
-            collector.observe_layer(
+            profile_complete = collector.observe_layer(
                 layer_id=self.layer_id,
                 q=q_heads.detach(),
                 latent_k=latent_kv.detach(),
                 softmax_scale=self.softmax_scale,
+                prefix_len=prefix_len,
+                extend_len=actual_extend,
+                seq_len=sequence_end,
             )
-            # Export incrementally after the last layer so the bench can read a
-            # ready JSON as soon as one prefill completes.
+            # Export only when every layer has captured exactly the configured
+            # request length.  Short warmups and partial chunks never produce
+            # files that the TP merge could mistake for a valid profile.
             out_path = getattr(
                 get_global_server_args(), "redknot_mla_profile_out", None
             )
-            if out_path and self.layer_id == self._mla_profile_last_layer:
-                if tp_single:
-                    collector.export_json(out_path)
+            if (
+                profile_complete
+                and out_path
+                and self.layer_id == self._mla_profile_last_layer
+            ):
+                rank = get_attention_tp_rank()
+                stem, ext = os.path.splitext(out_path)
+                ext = ext or ".json"
+                # At TP>1 every rank owns a contiguous shard of logical query
+                # heads.  Export each shard separately; the benchmark parent
+                # merges them after Engine shutdown.  Previously only TP=1
+                # exported a head config, which made profiling this 8-way model
+                # impossible in practice.
+                head_path = out_path if tp_single else f"{stem}_rank{rank}{ext}"
+                collector.export_json(head_path)
+                distance_path = (
+                    f"{stem}_distance{ext}"
+                    if tp_single
+                    else f"{stem}_distance_rank{rank}{ext}"
+                )
+                collector.export_distance_json(distance_path)
                 # Always export the per-layer token-mass concentration curve
                 # (the real "tokens for N% attn" signal). Tag with TP rank so
                 # multi-rank runs can be averaged offline.
                 try:
-                    from sglang.srt.layers.dp_attention import get_attention_tp_rank
-
-                    rank = get_attention_tp_rank()
                     conc_path = out_path
                     if conc_path.endswith(".json"):
                         conc_path = conc_path[: -len(".json")]
@@ -897,11 +1834,77 @@ class MQALayer(nn.Module):
                     logger.warning(
                         "RedKnot MLA concentration export skipped: %s", conc_exc
                     )
-        except Exception as exc:  # analysis must never break the forward
+        except Exception as exc:  # serving remains fail-open by default
             logger.warning(
                 "RedKnot MLA head profiling skipped at layer %d: %s",
                 self.layer_id,
                 exc,
+            )
+            # Offline benchmark runs opt into strict mode so a broken probe
+            # fails on the first layer instead of spending a full long-context
+            # forward and only discovering that no JSON shards were exported.
+            if os.environ.get("REDKNOT_MLA_PROFILE_STRICT", "0") == "1":
+                raise
+
+    @staticmethod
+    def _clear_mla_off_ephemeral_snapshot_state(mla_off_context) -> None:
+        """Drop layer-local snapshot tensors as soon as their hook is done.
+
+        ``shared_snapshot_canonical_swa`` aliases a potentially large device
+        tensor produced by this layer's real KV projection.  It is a hand-off
+        value for ``capture_mla_off_shared_snapshot_chunk`` only; retaining it
+        on the context until a later layer (or after a cancelled forward) pins
+        an otherwise dead activation and can also expose the wrong layer's
+        rows to a retried scheduler forward.
+        """
+
+        if mla_off_context is None:
+            return
+        try:
+            delattr(mla_off_context, "shared_snapshot_canonical_swa")
+        except AttributeError:
+            pass
+
+    @staticmethod
+    def _close_mla_off_composite_resources_on_error(
+        forward_batch, *, error: BaseException, layer_id: int = -1
+    ) -> None:
+        """Fail closed only when this ForwardBatch owns a composite lease."""
+
+        if (
+            getattr(
+                forward_batch, "_redknot_composite_forward_resources", None
+            )
+            is None
+        ):
+            # Dense/native forwards never import or invoke the RedKnot cleanup
+            # runtime.  This keeps their exception path byte-for-byte neutral
+            # apart from this inexpensive attribute read.
+            return
+        try:
+            backend = get_attn_backend()
+            abort_forward = getattr(
+                backend, "abort_mla_off_forward_transaction", None
+            )
+            if callable(abort_forward) and abort_forward(
+                forward_batch=forward_batch,
+                error=error,
+                layer_id=int(layer_id),
+            ):
+                return
+            from sglang.srt.layers.attention.redknot.dsv4_reuse_backend_runtime import (
+                close_composite_forward_resources,
+            )
+
+            close_composite_forward_resources(forward_batch)
+        except Exception as cleanup_error:
+            # Preserve the original model/cancellation exception.  The close
+            # primitive itself attempts every pin before reporting a failure;
+            # logging here records that the fail-closed cleanup was incomplete
+            # without replacing the error that caused the unwind.
+            logger.exception(
+                "RedKnot composite forward cleanup failed at layer teardown: %s",
+                cleanup_error,
             )
 
     def forward(
@@ -910,6 +1913,72 @@ class MQALayer(nn.Module):
         positions: torch.Tensor,
         forward_batch: ForwardBatch,
         x_quant=None,
+    ) -> torch.Tensor:
+        """Run one layer with request-scoped fail-closed resource teardown."""
+
+        lifecycle = {"mla_off_context": None}
+        try:
+            output = self._forward_impl(
+                x,
+                positions,
+                forward_batch,
+                x_quant=x_quant,
+                _redknot_lifecycle=lifecycle,
+            )
+        except BaseException as layer_error:
+            # This covers normal execution errors as well as scheduler
+            # cancellation (which need not inherit from Exception).  A
+            # committed composite omission may own persistent GPU-bank pins
+            # spanning layers 3..39, so a per-context release is insufficient
+            # once the layer aborts before its normal completion hook.
+            failed_context = lifecycle.get("mla_off_context")
+            self._clear_mla_off_ephemeral_snapshot_state(failed_context)
+            if bool(
+                failed_context is not None
+                and getattr(failed_context, "is_snapshot", False)
+            ):
+                try:
+                    failed_backend = get_attn_backend()
+                    abort_snapshot = getattr(
+                        failed_backend,
+                        "abort_mla_off_snapshot_context",
+                        None,
+                    )
+                    if callable(abort_snapshot):
+                        # Unified shared snapshots own z_off, CPU latent, GPU
+                        # bank staging, and the backend stage registry as one
+                        # transaction.  Context.abort_snapshot() alone only
+                        # covers the legacy z_off controller.
+                        abort_snapshot(failed_context)
+                    else:
+                        failed_context.abort_snapshot()
+                except Exception as snapshot_cleanup_error:
+                    # Preserve the model/cancellation exception.  A duplicate
+                    # rollback after a concurrent finalization may itself be
+                    # stale, while the original failure remains actionable.
+                    logger.exception(
+                        "RedKnot snapshot rollback failed during layer teardown: %s",
+                        snapshot_cleanup_error,
+                    )
+            self._close_mla_off_composite_resources_on_error(
+                forward_batch,
+                error=layer_error,
+                layer_id=int(self.layer_id),
+            )
+            raise
+        self._clear_mla_off_ephemeral_snapshot_state(
+            lifecycle.get("mla_off_context")
+        )
+        return output
+
+    def _forward_impl(
+        self,
+        x: torch.Tensor,
+        positions: torch.Tensor,
+        forward_batch: ForwardBatch,
+        x_quant=None,
+        *,
+        _redknot_lifecycle=None,
     ) -> torch.Tensor:
         if not get_attn_tp_context().input_scattered and x.shape[0] == 0:
             assert not self.wo_b.reduce_results, (
@@ -924,16 +1993,74 @@ class MQALayer(nn.Module):
                 (DeepseekV4AttnBackend, DeepseekV4HipRadixBackend),
             )
 
+        # MLA restore geometry must be certified before wq_b runs; otherwise
+        # the model has already paid for a complete 65Kx64 Q projection before
+        # learning which local head/rows attention will omit.
+        mla_off_context = None
+        prepare_mla_off = getattr(attn_backend, "prepare_mla_off_context", None)
+        if callable(prepare_mla_off):
+            with _redknot_v4_timed(
+                "prepare_context", layer_id=self.layer_id
+            ):
+                mla_off_context = prepare_mla_off(
+                    layer_id=self.layer_id,
+                    positions=positions,
+                    forward_batch=forward_batch,
+                    q_head_count=self.n_local_heads,
+                    q_row_count=int(x.shape[0]),
+                    n_local_heads=self.n_local_heads,
+                    n_local_groups=self.n_local_groups,
+                    head_dim=self.head_dim,
+                    o_lora_rank=self.o_lora_rank,
+                    fp8_wo_a=_FP8_WO_A_GEMM,
+                    device=x.device,
+                    projection_dtype=x.dtype,
+                )
+        if _redknot_lifecycle is not None:
+            # Keep the original context even if a collectively rejected
+            # proposal later switches the local execution variable to None.
+            # The public wrapper needs this reference solely to clear ephemeral
+            # snapshot tensors while the ForwardBatch owns resource lifetime.
+            _redknot_lifecycle["mla_off_context"] = mla_off_context
+        diagnostic_ablation = str(
+            getattr(mla_off_context, "diagnostic_ablation", "full") or "full"
+        )
+        diagnostic_shared_only = diagnostic_ablation == "shared_only"
+        diagnostic_shared_full_local = bool(
+            diagnostic_shared_only
+            and mla_off_context is not None
+            and getattr(mla_off_context, "is_full_local", False)
+        )
+        sparse_q_candidate = bool(
+            mla_off_context is not None
+            and getattr(mla_off_context, "is_restore", False)
+            and int(getattr(mla_off_context, "reused_row_count", 0)) > 0
+            and not diagnostic_shared_only
+        )
+        accepts_rank_local_q = getattr(attn_backend, "accepts_rank_local_q", None)
+        rank_local_q_enabled = bool(
+            not diagnostic_shared_full_local
+            and callable(accepts_rank_local_q)
+            and accepts_rank_local_q(
+                layer_id=self.layer_id, forward_batch=forward_batch
+            )
+        )
+
         enable_multi_stream = (
             envs.SGLANG_OPT_USE_MULTI_STREAM_OVERLAP.get()
             and self.alt_streams is not None
             and get_is_capture_mode()
             and x.shape[0] <= self._multi_stream_bs_limit
             and not (self.dsa_enable_prefill_cp and dsa_use_prefill_cp(forward_batch))
+            and mla_off_context is None
         )
 
         tp_slice, q_padded, q_out = slice(None), None, None
-        if self.tp_size > 1:
+        if (
+            self.tp_size > 1
+            and not sparse_q_candidate
+            and not rank_local_q_enabled
+        ):
             q_padded = x.new_empty(x.shape[0], self.n_heads, self.head_dim)
             rank = self.tp_rank
             tp_slice = slice(rank * self.n_local_heads, (rank + 1) * self.n_local_heads)
@@ -962,65 +2089,684 @@ class MQALayer(nn.Module):
                 )
             kv = None
         else:
-            q, kv = self._forward_prepare(
-                x,
-                positions,
-                forward_batch,
-                attn_backend,
-                q_out,
-                x_quant=x_quant,
-            )
+            with _redknot_v4_timed(
+                "q_kv_prepare_total", layer_id=self.layer_id
+            ):
+                q, kv = self._forward_prepare(
+                    x,
+                    positions,
+                    forward_batch,
+                    attn_backend,
+                    q_out,
+                    x_quant=x_quant,
+                    mla_off_context=mla_off_context,
+                )
+
+        if bool(
+            mla_off_context is not None
+            and getattr(mla_off_context, "composite_dense_fallback", False)
+        ):
+            # The one-shot TP vote rejected the proposal before any omission.
+            # `_forward_prepare` has already recomputed full rank-local Q and
+            # executed full-row KV/Indexer/Compressor builders.  Do not pass a
+            # stale restore context into headwise attention: doing so could
+            # omit clean local-head work despite the collective rejection.
+            mla_off_context = None
+            sparse_q_candidate = False
+
+        if self.tp_size > 1 and sparse_q_candidate:
+            if bool(getattr(mla_off_context, "sparse_q_committed", False)):
+                # Backend headwise mode consumes the packed global/full and
+                # local/dirty runs directly; there is no dense Q presentation.
+                tp_slice = slice(None)
+            elif not rank_local_q_enabled:
+                # Sparse proposal was collectively rejected before attention.
+                # A backend without rank-local support needs native padding;
+                # the production middle-layer RedKnot backend never enters
+                # this compatibility branch.
+                q_padded = x.new_empty(x.shape[0], self.n_heads, self.head_dim)
+                rank = self.tp_rank
+                tp_slice = slice(
+                    rank * self.n_local_heads,
+                    (rank + 1) * self.n_local_heads,
+                )
+                q_padded[:, tp_slice, :].copy_(q)
+            else:
+                # Safe pre-commit fallback is complete rank-local Q consumed
+                # by the arbitrary-head path, still without [T,64,D].
+                tp_slice = slice(None)
 
         # The cache write is always fused / already done by _forward_prepare* --
         # tell the backend to skip its own store_cache. When `kv is None`
         # (no DSA-CP), pass `q` as a sentinel for the `k is v` assert; the
         # attention path doesn't read it once `save_kv_cache=False`.
         attn_k = kv if kv is not None else q
-        o = attn_backend.forward(
-            q=q_padded if q_padded is not None else q,
-            k=attn_k,
-            v=attn_k,
-            layer=self.attn_mqa,
-            forward_batch=forward_batch,
-            compress_ratio=self.compress_ratio,
-            attn_sink=self.attn_sink,
-            save_kv_cache=False,
+        irreversible_postcommit = bool(
+            mla_off_context is not None
+            and bool(
+                getattr(mla_off_context, "composite_irreversible", False)
+                or getattr(mla_off_context, "composite_certificate", None)
+                is not None
+                or getattr(
+                    mla_off_context, "diagnostic_irreversible", False
+                )
+            )
         )
+        carried_postcommit_error = (
+            getattr(mla_off_context, "composite_pipeline_error", None)
+            if irreversible_postcommit
+            else None
+        )
+        if carried_postcommit_error is None:
+            try:
+                with _redknot_v4_timed(
+                    "attention", layer_id=self.layer_id
+                ):
+                    o = attn_backend.forward(
+                        q=q_padded if q_padded is not None else q,
+                        k=attn_k,
+                        v=attn_k,
+                        layer=self.attn_mqa,
+                        forward_batch=forward_batch,
+                        compress_ratio=self.compress_ratio,
+                        attn_sink=self.attn_sink,
+                        save_kv_cache=False,
+                        mla_off_context=mla_off_context,
+                    )
+            except BaseException as attention_error:
+                if not irreversible_postcommit:
+                    raise
+                carried_postcommit_error = (
+                    mla_off_context.record_pipeline_error(attention_error)
+                )
+        if carried_postcommit_error is not None:
+            # A committed rank may not escape before peers reach the one final
+            # post-pipeline vote.  This tensor is shape-only: projection/merge
+            # sees the carried error and skips all reads before the vote rejects
+            # the layer on every rank.
+            carrier_heads = (
+                self.n_heads if q_padded is not None else self.n_local_heads
+            )
+            make_carrier = getattr(
+                attn_backend, "make_mla_off_failure_carrier", None
+            )
+            if not callable(make_carrier):
+                raise carried_postcommit_error
+            o = make_carrier(
+                mla_off_context=mla_off_context,
+                reference=x,
+                shape=(
+                    int(x.shape[0]),
+                    int(carrier_heads),
+                    int(self.attn_mqa.v_head_dim),
+                ),
+                stage="attention_output",
+                error=carried_postcommit_error,
+            )
+            mla_off_context.backend_applied = True
         o = o[:, tp_slice, :]
-        fused_rope_inplace(
-            o[..., -self.qk_rope_head_dim :],
-            None,
-            self.freqs_cis,
-            positions=positions,
-            inverse=True,
+        drift_profile_active = bool(
+            getattr(forward_batch, "_redknot_mla_head_drift_active", False)
+        )
+        pure_mla_off_restore = bool(
+            not _FP8_WO_A_GEMM
+            and not drift_profile_active
+            and mla_off_context is not None
+            and getattr(mla_off_context, "is_restore", False)
+            and getattr(mla_off_context, "backend_applied", False)
+            and not diagnostic_shared_only
+            and getattr(
+                getattr(mla_off_context, "spec", None),
+                "execution_profile",
+                "",
+            )
+            in (
+                "pure_headsplit_context_bound_fullscope_3_37_3_v1",
+                "pure_headsplit_independent_rope_relocation_fullscope_"
+                "boundary128_3_37_3_v1",
+                "combined_headsplit_independent_rope_zoff_checkpoint_"
+                "rowsparse_3_37_3_v1",
+            )
+        )
+        indexed_mla_off_restore = bool(
+            not pure_mla_off_restore
+            and not diagnostic_shared_only
+            and not _FP8_WO_A_GEMM
+            and not drift_profile_active
+            and mla_off_context is not None
+            and bool(
+                getattr(mla_off_context, "can_merge_online_indexed", False)
+            )
+        )
+        coordinated_mla_off_restore = bool(
+            mla_off_context is not None
+            and getattr(mla_off_context, "is_restore", False)
+            and getattr(mla_off_context, "backend_applied", False)
+        )
+        forward_composite_deferred = bool(
+            mla_off_context is not None
+            and getattr(
+                getattr(
+                    mla_off_context,
+                    "_redknot_forward_composite_transaction",
+                    None,
+                ),
+                "coordinator",
+                None,
+            )
+            is not None
         )
 
-        o = o.view(o.shape[0], self.n_local_groups, -1)
-
-        if _FP8_WO_A_GEMM:
-            import deep_gemm
-
-            T, G, D = o.shape
-            R = self.o_lora_rank
-            o_fp8, o_s = sglang_per_token_group_quant_fp8(
-                o.reshape(T * G, D).contiguous(),
-                group_size=128,
+        def forward_projection_carrier(
+            stage: str, local_error: BaseException
+        ) -> torch.Tensor:
+            make_carrier = getattr(
+                attn_backend, "make_mla_off_failure_carrier", None
             )
-            o_s = deep_gemm.ceil_to_ue8m0(o_s)
-            output = torch.empty(T, G, R, device=o.device, dtype=torch.bfloat16)
-            deep_gemm.fp8_einsum(
-                "bhr,hdr->bhd",
-                (o_fp8.view(T, G, D), o_s.view(T, G, -1)),
-                (self.wo_a.weight.view(G, R, D), self.wo_a.weight_scale_inv.data),
-                output,
-                recipe=(1, 1, 128),
+            if not callable(make_carrier):
+                raise local_error
+            return make_carrier(
+                mla_off_context=mla_off_context,
+                reference=x,
+                shape=(
+                    int(x.shape[0]),
+                    int(self.n_local_groups),
+                    int(self.o_lora_rank),
+                ),
+                stage=stage,
+                error=local_error,
             )
-            o = output
+
+        def coordinate_mla_off_consumer(
+            stage: str, local_error: Optional[BaseException]
+        ) -> bool:
+            """Make every attention-TP rank cross a restore stage together."""
+
+            resolve_stage = getattr(
+                attn_backend, "resolve_mla_off_consumer_stage", None
+            )
+            if not callable(resolve_stage):
+                raise RuntimeError(
+                    "MLA-off restore backend has no TP consumer coordinator"
+                ) from local_error
+            stage_ok, stage_reason = resolve_stage(
+                stage=stage,
+                local_success=local_error is None,
+                device=o.device,
+                mla_off_context=mla_off_context,
+            )
+            if not stage_ok:
+                raise RuntimeError(
+                    "MLA-off post-attention consumer aborted before wo_b: "
+                    f"stage={stage} reason={stage_reason}"
+                ) from local_error
+            return bool(forward_composite_deferred and local_error is not None)
+
+        def inverse_rope_and_project_wo_a(
+            per_head_output: torch.Tensor,
+            rope_positions: torch.Tensor,
+            *,
+            compact_empty_shape: bool,
+            source_head_axes: Optional[Tuple[int, ...]] = None,
+        ) -> Tuple[torch.Tensor, Optional[torch.Tensor]]:
+            """Run post-attention projection, optionally slicing logical heads.
+
+            ``source_head_axes`` are TP-rank-local axes in the original
+            ``wo_a`` input.  Supplying them computes only the corresponding
+            weight columns; it does not zero-fill a full head tensor and call a
+            full GEMM.  This is the online half of pure MLA head splitting.
+            """
+
+            if int(per_head_output.shape[0]) > 0:
+                fused_rope_inplace(
+                    per_head_output[..., -self.qk_rope_head_dim :],
+                    None,
+                    self.freqs_cis,
+                    positions=rope_positions,
+                    inverse=True,
+                )
+
+            # Accuracy calibration hook. ModelRunner sets this request-local
+            # flag only after fail-closed drift-profile validation.
+            if drift_profile_active:
+                if _FP8_WO_A_GEMM:
+                    raise RuntimeError(
+                        "MLA head-drift profiling does not support FP8 wo_a"
+                    )
+                from sglang.srt.layers.attention.redknot.mla_head_drift_runtime import (
+                    capture_active_drift_layer,
+                )
+
+                capture_active_drift_layer(
+                    layer_id=self.layer_id,
+                    per_head_output=per_head_output,
+                    wo_a_weight=self.wo_a.weight.view(
+                        self.n_local_groups, self.o_lora_rank, -1
+                    ),
+                    num_local_groups=self.n_local_groups,
+                    tp_rank=self.tp_rank,
+                    tp_size=self.tp_size,
+                )
+
+            if source_head_axes is not None:
+                if _FP8_WO_A_GEMM:
+                    raise RuntimeError(
+                        "pure MLA head-sliced wo_a requires the BF16 projection path"
+                    )
+                source_head_axes = tuple(int(axis) for axis in source_head_axes)
+                if (
+                    len(source_head_axes) != int(per_head_output.shape[1])
+                    or len(set(source_head_axes)) != len(source_head_axes)
+                    or any(
+                        axis < 0 or axis >= self.n_local_heads
+                        for axis in source_head_axes
+                    )
+                ):
+                    raise ValueError("MLA head-sliced wo_a axes are inconsistent")
+                wo_a_weight = self.wo_a.weight.view(
+                    self.n_local_groups, self.o_lora_rank, -1
+                )
+                heads_per_group = self.n_local_heads // self.n_local_groups
+                projected = per_head_output.new_zeros(
+                    (
+                        per_head_output.shape[0],
+                        self.n_local_groups,
+                        self.o_lora_rank,
+                    )
+                )
+                for group_id in range(self.n_local_groups):
+                    group_start = group_id * heads_per_group
+                    group_end = group_start + heads_per_group
+                    selected_positions = tuple(
+                        position
+                        for position, axis in enumerate(source_head_axes)
+                        if group_start <= axis < group_end
+                    )
+                    if not selected_positions:
+                        continue
+                    selected_axes = tuple(
+                        source_head_axes[position] - group_start
+                        for position in selected_positions
+                    )
+                    output_index = torch.tensor(
+                        selected_positions,
+                        dtype=torch.long,
+                        device=per_head_output.device,
+                    )
+                    weight_index = torch.tensor(
+                        selected_axes,
+                        dtype=torch.long,
+                        device=wo_a_weight.device,
+                    )
+                    selected_output = per_head_output.index_select(
+                        1, output_index
+                    ).reshape(per_head_output.shape[0], -1)
+                    selected_weight = (
+                        wo_a_weight[group_id]
+                        .view(self.o_lora_rank, heads_per_group, self.head_dim)
+                        .index_select(1, weight_index)
+                        .reshape(self.o_lora_rank, -1)
+                    )
+                    projected[:, group_id, :] = torch.einsum(
+                        "td,rd->tr", selected_output, selected_weight
+                    )
+                return projected, wo_a_weight
+
+            if compact_empty_shape and int(per_head_output.shape[0]) == 0:
+                grouped_head_dim = (
+                    int(per_head_output.shape[1])
+                    * int(per_head_output.shape[2])
+                ) // int(self.n_local_groups)
+                grouped = per_head_output.reshape(
+                    0, self.n_local_groups, grouped_head_dim
+                )
+            else:
+                grouped = per_head_output.view(
+                    per_head_output.shape[0], self.n_local_groups, -1
+                )
+
+            if _FP8_WO_A_GEMM:
+                import deep_gemm
+
+                T, G, D = grouped.shape
+                R = self.o_lora_rank
+                o_fp8, o_s = sglang_per_token_group_quant_fp8(
+                    grouped.reshape(T * G, D).contiguous(),
+                    group_size=128,
+                )
+                o_s = deep_gemm.ceil_to_ue8m0(o_s)
+                output = torch.empty(
+                    T, G, R, device=grouped.device, dtype=torch.bfloat16
+                )
+                deep_gemm.fp8_einsum(
+                    "bhr,hdr->bhd",
+                    (o_fp8.view(T, G, D), o_s.view(T, G, -1)),
+                    (
+                        self.wo_a.weight.view(G, R, D),
+                        self.wo_a.weight_scale_inv.data,
+                    ),
+                    output,
+                    recipe=(1, 1, 128),
+                )
+                return output, None
+
+            wo_a_weight = self.wo_a.weight.view(
+                self.n_local_groups, self.o_lora_rank, -1
+            )
+            return (
+                torch.einsum("tgd,grd->tgr", grouped, wo_a_weight),
+                wo_a_weight,
+            )
+
+        if pure_mla_off_restore:
+            # Document rows contain online global-head attention outputs and
+            # zero local slots. Query/new rows additionally contain all local
+            # heads. One full-tensor inverse RoPE preserves those zero slots;
+            # the committed two-kernel plan then reads head/row coordinates
+            # directly and folds persistent z_off into the global stores.
+            # Dirty KV/Indexer/Compressor and headwise attention deliberately
+            # run without intermediate TP barriers in the composite path.  A
+            # rank that failed either stage carries the first error here, skips
+            # projection/merge, and still joins the one fixed rendezvous below
+            # before any rank enters the tensor-parallel wo_b GEMM.
+            pure_pipeline_error = getattr(
+                mla_off_context, "composite_pipeline_error", None
+            )
+            merged_projection = None
+            try:
+                with _redknot_v4_timed(
+                    "persistent_woa_merge", layer_id=self.layer_id
+                ):
+                    if pure_pipeline_error is not None:
+                        raise pure_pipeline_error
+                    if int(o.shape[0]) > 0:
+                        fused_rope_inplace(
+                            o[..., -self.qk_rope_head_dim :],
+                            None,
+                            self.freqs_cis,
+                            positions=positions,
+                            inverse=True,
+                        )
+                    merged_projection = mla_off_context.project_merge_headsplit(
+                        o,
+                        wo_a_weight=self.wo_a.weight,
+                    )
+                    if merged_projection is None:
+                        raise RuntimeError(
+                            "pure MLA offline/online merge returned no projection"
+                        )
+            except BaseException as error:
+                pure_pipeline_error = error
+            deferred_failure = coordinate_mla_off_consumer(
+                "pure_headsplit_projection_merge", pure_pipeline_error
+            )
+            if pure_pipeline_error is not None:
+                if deferred_failure:
+                    merged_projection = forward_projection_carrier(
+                        "pure_headsplit_projection_merge",
+                        pure_pipeline_error,
+                    )
+                else:
+                    raise RuntimeError(
+                        "pure MLA headsplit projection/merge failed"
+                    ) from pure_pipeline_error
+            o = merged_projection
+        elif indexed_mla_off_restore:
+            # Collective eligibility was committed by the backend before
+            # attention, so every TP rank takes this exact branch. Capture the
+            # entire select→inverse-RoPE→reshape→wo_a→merge pipeline: one rank
+            # cannot escape while peers wait at a later wo_b collective.
+            compact_pipeline_error = None
+            compact_projection = None
+            try:
+                o_per_head, rope_positions = (
+                    mla_off_context.indexed_online_rows(o, positions)
+                )
+                online_projection, _ = inverse_rope_and_project_wo_a(
+                    o_per_head,
+                    rope_positions,
+                    compact_empty_shape=True,
+                )
+                compact_projection = mla_off_context.merge_online_indexed(
+                    online_projection,
+                    total_rows=int(positions.shape[0]),
+                )
+                if compact_projection is None:
+                    raise RuntimeError(
+                        "MLA-off compact pipeline returned no local projection"
+                    )
+            except BaseException as error:
+                compact_pipeline_error = error
+            deferred_compact_failure = coordinate_mla_off_consumer(
+                "indexed_pipeline", compact_pipeline_error
+            )
+            if compact_pipeline_error is not None:
+                if deferred_compact_failure:
+                    compact_projection = forward_projection_carrier(
+                        "indexed_pipeline",
+                        compact_pipeline_error,
+                    )
+                else:
+                    raise RuntimeError(
+                        "MLA-off compact vote accepted a local pipeline failure"
+                    ) from compact_pipeline_error
+            o = compact_projection
+
+            audit_publish_error = None
+            prepared_audit = None
+            try:
+                prepared_audit = (
+                    mla_off_context.prepare_indexed_merge_success_audit()
+                )
+            except BaseException as error:
+                audit_publish_error = error
+            deferred_audit_failure = coordinate_mla_off_consumer(
+                "audit_publish", audit_publish_error
+            )
+            if audit_publish_error is not None:
+                if not deferred_audit_failure:
+                    raise RuntimeError(
+                        "MLA-off audit vote accepted a local preparation failure"
+                    ) from audit_publish_error
+            # The marker becomes externally visible only after every rank has
+            # prepared the same stage successfully. All validation and JSON
+            # serialization happened above, so publication cannot strand a
+            # peer at a later consumer collective.
+            if audit_publish_error is None:
+                mla_off_context.publish_indexed_merge_success_audit(
+                    prepared_audit
+                )
         else:
-            wo_a = self.wo_a.weight.view(self.n_local_groups, self.o_lora_rank, -1)
-            o = torch.einsum("tgd,grd->tgr", o, wo_a)
+            # Mixed/global, snapshot, native fallback, drift profiling and FP8
+            # retain the existing all-row projection path.
+            o_per_head = o
+            projection_error = None
+            projected_online = None
+            wo_a = None
+            try:
+                if diagnostic_shared_only:
+                    shared_pipeline_error = getattr(
+                        mla_off_context, "composite_pipeline_error", None
+                    )
+                    if shared_pipeline_error is not None:
+                        raise shared_pipeline_error
+                projected_online, wo_a = inverse_rope_and_project_wo_a(
+                    o_per_head,
+                    positions,
+                    compact_empty_shape=False,
+                )
+                if projected_online is None:
+                    raise RuntimeError(
+                        "MLA-off projection returned no local result"
+                    )
+            except BaseException as error:
+                projection_error = error
+            if coordinated_mla_off_restore:
+                deferred_projection_failure = coordinate_mla_off_consumer(
+                    "projection_compute", projection_error
+                )
+            elif projection_error is not None:
+                raise projection_error
+            if projection_error is not None:
+                if forward_composite_deferred and deferred_projection_failure:
+                    projected_online = forward_projection_carrier(
+                        "projection_compute",
+                        projection_error,
+                    )
+                else:
+                    raise RuntimeError(
+                        "MLA-off projection vote accepted a local failure"
+                    ) from projection_error
+            o = projected_online
 
-        o, _ = self.wo_b(o.flatten(1))
+            if mla_off_context is not None:
+                if not mla_off_context.backend_applied:
+                    # A native/backend fallback returned a complete all-head
+                    # output. Do not add an offline contribution twice.
+                    if mla_off_context.is_snapshot:
+                        forward_batch._redknot_mla_off_disabled = True
+                        abort_snapshot = getattr(
+                            attn_backend,
+                            "abort_mla_off_snapshot_context",
+                            None,
+                        )
+                        if callable(abort_snapshot):
+                            abort_snapshot(mla_off_context)
+                        else:
+                            mla_off_context.abort_snapshot()
+                    logger.warning(
+                        "RedKnot MLA-off policy was not applied at layer %d; "
+                        "keeping the full online projection",
+                        self.layer_id,
+                    )
+                elif mla_off_context.is_snapshot:
+                    if wo_a is None:
+                        raise RuntimeError(
+                            "MLA-off snapshot requires non-FP8 wo_a"
+                        )
+                    capture_succeeded = False
+                    capture_error = ""
+                    try:
+                        local_per_head = mla_off_context.local_only(o_per_head)
+                        local_grouped = local_per_head.view(
+                            local_per_head.shape[0], self.n_local_groups, -1
+                        )
+                        local_projection = torch.einsum(
+                            "tgd,grd->tgr", local_grouped, wo_a
+                        )
+                        capture_shared_snapshot = getattr(
+                            attn_backend,
+                            "capture_mla_off_shared_snapshot_chunk",
+                            None,
+                        )
+                        if bool(
+                            getattr(
+                                mla_off_context,
+                                "shared_snapshot_enabled",
+                                False,
+                            )
+                        ):
+                            if not callable(capture_shared_snapshot):
+                                raise RuntimeError(
+                                    "shared snapshot context has no capture hook"
+                                )
+                            # Capture immediately after this layer's native
+                            # KV/Indexer/Compressor producers and z_off output.
+                            # The hook canonicalizes their exact cache/state
+                            # records into device staging before a later
+                            # scheduler forward can reuse physical ring slots.
+                            capture_shared_snapshot(
+                                mla_off_context=mla_off_context,
+                                forward_batch=forward_batch,
+                                positions=positions,
+                                local_projection=local_projection,
+                                layer_id=self.layer_id,
+                                compress_ratio=self.compress_ratio,
+                                freqs_cis=self.freqs_cis,
+                            )
+                        else:
+                            # Legacy z_off-only snapshots keep their original
+                            # controller.  The unified shared adapter already
+                            # owns that controller generation and must be the
+                            # sole writer when enabled.
+                            mla_off_context.capture(local_projection)
+                        capture_succeeded = True
+                    except BaseException as error:
+                        capture_error = str(error)
+                    finally:
+                        # The canonical packed SWA rows are an ephemeral
+                        # producer-to-capture hand-off.  Drop the device tensor
+                        # before snapshot publication/TP coordination and do so
+                        # even when capture failed locally.
+                        self._clear_mla_off_ephemeral_snapshot_state(
+                            mla_off_context
+                        )
+                    finalize_snapshot = getattr(
+                        attn_backend,
+                        "finalize_mla_off_snapshot_context",
+                        None,
+                    )
+                    if not callable(finalize_snapshot):
+                        abort_snapshot = getattr(
+                            attn_backend,
+                            "abort_mla_off_snapshot_context",
+                            None,
+                        )
+                        if callable(abort_snapshot):
+                            abort_snapshot(mla_off_context)
+                        else:
+                            mla_off_context.abort_snapshot()
+                        snapshot_ready = False
+                    else:
+                        snapshot_ready = finalize_snapshot(
+                            mla_off_context,
+                            capture_succeeded=capture_succeeded,
+                            device=x.device,
+                        )
+                    if not snapshot_ready:
+                        forward_batch._redknot_mla_off_disabled = True
+                        logger.warning(
+                            "RedKnot MLA-off snapshot aborted at layer %d: %s",
+                            self.layer_id,
+                            capture_error or "attention-TP capture vote failed",
+                        )
+                elif mla_off_context.is_restore and not diagnostic_shared_only:
+                    merged_projection = None
+                    merge_error = None
+                    try:
+                        merged_projection = mla_off_context.merge_online(o)
+                        if merged_projection is None:
+                            raise RuntimeError(
+                                "MLA-off merge returned no local projection"
+                            )
+                    except BaseException as error:
+                        merge_error = error
+                    deferred_merge_failure = coordinate_mla_off_consumer(
+                        "projection_merge", merge_error
+                    )
+                    if merge_error is not None:
+                        if deferred_merge_failure:
+                            merged_projection = forward_projection_carrier(
+                                "projection_merge",
+                                merge_error,
+                            )
+                        else:
+                            raise RuntimeError(
+                                "MLA-off merge vote accepted a local failure"
+                            ) from merge_error
+                    o = merged_projection
+
+        with _redknot_v4_timed("wo_b", layer_id=self.layer_id):
+            o, _ = self.wo_b(o.flatten(1))
+
+        finish_restore = getattr(
+            attn_backend, "finish_mla_off_forward_resources", None
+        )
+        if callable(finish_restore):
+            finish_restore(
+                mla_off_context=mla_off_context,
+                forward_batch=forward_batch,
+            )
 
         return o
 
@@ -1180,6 +2926,20 @@ class DeepseekV4DecoderLayer(nn.Module):
             )
             return y, post, comb, False
 
+        if os.environ.get("SGLANG_USE_JIT_MHC", "0") == "1":
+            from sglang.jit_kernel.dsv4.attn import triton_hc_pre
+
+            y, post, comb = triton_hc_pre(
+                x,
+                hc_fn,
+                hc_scale,
+                hc_base,
+                self.rms_norm_eps,
+                self.hc_sinkhorn_iters,
+                self.hc_eps,
+            )
+            return y, post, comb, False
+
         if envs.SGLANG_OPT_USE_TILELANG_MHC_PRE.get():
             from sglang.srt.layers.mhc import mhc_pre
 
@@ -1259,6 +3019,11 @@ class DeepseekV4DecoderLayer(nn.Module):
             return torch.empty(
                 (0, self.hc_mult, x.shape[-1]), dtype=x.dtype, device=x.device
             )
+
+        if os.environ.get("SGLANG_USE_JIT_MHC", "0") == "1":
+            from sglang.jit_kernel.dsv4.attn import triton_hc_post
+
+            return triton_hc_post(x, residual, post, comb)
 
         if envs.SGLANG_OPT_USE_TILELANG_MHC_POST.get():
             from sglang.srt.layers.mhc import mhc_post
@@ -1360,18 +3125,17 @@ class DeepseekV4DecoderLayer(nn.Module):
                 )
             importance = lengths.to(device=device, dtype=torch.float32).clamp_min(0)
 
-        if importance is None or importance.sum() <= 0:
+        if importance is None or importance.numel() == 0:
             return None
         if os.environ.get("SGLANG_REDKNOT_FFN_DEBUG") == "1" and not getattr(
             self, "_redknot_ffn_idx_logged", False
         ):
             logger.info(
                 "[RedKnot sparse-FFN] layer %d using INDEXER importance "
-                "(%s): tokens=%d mean=%.2f",
+                "(%s): tokens=%d",
                 self.layer_id,
                 used,
                 num_tokens,
-                float(importance.mean()),
             )
             self._redknot_ffn_idx_logged = True
         return importance
@@ -1417,12 +3181,67 @@ class DeepseekV4DecoderLayer(nn.Module):
         except Exception:  # noqa: BLE001
             return None
 
-    def _select_redknot_sparse_ffn_tokens(self, hidden_states: torch.Tensor):
+    def _select_redknot_sparse_ffn_tokens(
+        self,
+        hidden_states: torch.Tensor,
+        positions: torch.Tensor,
+        forward_batch: ForwardBatch,
+    ):
         server_args = get_global_server_args()
         if (
             not getattr(server_args, "redknot_sparse_ffn_enable", False)
             or self.layer_id < server_args.redknot_sparse_ffn_dense_until
+            or self.layer_id
+            >= int(self.config.num_hidden_layers)
+            - int(os.environ.get("REDKNOT_FFN_DENSE_SUFFIX_LAYERS", "0"))
             or hidden_states.shape[0] <= 1
+        ):
+            return None
+        if getattr(self.mlp, "num_fused_shared_experts", 0) != 0 or not hasattr(
+            self.mlp, "shared_experts"
+        ):
+            return None
+        raw_plans = getattr(forward_batch, "redknot_reuse_plan", None)
+        restore_plans = tuple(
+            plan
+            for plan in (raw_plans or ())
+            if isinstance(plan, Mapping)
+            and plan.get("mode") == "restore"
+            and plan.get("reuse_mla_off") is True
+        )
+        if (
+            int(getattr(forward_batch, "batch_size", 0)) != 1
+            or len(restore_plans) != 1
+        ):
+            return None
+        restore_plan = restore_plans[0]
+        from sglang.srt.layers.attention.redknot.v4.reuse_planner import (
+            MLA_OFF_EXECUTION_PROFILE,
+            MLA_OFF_INDEPENDENT_RELOCATION_PROFILE,
+        )
+
+        execution_profile = restore_plan.get("mla_off_execution_profile")
+        context_bound_restore = bool(
+            execution_profile == MLA_OFF_EXECUTION_PROFILE
+            and restore_plan.get("allow_approximate") is False
+        )
+        independent_relocation_restore = bool(
+            execution_profile == MLA_OFF_INDEPENDENT_RELOCATION_PROFILE
+            and restore_plan.get("allow_approximate") is True
+        )
+        if (
+            restore_plan.get("mla_off_qualification_only") is not True
+            or not (context_bound_restore or independent_relocation_restore)
+        ):
+            return None
+
+        min_seq_len = int(
+            getattr(server_args, "redknot_sparse_ffn_min_seq_len", 0) or 0
+        )
+        if (
+            min_seq_len > 0
+            and forward_batch.seq_lens_cpu is not None
+            and int(forward_batch.seq_lens_cpu.max().item()) < min_seq_len
         ):
             return None
 
@@ -1433,6 +3252,51 @@ class DeepseekV4DecoderLayer(nn.Module):
             return None
 
         num_tokens = hidden_states.shape[0]
+        block_tokens = int(os.environ.get("REDKNOT_FFN_BLOCK_TOKENS", "0") or 0)
+        freeze_blocks = os.environ.get(
+            "REDKNOT_FFN_FREEZE_BLOCK_SELECTION", "0"
+        ) == "1"
+        if block_tokens < 0 or (block_tokens and block_tokens % 128 != 0):
+            return None
+        selection_generation = getattr(
+            forward_batch, "_redknot_forward_generation_id", None
+        )
+        raw_query_start = restore_plan.get("query_start")
+        raw_total_tokens = restore_plan.get("total_tokens")
+        block_selection_key = (
+            selection_generation,
+            int(positions.data_ptr()),
+            int(getattr(positions, "_version", -1)),
+            int(num_tokens),
+            int(block_tokens),
+            float(
+                getattr(
+                    server_args, "redknot_sparse_ffn_max_full_ratio", 0.80
+                )
+            ),
+            int(os.environ.get("REDKNOT_FFN_BOUNDARY_TOKENS", "128")),
+            int(server_args.redknot_sparse_ffn_recent_n),
+            raw_query_start if type(raw_query_start) is int else -1,
+            raw_total_tokens if type(raw_total_tokens) is int else -1,
+        )
+        cached_block_selection = getattr(
+            forward_batch, "_redknot_sparse_ffn_block_selection", None
+        )
+        if (
+            block_tokens
+            and freeze_blocks
+            and isinstance(cached_block_selection, tuple)
+            and len(cached_block_selection) == 2
+            and cached_block_selection[0] == block_selection_key
+        ):
+            selected_idx = cached_block_selection[1]
+            if (
+                isinstance(selected_idx, torch.Tensor)
+                and selected_idx.dtype == torch.long
+                and selected_idx.device == hidden_states.device
+            ):
+                return selected_idx
+            return None
         importance_mode = getattr(
             server_args, "redknot_sparse_ffn_importance", "activation"
         )
@@ -1456,24 +3320,146 @@ class DeepseekV4DecoderLayer(nn.Module):
                     # rather than dominates the activation magnitude.
                     idx_norm = idx_importance / idx_importance.max().clamp_min(1.0)
                     importance = act_importance * idx_norm.clamp_min(1e-3)
-            # else: idx unavailable -> keep activation-norm fallback.
+            elif importance_mode in ("indexer", "indexer_indegree"):
+                # Strict indexer-guided mode stays dense when this layer has no
+                # native Indexer signal (e.g. SWA/HCA layers).
+                return None
 
-        if importance.numel() == 0 or importance.sum() <= 0:
-            return None
-
-        sorted_imp, sorted_idx = torch.sort(importance, descending=True)
-        cum_frac = torch.cumsum(sorted_imp, dim=0) / importance.sum().clamp_min(
-            torch.finfo(sorted_imp.dtype).tiny
+        max_full_ratio = float(
+            getattr(server_args, "redknot_sparse_ffn_max_full_ratio", 0.80)
         )
-        rank_keep = cum_frac < mass_thresh
-        rank_keep[0] = True
-
+        use_fixed_budget = max_full_ratio < 1.0
+        if importance.numel() == 0:
+            return None
+        if not use_fixed_budget and importance.sum() <= 0:
+            return None
         keep = torch.zeros_like(importance, dtype=torch.bool)
-        keep.scatter_(0, sorted_idx, rank_keep)
-        recent_n = min(int(server_args.redknot_sparse_ffn_recent_n), keep.numel())
+        if not use_fixed_budget:
+            sorted_imp, sorted_idx = torch.sort(importance, descending=True)
+            cum_frac = torch.cumsum(sorted_imp, dim=0) / importance.sum().clamp_min(
+                torch.finfo(sorted_imp.dtype).tiny
+            )
+            rank_keep = cum_frac < mass_thresh
+            crossing = torch.nonzero(cum_frac >= mass_thresh, as_tuple=False)
+            if crossing.numel() > 0:
+                rank_keep[crossing[0, 0]] = True
+            rank_keep[0] = True
+            keep.scatter_(0, sorted_idx, rank_keep)
+        protected = torch.zeros_like(keep)
+        token_positions = positions[:num_tokens].to(torch.int64)
+        query_start = restore_plan.get("query_start")
+        total_tokens = restore_plan.get("total_tokens")
+        segments = restore_plan.get("segments")
+        if (
+            type(query_start) is not int
+            or type(total_tokens) is not int
+            or query_start < 0
+            or total_tokens < query_start
+            or not isinstance(segments, (list, tuple))
+        ):
+            return None
+        protected |= token_positions >= query_start
+        seq_len = (
+            int(forward_batch.seq_lens_cpu.max().item())
+            if forward_batch.seq_lens_cpu is not None
+            else total_tokens
+        )
+        request_begin = seq_len - num_tokens
+        request_end = seq_len
+        if request_begin < 0 or request_end > total_tokens:
+            return None
+        protected_intervals = []
+
+        def _record_protected_interval(begin: int, end: int) -> None:
+            clipped_begin = max(request_begin, int(begin))
+            clipped_end = min(request_end, int(end))
+            if clipped_begin < clipped_end:
+                protected_intervals.append((clipped_begin, clipped_end))
+
+        _record_protected_interval(query_start, total_tokens)
+        boundary_tokens = int(os.environ.get("REDKNOT_FFN_BOUNDARY_TOKENS", "128"))
+        if boundary_tokens < 0:
+            return None
+        for segment in segments:
+            if not isinstance(segment, Mapping):
+                return None
+            begin = segment.get("global_offset")
+            length = segment.get("length")
+            if type(begin) is not int or type(length) is not int or length <= 0:
+                return None
+            end = begin + length
+            if boundary_tokens:
+                protected |= (token_positions >= begin) & (
+                    token_positions < min(end, begin + boundary_tokens)
+                )
+                protected |= (token_positions >= max(begin, end - boundary_tokens)) & (
+                    token_positions < end
+                )
+                _record_protected_interval(begin, min(end, begin + boundary_tokens))
+                _record_protected_interval(max(begin, end - boundary_tokens), end)
+
+        recent_n = int(server_args.redknot_sparse_ffn_recent_n)
         if recent_n > 0:
-            keep[-recent_n:] = True
-        return keep
+            protected |= token_positions >= max(0, seq_len - recent_n)
+            _record_protected_interval(max(0, seq_len - recent_n), seq_len)
+
+        if use_fixed_budget:
+            protected_intervals.sort()
+            protected_count = 0
+            merged_end = request_begin
+            for begin, end in protected_intervals:
+                if end <= merged_end:
+                    continue
+                if begin > merged_end:
+                    protected_count += end - begin
+                    merged_end = end
+                else:
+                    protected_count += end - merged_end
+                    merged_end = end
+            if block_tokens:
+                from sglang.srt.layers.attention.redknot.sparse_ffn import (
+                    select_fixed_budget_blocks,
+                )
+
+                selected_idx = select_fixed_budget_blocks(
+                    importance,
+                    protected,
+                    token_positions,
+                    max_full_ratio=max_full_ratio,
+                    protected_count=protected_count,
+                    block_tokens=block_tokens,
+                )
+                if freeze_blocks:
+                    forward_batch._redknot_sparse_ffn_block_selection = (
+                        block_selection_key,
+                        selected_idx,
+                    )
+                return selected_idx
+
+            from sglang.srt.layers.attention.redknot.sparse_ffn import (
+                select_fixed_budget_tokens,
+            )
+
+            return select_fixed_budget_tokens(
+                importance,
+                protected,
+                max_full_ratio=max_full_ratio,
+                protected_count=protected_count,
+            )
+
+        from sglang.srt.layers.attention.redknot.sparse_ffn import (
+            enforce_token_selection_bounds,
+        )
+
+        return enforce_token_selection_bounds(
+            importance,
+            keep,
+            protected,
+            min_full_ratio=float(
+                getattr(server_args, "redknot_sparse_ffn_min_full_ratio", 0.20)
+            ),
+            max_full_ratio=max_full_ratio,
+        )
 
     def forward(
         self,
@@ -1483,45 +3469,49 @@ class DeepseekV4DecoderLayer(nn.Module):
         forward_batch: ForwardBatch,
         input_ids_global: torch.Tensor,
     ) -> torch.Tensor:
-        residual = hidden_states
-        hidden_states, post, comb, norm_fused = self.hc_pre(
-            hidden_states,
-            self.hc_attn_fn,
-            self.hc_attn_scale,
-            self.hc_attn_base,
-            norm=self.input_layernorm,
-        )
-        if not norm_fused:
-            if _use_aiter and _is_gfx95_supported:
-                x_quant, hidden_states = _fused_rmsnorm_fp8_quant(
-                    hidden_states,
-                    self.input_layernorm.weight,
-                    self.rms_norm_eps,
-                )
+        with _redknot_v4_timed("attn_hc_pre_norm", layer_id=self.layer_id):
+            residual = hidden_states
+            hidden_states, post, comb, norm_fused = self.hc_pre(
+                hidden_states,
+                self.hc_attn_fn,
+                self.hc_attn_scale,
+                self.hc_attn_base,
+                norm=self.input_layernorm,
+            )
+            if not norm_fused:
+                if _use_aiter and _is_gfx95_supported:
+                    x_quant, hidden_states = _fused_rmsnorm_fp8_quant(
+                        hidden_states,
+                        self.input_layernorm.weight,
+                        self.rms_norm_eps,
+                    )
+                else:
+                    hidden_states = self.input_layernorm(hidden_states)
+                    x_quant = None
             else:
-                hidden_states = self.input_layernorm(hidden_states)
                 x_quant = None
-        else:
-            x_quant = None
 
-        hidden_states = self.self_attn(
-            x=hidden_states,
-            positions=positions,
-            forward_batch=forward_batch,
-            x_quant=x_quant,
-        )
+        with _redknot_v4_timed("self_attn_total", layer_id=self.layer_id):
+            hidden_states = self.self_attn(
+                x=hidden_states,
+                positions=positions,
+                forward_batch=forward_batch,
+                x_quant=x_quant,
+            )
 
-        hidden_states = self.hc_post(hidden_states, residual, post, comb)
-        residual = hidden_states
-        hidden_states, post, comb, norm_fused = self.hc_pre(
-            hidden_states,
-            self.hc_ffn_fn,
-            self.hc_ffn_scale,
-            self.hc_ffn_base,
-            norm=self.post_attention_layernorm,
-        )
-        if not norm_fused:
-            hidden_states = self.post_attention_layernorm(hidden_states)
+        with _redknot_v4_timed("attn_hc_post", layer_id=self.layer_id):
+            hidden_states = self.hc_post(hidden_states, residual, post, comb)
+        with _redknot_v4_timed("ffn_hc_pre_norm", layer_id=self.layer_id):
+            residual = hidden_states
+            hidden_states, post, comb, norm_fused = self.hc_pre(
+                hidden_states,
+                self.hc_ffn_fn,
+                self.hc_ffn_scale,
+                self.hc_ffn_base,
+                norm=self.post_attention_layernorm,
+            )
+            if not norm_fused:
+                hidden_states = self.post_attention_layernorm(hidden_states)
 
         _use_cp = self.dsa_enable_prefill_cp and dsa_use_prefill_cp(forward_batch)
         _use_tp_moe_gather = (
@@ -1557,60 +3547,103 @@ class DeepseekV4DecoderLayer(nn.Module):
             hidden_states = _a2a_scatter_chunks[r].contiguous()
             input_ids = input_ids.tensor_split(s)[r].contiguous()
             input_ids_global = input_ids_global.tensor_split(s)[r].contiguous()
-        sparse_ffn_keep = None
-        if not (_use_cp or _use_tp_moe_gather or _use_tp_attn_a2a_scatter):
-            sparse_ffn_keep = self._select_redknot_sparse_ffn_tokens(hidden_states)
+        with _redknot_v4_timed("ffn_select", layer_id=self.layer_id):
+            sparse_ffn_keep = None
+            if not (_use_cp or _use_tp_moe_gather or _use_tp_attn_a2a_scatter):
+                sparse_ffn_keep = self._select_redknot_sparse_ffn_tokens(
+                    hidden_states, positions, forward_batch
+                )
 
-        if sparse_ffn_keep is None or bool(sparse_ffn_keep.all()):
-            if sparse_ffn_keep is not None:
-                # All tokens kept on a sparse-eligible layer: keep_ratio=1 row.
-                _n = int(sparse_ffn_keep.numel())
-                _redknot_ffn_stats_record(_n, _n)
-            hidden_states = self.mlp(
-                hidden_states,
-                forward_batch,
-                input_ids=input_ids,
-                input_ids_global=input_ids_global,
-            )
-        else:
-            selected_idx = torch.nonzero(sparse_ffn_keep, as_tuple=False).flatten()
-            _redknot_ffn_stats_record(
-                int(selected_idx.numel()), int(sparse_ffn_keep.numel())
-            )
-            sparse_hidden_states = torch.zeros_like(hidden_states)
-            if selected_idx.numel() > 0:
-                selected_hidden_states = hidden_states.index_select(0, selected_idx)
-                selected_input_ids = (
-                    input_ids.index_select(0, selected_idx)
-                    if input_ids is not None
-                    else None
-                )
-                selected_input_ids_global = (
-                    input_ids_global.index_select(0, selected_idx)
-                    if input_ids_global is not None
-                    else None
-                )
-                selected_output = self.mlp(
-                    selected_hidden_states,
+        with _redknot_v4_timed("moe", layer_id=self.layer_id):
+            if sparse_ffn_keep is None:
+                hidden_states = self.mlp(
+                    hidden_states,
                     forward_batch,
-                    input_ids=selected_input_ids,
-                    input_ids_global=selected_input_ids_global,
+                    input_ids=input_ids,
+                    input_ids_global=input_ids_global,
                 )
-                sparse_hidden_states.index_copy_(0, selected_idx, selected_output)
-            hidden_states = sparse_hidden_states
-        if _use_tp_moe_gather:
-            hidden_states, global_hidden_states = (
-                get_local_dp_buffer(get_tp_group()),
-                hidden_states,
-            )
-            dp_scatter(hidden_states, global_hidden_states, forward_batch)
-        if _use_tp_attn_a2a_scatter:
-            assert _a2a_scatter_chunks is not None
-            gathered = [torch.empty_like(t) for t in _a2a_scatter_chunks]
-            attn_tp_all_gather(gathered, hidden_states.contiguous())
-            hidden_states = torch.cat(gathered)
+            elif sparse_ffn_keep.dtype != torch.bool:
+                selected_idx = sparse_ffn_keep
+                _n = int(selected_idx.numel())
+                _total = int(hidden_states.shape[0])
+                _redknot_ffn_stats_record(_n, _total)
+                if _n == _total:
+                    hidden_states = self.mlp(
+                        hidden_states,
+                        forward_batch,
+                        input_ids=input_ids,
+                        input_ids_global=input_ids_global,
+                    )
+                else:
+                    hidden_states = self.mlp.forward_redknot_sparse(
+                        hidden_states,
+                        selected_idx,
+                        input_ids_global=input_ids_global,
+                    )
+            elif bool(sparse_ffn_keep.all()):
+                if sparse_ffn_keep is not None:
+                    # All tokens kept on a sparse-eligible layer: keep_ratio=1 row.
+                    _n = int(sparse_ffn_keep.numel())
+                    _redknot_ffn_stats_record(_n, _n)
+                hidden_states = self.mlp(
+                    hidden_states,
+                    forward_batch,
+                    input_ids=input_ids,
+                    input_ids_global=input_ids_global,
+                )
+            else:
+                selected_idx = torch.nonzero(
+                    sparse_ffn_keep, as_tuple=False
+                ).flatten()
+                _redknot_ffn_stats_record(
+                    int(selected_idx.numel()), int(sparse_ffn_keep.numel())
+                )
+                hidden_states = self.mlp.forward_redknot_sparse(
+                    hidden_states,
+                    selected_idx,
+                    input_ids_global=input_ids_global,
+                )
 
-        hidden_states = self.hc_post(hidden_states, residual, post, comb)
+        with _redknot_v4_timed("ffn_collective", layer_id=self.layer_id):
+            if _use_tp_moe_gather:
+                hidden_states, global_hidden_states = (
+                    get_local_dp_buffer(get_tp_group()),
+                    hidden_states,
+                )
+                dp_scatter(hidden_states, global_hidden_states, forward_batch)
+            if _use_tp_attn_a2a_scatter:
+                assert _a2a_scatter_chunks is not None
+                gathered = [torch.empty_like(t) for t in _a2a_scatter_chunks]
+                attn_tp_all_gather(gathered, hidden_states.contiguous())
+                hidden_states = torch.cat(gathered)
+
+        with _redknot_v4_timed("ffn_hc_post", layer_id=self.layer_id):
+            hidden_states = self.hc_post(hidden_states, residual, post, comb)
+
+        if (
+            self.layer_id == int(self.config.num_hidden_layers) - 4
+            and os.environ.get("SGLANG_REDKNOT_FFN_DEBUG") == "1"
+            and getattr(get_global_server_args(), "redknot_sparse_ffn_enable", False)
+        ):
+            snap = redknot_ffn_stats_snapshot()
+            request_ids = tuple(
+                str(plan.get("benchmark_request_id", ""))
+                for plan in (getattr(forward_batch, "redknot_reuse_plan", None) or ())
+                if isinstance(plan, Mapping)
+                and plan.get("mode") == "restore"
+                and plan.get("reuse_mla_off") is True
+            )
+            logger.info(
+                "[RedKnot sparse-FFN FORWARD] requests=%s full=%d "
+                "shared_only=%d total=%d full_ratio=%.9f "
+                "expert_compute_ratio=%.9f",
+                request_ids,
+                snap["kept_tokens"],
+                snap["shared_only_tokens"],
+                snap["total_tokens"],
+                snap["full_ratio"],
+                snap["expert_compute_ratio"],
+            )
 
         return hidden_states
 
@@ -1667,6 +3700,7 @@ class DeepseekV4Model(nn.Module):
         else:
             self.norm = PPMissingLayer()
         self.gemm_output_zero_allocator_size = 0
+        self.layers_to_capture: List[int] = []
         self.hc_eps = config.hc_eps
         self.hc_mult = hc_mult = config.hc_mult
         self.norm_eps = config.rms_norm_eps
@@ -1768,23 +3802,79 @@ class DeepseekV4Model(nn.Module):
                 delattr(forward_batch, _attr)
         # Upgrade lazy raw metadata on the main stream once before any layer
         # forks alt-streams; later per-layer calls become no-ops.
-        get_attn_backend()._maybe_upgrade_forward_metadata()
-
-        for i in range(self.start_layer, self.end_layer):
-            layer = self.layers[i]
-            ctx = (
-                nullcontext()
-                if not get_global_server_args().disable_piecewise_cuda_graph
-                else get_global_expert_distribution_recorder().with_current_layer(i)
-            )
-            with ctx:
-                hidden_states = layer(
-                    positions=positions,
-                    hidden_states=hidden_states,
-                    forward_batch=forward_batch,
-                    input_ids=input_ids,
-                    input_ids_global=input_ids_global,
+        attn_backend = get_attn_backend()
+        attn_backend._maybe_upgrade_forward_metadata()
+        begin_mla_off_forward = getattr(
+            attn_backend, "begin_mla_off_forward_transaction", None
+        )
+        finalize_mla_off_forward = getattr(
+            attn_backend, "finalize_mla_off_forward_transaction", None
+        )
+        aux_hidden_states = []
+        active_layer_id = -1
+        try:
+            for i in range(self.start_layer, self.end_layer):
+                active_layer_id = int(i)
+                # Dense layers 0..2 complete before the omission certificate.
+                # This removes a postcommit failure window while keeping the
+                # exact 3..39 reusable domain covered by one prepare/final
+                # pair.  Pipeline partitions that do not own layer 3 never
+                # attempt a partial certificate.
+                if int(i) == 3 and callable(begin_mla_off_forward):
+                    reusable_layers = tuple(
+                        self.layers[layer_id].self_attn
+                        for layer_id in range(3, 40)
+                        if self.start_layer <= layer_id < self.end_layer
+                    )
+                    with _redknot_v4_timed("mla_forward_prepare", layer_id=3):
+                        begin_mla_off_forward(
+                            positions=positions,
+                            forward_batch=forward_batch,
+                            layers=reusable_layers,
+                            q_row_count=int(hidden_states.shape[0]),
+                            device=hidden_states.device,
+                            projection_dtype=hidden_states.dtype,
+                        )
+                layer = self.layers[i]
+                ctx = (
+                    nullcontext()
+                    if not get_global_server_args().disable_piecewise_cuda_graph
+                    else get_global_expert_distribution_recorder().with_current_layer(i)
                 )
+                with ctx:
+                    with _redknot_v4_timed("decoder_layer", layer_id=int(i)):
+                        hidden_states = layer(
+                            positions=positions,
+                            hidden_states=hidden_states,
+                            forward_batch=forward_batch,
+                            input_ids=input_ids,
+                            input_ids_global=input_ids_global,
+                        )
+                if int(i) == 39 and callable(finalize_mla_off_forward):
+                    # Finalize only after the complete decoder layer returns,
+                    # including wo_b and its MLP/MoE path.
+                    with _redknot_v4_timed(
+                        "mla_forward_finalize", layer_id=39
+                    ):
+                        finalize_mla_off_forward(
+                            forward_batch=forward_batch,
+                            layer_id=int(i),
+                        )
+                if i in self.layers_to_capture:
+                    # D-Spark consumes the mean over mHC lanes from each selected
+                    # target layer, matching the official reference implementation.
+                    aux_hidden_states.append(hidden_states.mean(dim=1))
+        except BaseException as model_error:
+            abort_forward = getattr(
+                attn_backend, "abort_mla_off_forward_transaction", None
+            )
+            if callable(abort_forward):
+                abort_forward(
+                    forward_batch=forward_batch,
+                    error=model_error,
+                    layer_id=active_layer_id,
+                )
+            raise
 
         # CP all-gather only on the last PP rank; PP IPC carries CP-split tensors.
         if self.pp_group.is_last_rank and dsa_use_prefill_cp(forward_batch):
@@ -1806,7 +3896,16 @@ class DeepseekV4Model(nn.Module):
         )
         hidden_states = self.norm(hidden_states)
 
-        return hidden_states, pre_hc_head
+        output = (hidden_states, pre_hc_head)
+        if self.layers_to_capture:
+            if len(aux_hidden_states) != len(self.layers_to_capture):
+                raise RuntimeError(
+                    "DeepSeek V4 captured "
+                    f"{len(aux_hidden_states)} of {len(self.layers_to_capture)} "
+                    "requested D-Spark hidden states"
+                )
+            return output, aux_hidden_states
+        return output
 
 
 class DeepseekV4ForCausalLM(nn.Module):
@@ -1889,23 +3988,31 @@ class DeepseekV4ForCausalLM(nn.Module):
         cfg = MLAHeadProfileConfig(
             num_layers=int(config.num_hidden_layers),
             num_heads=local_heads,
+            expected_context=int(
+                os.environ.get("REDKNOT_MLA_PROFILE_EXPECTED_CONTEXT", "0")
+            ),
             coverage=float(server_args.redknot_mla_profile_coverage),
             sample_queries=int(server_args.redknot_mla_profile_sample_queries),
+            query_window_quantile=float(
+                os.environ.get("REDKNOT_MLA_PROFILE_QUERY_QUANTILE", "0.90")
+            ),
             global_window_ratio=float(
                 server_args.redknot_mla_profile_global_window_ratio
             ),
             window_safety=float(server_args.redknot_mla_profile_window_safety),
             dense_prefix_layers=int(server_args.redknot_mla_dense_prefix_layers),
+            dense_suffix_layers=int(server_args.redknot_mla_dense_suffix_layers),
         )
         enable_global_collector(cfg)
         logger.info(
             "RedKnot MLA head profiler enabled: layers=%d local_heads=%d "
-            "(total=%d, tp=%d) coverage=%.3f",
+            "(total=%d, tp=%d) coverage=%.3f expected_context=%d",
             cfg.num_layers,
             cfg.num_heads,
             total_heads,
             tp_size,
             cfg.coverage,
+            cfg.expected_context,
         )
 
     def prewarm_mhc_token_count_buckets(
@@ -2015,6 +4122,32 @@ class DeepseekV4ForCausalLM(nn.Module):
             aux_hidden_states,
             hidden_states_before_norm=pre_hc_head,
         )
+
+    def set_dspark_layers_to_capture(self, layer_ids: List[int]) -> None:
+        """Capture post-layer lane-mean states used by the D-Spark proposer."""
+
+        if self.pp_group.world_size != 1:
+            raise ValueError("D-Spark hidden-state capture currently requires pp_size=1")
+        if not layer_ids:
+            raise ValueError("D-Spark requires explicit target layer IDs")
+
+        normalized = [int(layer_id) for layer_id in layer_ids]
+        if len(set(normalized)) != len(normalized):
+            raise ValueError(f"D-Spark target layers must be unique: {normalized}")
+        if sorted(normalized) != normalized:
+            raise ValueError(
+                f"D-Spark target layers must be strictly increasing: {normalized}"
+            )
+        invalid = [
+            layer_id
+            for layer_id in normalized
+            if layer_id < self.model.start_layer or layer_id >= self.model.end_layer
+        ]
+        if invalid:
+            raise ValueError(f"D-Spark target layers are not local: {invalid}")
+
+        self.capture_aux_hidden_states = True
+        self.model.layers_to_capture = normalized
 
     def _setup_fp8_wo_a_scales(self, is_nextn: bool) -> None:
         from deep_gemm import transform_sf_into_required_layout

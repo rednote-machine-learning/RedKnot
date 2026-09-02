@@ -375,7 +375,28 @@ class ForwardBatch(ForwardBatchDeepSeekMHAMixin):
     # current single-request forward should snapshot a segment's rope KV or
     # relocate cached segment KV into the request's global positions. See
     # DeepseekV4AttnBackend._maybe_redknot_reuse_hook.
-    redknot_reuse_plan: Optional[dict] = None
+    redknot_reuse_plan: Optional[List[Optional[dict]]] = None
+    # Scheduler-owned ids for an explicitly certified radix prefix.  This is
+    # populated only for the first-document-prefix RedKnot mode and never from
+    # request metadata alone; the attention backend uses it to rebuild the
+    # streaming input hash before accepting a restore that starts after row 0.
+    redknot_cached_prefix_input_ids: Optional[
+        List[Optional[Tuple[int, ...]]]
+    ] = None
+
+    # RedKnot aggressive query-only replay: active (online) logical row indices
+    # and boundary/segment metadata attached at runtime by the model runner.
+    redknot_active_row_indices: Optional[torch.Tensor] = None
+    redknot_active_row_count: Optional[int] = None
+    redknot_v4_boundary_replay: Optional[object] = None
+    redknot_v4_compressor_schedules: Optional[dict] = None
+
+    # RedKnot indexer-selected KV reuse (progressive, C4-cycle):
+    # Each C4 layer's indexer produces a Top-K page selection. The following
+    # non-C4 layers recompute KV only for the tokens covered by that selection
+    # (coarse-grained: selected pages -> token set), reusing offline state for
+    # the rest, until the next C4 layer refreshes the set. Captured at runtime.
+    redknot_indexer_selected_tokens: Optional[torch.Tensor] = None
 
     # For cross-encoder model
     token_type_ids: Optional[torch.Tensor] = None
@@ -546,6 +567,50 @@ class ForwardBatch(ForwardBatchDeepSeekMHAMixin):
                 if getattr(batch, "reqs", None)
                 and any(
                     getattr(req, "redknot_offline_segments", None) for req in batch.reqs
+                )
+                else None
+            ),
+            redknot_reuse_plan=(
+                [getattr(req, "redknot_reuse_plan", None) for req in batch.reqs]
+                if getattr(batch, "reqs", None)
+                and any(getattr(req, "redknot_reuse_plan", None) for req in batch.reqs)
+                else None
+            ),
+            redknot_cached_prefix_input_ids=(
+                [
+                    (
+                        tuple(
+                            int(token_id)
+                            for token_id in req.fill_ids[
+                                : int(req.redknot_reuse_plan.get(
+                                    "radix_prefix_tokens", 0
+                                ))
+                            ]
+                        )
+                        if isinstance(
+                            getattr(req, "redknot_reuse_plan", None), dict
+                        )
+                        and req.redknot_reuse_plan.get("radix_prefix_role")
+                        == "consume"
+                        and type(
+                            req.redknot_reuse_plan.get(
+                                "radix_prefix_tokens"
+                            )
+                        )
+                        is int
+                        and req.redknot_reuse_plan["radix_prefix_tokens"] > 0
+                        and len(req.prefix_indices)
+                        >= req.redknot_reuse_plan["radix_prefix_tokens"]
+                        else None
+                    )
+                    for req in batch.reqs
+                ]
+                if getattr(batch, "reqs", None)
+                and any(
+                    isinstance(getattr(req, "redknot_reuse_plan", None), dict)
+                    and req.redknot_reuse_plan.get("radix_prefix_role")
+                    == "consume"
+                    for req in batch.reqs
                 )
                 else None
             ),

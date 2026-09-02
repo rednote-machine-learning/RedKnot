@@ -104,6 +104,12 @@ class DeepSeekV4Config(PretrainedConfig):
     compress_rope_theta: int = 40000
     compress_ratios: List[int] = field(default_factory=list)
 
+    # DeepSeek-V4-Flash-0731 D-Spark speculative decoding module.
+    dspark_block_size: int = 0
+    dspark_noise_token_id: int = 0
+    dspark_target_layer_ids: List[int] = field(default_factory=list)
+    dspark_markov_rank: int = 256
+
     n_hash_layers: int = 3
     hc_mult: int = 4
     hc_sinkhorn_iters: int = 20

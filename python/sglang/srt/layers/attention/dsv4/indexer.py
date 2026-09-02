@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import logging
+import os
 from typing import TYPE_CHECKING, Any, List, Optional, Tuple
 
 import torch
@@ -29,6 +31,9 @@ if TYPE_CHECKING:
     from sglang.srt.layers.quantization import QuantizationConfig
     from sglang.srt.mem_cache.deepseek_v4_memory_pool import DeepSeekV4TokenToKVPool
     from sglang.srt.model_executor.forward_batch_info import ForwardBatch
+
+
+logger = logging.getLogger(__name__)
 
 
 if is_hip():
@@ -460,8 +465,22 @@ class C4IndexerBackendMixin:
             hisparse_coordinator is not None and forward_batch.forward_mode.is_decode()
         )
 
+        from sglang.srt.layers.attention.redknot.native_segment_pages import (
+            parse_native_indexer_bucket_policy,
+        )
+
+        native_bucket_policy = parse_native_indexer_bucket_policy(
+            os.environ,
+            indexer_topk=int(core_metadata.c4_sparse_topk),
+        )
+        if native_bucket_policy is not None and hisparse_coordinator is not None:
+            raise RuntimeError(
+                "native RedKnot Indexer bucketing cannot be combined with "
+                "HiSparse cache relocation"
+            )
+
         raw_indices = None
-        if capture_enabled:
+        if capture_enabled or native_bucket_policy is not None:
             raw_indices = torch.empty_like(core_metadata.c4_sparse_page_indices)
         elif hisparse_decode:
             raw_indices = hisparse_coordinator.raw_indices_buffer[
@@ -495,6 +514,41 @@ class C4IndexerBackendMixin:
                 indexer_metadata.c4_page_size,
                 raw_indices,
             )
+
+        if native_bucket_policy is not None:
+            if raw_indices is None:
+                raise RuntimeError(
+                    "native RedKnot Indexer bucketing requires raw logical indices"
+                )
+            from sglang.srt.layers.attention.redknot.native_segment_page_kernels import (
+                compact_indexer_topk_by_document,
+            )
+
+            (
+                bucketed_physical,
+                bucketed_raw,
+                bucketed_lengths,
+                bucket_counts,
+                bucket_workspace,
+            ) = compact_indexer_topk_by_document(
+                raw_indices=raw_indices,
+                physical_indices=core_metadata.c4_sparse_page_indices,
+                input_lengths=core_metadata.c4_sparse_topk_lengths,
+                policy=native_bucket_policy,
+                workspace=getattr(
+                    self, "_redknot_native_indexer_bucket_workspace", None
+                ),
+            )
+            self._redknot_native_indexer_bucket_workspace = bucket_workspace
+            core_metadata.c4_sparse_page_indices = bucketed_physical
+            core_metadata.c4_sparse_topk_lengths = bucketed_lengths
+            raw_indices = bucketed_raw
+            forward_batch._redknot_native_indexer_bucket_evidence = (
+                str(native_bucket_policy.digest),
+                int(c4_indexer.layer_id),
+                bucket_counts,
+                bucketed_lengths,
+            )
         if hisparse_coordinator is not None:
             if hisparse_decode:
                 compress_layer_id = token_to_kv_pool.layer_mapping[
@@ -520,6 +574,94 @@ class C4IndexerBackendMixin:
                 c4_indexer.layer_id
             ].compress_layer_id
             indexer_capturer.capture(compress_layer_id, raw_indices)
+
+        # RedKnot indexer-selected KV reuse (progressive, C4-cycle).
+        # After this C4 layer's indexer has written its Top-K page selection into
+        # core_metadata.c4_sparse_page_indices, publish it on the forward_batch
+        # so the following non-C4 layers recompute KV only for the covered tokens
+        # (coarse: page selection). The next C4 layer overwrites it (refresh).
+        if os.environ.get("REDKNOT_V4_INDEXER_KV_REUSE", "0") == "1":
+            sel = getattr(core_metadata, "c4_sparse_page_indices", None)
+            if sel is not None:
+                flat = sel.detach().reshape(-1)
+                flat = flat[flat >= 0]
+                n_q = int(sel.shape[0])
+                plans = getattr(forward_batch, "redknot_reuse_plan", None)
+                plan = plans[0] if plans and len(plans) == 1 else None
+                is_snapshot = (
+                    plan
+                    and plan.get("mode") == "snapshot"
+                    and c4_indexer.layer_id == 2
+                    and flat.numel() > 0
+                    and n_q > 1
+                )
+                if is_snapshot:
+                    from sglang.srt.layers.attention.redknot.dsv4_offline_reuse_v2 import (
+                        compute_paged_compressed_slots,
+                        get_offline_reuse_controller_v2,
+                    )
+
+                    # Per-slot selection frequency across all query tokens.
+                    freq = torch.bincount(flat.to(torch.long))
+                    seg_len = int(plan.get("length", 0))
+                    extra_page_size = token_to_kv_pool.get_extra_key_page_size(
+                        c4_indexer.layer_id
+                    )
+                    # Ordered physical slot for each local C4 unit u (unit u
+                    # covers local tokens [u*4, u*4+4)).
+                    ordered_slots = compute_paged_compressed_slots(
+                        page_table=core_metadata.page_table,
+                        req_idx=0,
+                        seq_len=seg_len,
+                        compress_ratio=4,
+                        compressed_page_size=extra_page_size,
+                    ).to(torch.long)
+                    n_units = int(ordered_slots.numel())
+                    # Frequency per unit = freq at that unit's slot (0 if unseen).
+                    slot_freq = torch.zeros(
+                        int(freq.numel()) + 1, dtype=freq.dtype, device=freq.device
+                    )
+                    slot_freq[: freq.numel()] = freq
+                    unit_freqs = slot_freq[ordered_slots.clamp(max=freq.numel())]
+                    unit_ordinals = torch.arange(
+                        n_units, dtype=torch.int32, device=unit_freqs.device
+                    )
+                    nz = unit_freqs > 0
+                    unit_ordinals = unit_ordinals[nz]
+                    unit_freqs = unit_freqs[nz].to(torch.int32)
+                    # In-segment frequency distribution: how many units survive
+                    # at several query-fraction thresholds. Tells us whether a
+                    # high frac can carve a sparse set inside a single segment.
+                    dist = ""
+                    if n_q > 1 and unit_freqs.numel() > 0:
+                        parts = []
+                        for f in (0.10, 0.25, 0.50, 0.75, 0.90):
+                            k = max(1, int(n_q * f))
+                            c = int((unit_freqs >= k).sum().item())
+                            parts.append(f"{int(f*100)}%:{c}[{100.0*c/n_units:.0f}%]")
+                        dist = " ".join(parts)
+                    logger.info(
+                        "RedKnot indexer-KV-reuse SNAPSHOT store: seg=%s n_q=%d "
+                        "n_units=%d selected_units=%d seg_len=%d | in-seg-dist %s",
+                        str(plan["seg_hash"]),
+                        n_q,
+                        n_units,
+                        int(unit_ordinals.numel()),
+                        seg_len,
+                        dist,
+                    )
+                    get_offline_reuse_controller_v2().store_indexer_unit_freqs(
+                        seg_hash=str(plan["seg_hash"]),
+                        length=seg_len,
+                        unit_ordinals=unit_ordinals,
+                        unit_freqs=unit_freqs,
+                        num_queries=n_q,
+                    )
+                elif c4_indexer.layer_id <= 4 and flat.numel() > 0:
+                    # decode / non-snapshot: publish union for logging only
+                    forward_batch.redknot_indexer_selected_tokens = torch.unique(
+                        flat
+                    ).to(torch.int32)
 
 
 class C4Indexer(nn.Module):

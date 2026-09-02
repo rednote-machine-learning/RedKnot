@@ -583,6 +583,14 @@ class FusedMoE(torch.nn.Module):
             expert_data.copy_(loaded_weight)
 
     def _map_global_expert_id_to_local_expert_id(self, expert_id: int) -> int:
+        # RedKnot physical shrink: a global->local map keeps only top-frequency
+        # experts. Pruned experts return -1 (weight_loader skips them). Set by
+        # the model on the FusedMoE instance before weight loading.
+        shrink_map = getattr(self, "_redknot_shrink_global2local", None)
+        if shrink_map is not None:
+            if 0 <= expert_id < len(shrink_map):
+                return int(shrink_map[expert_id])
+            return -1
         start_idx = self.moe_ep_rank * self._num_local_routed
         end_idx = start_idx + self._num_local_routed
         if start_idx <= expert_id < end_idx:

@@ -1,0 +1,115 @@
+[rank6] run_scheduler_process ENTER gpu=0
+[2026-08-30 11:10:13 TP6] RedKnot TP worker ready before CUDA: rank=6 gpu=0 pid=1036906
+[2026-08-30 11:10:14 TP6] RedKnot TP worker GPU release acknowledged: rank=6 pid=1036906
+Unrecognized keys in `rope_scaling` for 'rope_type'='yarn': {'rope_theta'}
+Unrecognized keys in `rope_scaling` for 'rope_type'='yarn': {'rope_theta'}
+[2026-08-30 11:10:14 TP6] Auto-detected DSV4 routed-expert layout: is_fp4_experts=True
+[2026-08-30 11:10:14 TP6] Hybrid swa model: self.hf_config.architectures=['DeepseekV4ForCausalLM']
+[2026-08-30 11:10:15 TP6] Auto-detected DSV4 routed-expert layout: is_fp4_experts=True
+[2026-08-30 11:10:15 TP6] Hybrid swa model: self.hf_config.architectures=['DeepseekV4ForCausalLM']
+[2026-08-30 11:10:18 TP6] Init torch distributed begin.
+[Gloo] Rank 6 is connected to 7 peer ranks. Expected number of connected peer ranks is : 7
+[Gloo] Rank 6 is connected to 7 peer ranks. Expected number of connected peer ranks is : 7
+lshb-qs-cfa0-26:1036906:1036906 [0] NCCL INFO cudaDriverVersion 12090
+lshb-qs-cfa0-26:1036906:1036906 [0] NCCL INFO NCCL_SOCKET_IFNAME set by environment to eth0
+lshb-qs-cfa0-26:1036906:1036906 [0] NCCL INFO Bootstrap: Using eth0:10.144.205.133<0>
+lshb-qs-cfa0-26:1036906:1036906 [0] NCCL INFO NCCL version 2.27.5+cuda12.9
+lshb-qs-cfa0-26:1036906:1036906 [0] NCCL INFO NET/Plugin: Could not find: none libnccl-net-none.so. 
+lshb-qs-cfa0-26:1036906:1036906 [0] NCCL INFO NCCL_IB_DISABLE set by environment to 1.
+lshb-qs-cfa0-26:1036906:1036906 [0] NCCL INFO NCCL_SOCKET_IFNAME set by environment to eth0
+lshb-qs-cfa0-26:1036906:1036906 [0] NCCL INFO NET/Socket : Using [0]eth0:10.144.205.133<0>
+lshb-qs-cfa0-26:1036906:1036906 [0] NCCL INFO Initialized NET plugin Socket
+lshb-qs-cfa0-26:1036906:1036906 [0] NCCL INFO Assigned NET plugin Socket to comm
+lshb-qs-cfa0-26:1036906:1036906 [0] NCCL INFO Using network Socket
+lshb-qs-cfa0-26:1036906:1036906 [0] NCCL INFO ncclCommInitRank comm 0x16ad4bc0 rank 6 nranks 8 cudaDev 0 nvmlDev 6 busId ca000 commId 0x57b0b05518869413 - Init START
+lshb-qs-cfa0-26:1036906:1036906 [0] NCCL INFO RAS client listening socket at ::1<28028>
+lshb-qs-cfa0-26:1036906:1036906 [0] NCCL INFO Bootstrap timings total 0.010048 (create 0.000024, send 0.000096, recv 0.000163, ring 0.009424, delay 0.000001)
+lshb-qs-cfa0-26:1036906:1036906 [0] NCCL INFO NCCL_CUMEM_ENABLE set by environment to 0.
+lshb-qs-cfa0-26:1036906:1036906 [0] NCCL INFO MNNVL busId 0xca000 fabric UUID 0.0 cliqueId 0x0 state 3 healthMask 0x0
+lshb-qs-cfa0-26:1036906:1036906 [0] NCCL INFO Setting affinity for GPU 6 to 48-95,144-191
+lshb-qs-cfa0-26:1036906:1036906 [0] NCCL INFO NCCL_NVLS_ENABLE set by environment to 0.
+lshb-qs-cfa0-26:1036906:1036906 [0] NCCL INFO comm 0x16ad4bc0 rank 6 nRanks 8 nNodes 1 localRanks 8 localRank 6 MNNVL 0
+lshb-qs-cfa0-26:1036906:1036906 [0] NCCL INFO NCCL_MIN_NCHANNELS set by environment to 4.
+lshb-qs-cfa0-26:1036906:1036906 [0] NCCL INFO Trees [0] 7/-1/-1->6->5 [1] 7/-1/-1->6->5 [2] 7/-1/-1->6->5 [3] 7/-1/-1->6->5 [4] 7/-1/-1->6->5 [5] 7/-1/-1->6->5 [6] 7/-1/-1->6->5 [7] 7/-1/-1->6->5 [8] 7/-1/-1->6->5 [9] 7/-1/-1->6->5 [10] 7/-1/-1->6->5 [11] 7/-1/-1->6->5 [12] 7/-1/-1->6->5 [13] 7/-1/-1->6->5 [14] 7/-1/-1->6->5 [15] 7/-1/-1->6->5 [16] 7/-1/-1->6->5 [17] 7/-1/-1->6->5 [18] 7/-1/-1->6->5 [19] 7/-1/-1->6->5 [20] 7/-1/-1->6->5 [21] 7/-1/-1->6->5 [22] 7/-1/-1->6->5 [23] 7/-1/-1->6->5
+lshb-qs-cfa0-26:1036906:1036906 [0] NCCL INFO P2P Chunksize set to 524288
+lshb-qs-cfa0-26:1036906:1036906 [0] NCCL INFO PROFILER/Plugin: Could not find: libnccl-profiler.so. 
+lshb-qs-cfa0-26:1036906:1040274 [0] NCCL INFO [Proxy Service] Device 0 CPU core 165
+lshb-qs-cfa0-26:1036906:1040280 [0] NCCL INFO [Proxy Service UDS] Device 0 CPU core 75
+lshb-qs-cfa0-26:1036906:1036906 [0] NCCL INFO Channel 00/0 : 6[6] -> 7[7] via P2P/IPC
+lshb-qs-cfa0-26:1036906:1036906 [0] NCCL INFO Channel 01/0 : 6[6] -> 7[7] via P2P/IPC
+lshb-qs-cfa0-26:1036906:1036906 [0] NCCL INFO Channel 02/0 : 6[6] -> 7[7] via P2P/IPC
+lshb-qs-cfa0-26:1036906:1036906 [0] NCCL INFO Channel 03/0 : 6[6] -> 7[7] via P2P/IPC
+lshb-qs-cfa0-26:1036906:1036906 [0] NCCL INFO Channel 04/0 : 6[6] -> 7[7] via P2P/IPC
+lshb-qs-cfa0-26:1036906:1036906 [0] NCCL INFO Channel 05/0 : 6[6] -> 7[7] via P2P/IPC
+lshb-qs-cfa0-26:1036906:1036906 [0] NCCL INFO Channel 06/0 : 6[6] -> 7[7] via P2P/IPC
+lshb-qs-cfa0-26:1036906:1036906 [0] NCCL INFO Channel 07/0 : 6[6] -> 7[7] via P2P/IPC
+lshb-qs-cfa0-26:1036906:1036906 [0] NCCL INFO Channel 08/0 : 6[6] -> 7[7] via P2P/IPC
+lshb-qs-cfa0-26:1036906:1036906 [0] NCCL INFO Channel 09/0 : 6[6] -> 7[7] via P2P/IPC
+lshb-qs-cfa0-26:1036906:1036906 [0] NCCL INFO Channel 10/0 : 6[6] -> 7[7] via P2P/IPC
+lshb-qs-cfa0-26:1036906:1036906 [0] NCCL INFO Channel 11/0 : 6[6] -> 7[7] via P2P/IPC
+lshb-qs-cfa0-26:1036906:1036906 [0] NCCL INFO Channel 12/0 : 6[6] -> 7[7] via P2P/IPC
+lshb-qs-cfa0-26:1036906:1036906 [0] NCCL INFO Channel 13/0 : 6[6] -> 7[7] via P2P/IPC
+lshb-qs-cfa0-26:1036906:1036906 [0] NCCL INFO Channel 14/0 : 6[6] -> 7[7] via P2P/IPC
+lshb-qs-cfa0-26:1036906:1036906 [0] NCCL INFO Channel 15/0 : 6[6] -> 7[7] via P2P/IPC
+lshb-qs-cfa0-26:1036906:1036906 [0] NCCL INFO Channel 16/0 : 6[6] -> 7[7] via P2P/IPC
+lshb-qs-cfa0-26:1036906:1036906 [0] NCCL INFO Channel 17/0 : 6[6] -> 7[7] via P2P/IPC
+lshb-qs-cfa0-26:1036906:1036906 [0] NCCL INFO Channel 18/0 : 6[6] -> 7[7] via P2P/IPC
+lshb-qs-cfa0-26:1036906:1036906 [0] NCCL INFO Channel 19/0 : 6[6] -> 7[7] via P2P/IPC
+lshb-qs-cfa0-26:1036906:1036906 [0] NCCL INFO Channel 20/0 : 6[6] -> 7[7] via P2P/IPC
+lshb-qs-cfa0-26:1036906:1036906 [0] NCCL INFO Channel 21/0 : 6[6] -> 7[7] via P2P/IPC
+lshb-qs-cfa0-26:1036906:1036906 [0] NCCL INFO Channel 22/0 : 6[6] -> 7[7] via P2P/IPC
+lshb-qs-cfa0-26:1036906:1036906 [0] NCCL INFO Channel 23/0 : 6[6] -> 7[7] via P2P/IPC
+lshb-qs-cfa0-26:1036906:1036906 [0] NCCL INFO Connected all rings, use ring PXN 0 GDR 1
+lshb-qs-cfa0-26:1036906:1036906 [0] NCCL INFO Channel 00/0 : 6[6] -> 5[5] via P2P/IPC
+lshb-qs-cfa0-26:1036906:1036906 [0] NCCL INFO Channel 01/0 : 6[6] -> 5[5] via P2P/IPC
+lshb-qs-cfa0-26:1036906:1036906 [0] NCCL INFO Channel 02/0 : 6[6] -> 5[5] via P2P/IPC
+lshb-qs-cfa0-26:1036906:1036906 [0] NCCL INFO Channel 03/0 : 6[6] -> 5[5] via P2P/IPC
+lshb-qs-cfa0-26:1036906:1036906 [0] NCCL INFO Channel 04/0 : 6[6] -> 5[5] via P2P/IPC
+lshb-qs-cfa0-26:1036906:1036906 [0] NCCL INFO Channel 05/0 : 6[6] -> 5[5] via P2P/IPC
+lshb-qs-cfa0-26:1036906:1036906 [0] NCCL INFO Channel 06/0 : 6[6] -> 5[5] via P2P/IPC
+lshb-qs-cfa0-26:1036906:1036906 [0] NCCL INFO Channel 07/0 : 6[6] -> 5[5] via P2P/IPC
+lshb-qs-cfa0-26:1036906:1036906 [0] NCCL INFO Channel 08/0 : 6[6] -> 5[5] via P2P/IPC
+lshb-qs-cfa0-26:1036906:1036906 [0] NCCL INFO Channel 09/0 : 6[6] -> 5[5] via P2P/IPC
+lshb-qs-cfa0-26:1036906:1036906 [0] NCCL INFO Channel 10/0 : 6[6] -> 5[5] via P2P/IPC
+lshb-qs-cfa0-26:1036906:1036906 [0] NCCL INFO Channel 11/0 : 6[6] -> 5[5] via P2P/IPC
+lshb-qs-cfa0-26:1036906:1036906 [0] NCCL INFO Channel 12/0 : 6[6] -> 5[5] via P2P/IPC
+lshb-qs-cfa0-26:1036906:1036906 [0] NCCL INFO Channel 13/0 : 6[6] -> 5[5] via P2P/IPC
+lshb-qs-cfa0-26:1036906:1036906 [0] NCCL INFO Channel 14/0 : 6[6] -> 5[5] via P2P/IPC
+lshb-qs-cfa0-26:1036906:1036906 [0] NCCL INFO Channel 15/0 : 6[6] -> 5[5] via P2P/IPC
+lshb-qs-cfa0-26:1036906:1036906 [0] NCCL INFO Channel 16/0 : 6[6] -> 5[5] via P2P/IPC
+lshb-qs-cfa0-26:1036906:1036906 [0] NCCL INFO Channel 17/0 : 6[6] -> 5[5] via P2P/IPC
+lshb-qs-cfa0-26:1036906:1036906 [0] NCCL INFO Channel 18/0 : 6[6] -> 5[5] via P2P/IPC
+lshb-qs-cfa0-26:1036906:1036906 [0] NCCL INFO Channel 19/0 : 6[6] -> 5[5] via P2P/IPC
+lshb-qs-cfa0-26:1036906:1036906 [0] NCCL INFO Channel 20/0 : 6[6] -> 5[5] via P2P/IPC
+lshb-qs-cfa0-26:1036906:1036906 [0] NCCL INFO Channel 21/0 : 6[6] -> 5[5] via P2P/IPC
+lshb-qs-cfa0-26:1036906:1036906 [0] NCCL INFO Channel 22/0 : 6[6] -> 5[5] via P2P/IPC
+lshb-qs-cfa0-26:1036906:1036906 [0] NCCL INFO Channel 23/0 : 6[6] -> 5[5] via P2P/IPC
+lshb-qs-cfa0-26:1036906:1036906 [0] NCCL INFO Connected all trees
+lshb-qs-cfa0-26:1036906:1040288 [0] NCCL INFO [Proxy Progress] Device 0 CPU core 187
+lshb-qs-cfa0-26:1036906:1036906 [0] NCCL INFO threadThresholds 8/8/64 | 64/8/64 | 512 | 512
+lshb-qs-cfa0-26:1036906:1036906 [0] NCCL INFO 24 coll channels, 24 collnet channels, 0 nvls channels, 32 p2p channels, 32 p2p channels per peer
+lshb-qs-cfa0-26:1036906:1036906 [0] NCCL INFO TUNER/Plugin: Could not find: libnccl-tuner.so. Using internal tuner plugin.
+lshb-qs-cfa0-26:1036906:1036906 [0] NCCL INFO ncclCommInitRank comm 0x16ad4bc0 rank 6 nranks 8 cudaDev 0 nvmlDev 6 busId ca000 commId 0x57b0b05518869413 - Init COMPLETE
+lshb-qs-cfa0-26:1036906:1036906 [0] NCCL INFO Init timings - ncclCommInitRank: rank 6 nranks 8 total 1.69 (kernels 0.43, alloc 0.68, bootstrap 0.01, allgathers 0.01, topo 0.06, graphs 0.01, connections 0.48, rest 0.01)
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[Gloo] Rank 0 is connected to 0 peer ranks. Expected number of connected peer ranks is : 0
+[2026-08-30 11:10:36 TP6] Init torch distributed ends. elapsed=17.73 s, mem usage=1.28 GB
+/root/miniconda3/lib/python3.11/site-packages/pydantic/_internal/_generate_schema.py:2249: UnsupportedFieldAttributeWarning: The 'repr' attribute with value False was provided to the `Field()` function, which has no effect in the context it was used. 'repr' is field-specific metadata, and can only be attached to a model field using `Annotated` metadata or by assignment. This may have happened because an `Annotated` type alias using the `type` statement was used, or if the `Field()` function was attached to a single member of a union type.
+  warnings.warn(
+/root/miniconda3/lib/python3.11/site-packages/pydantic/_internal/_generate_schema.py:2249: UnsupportedFieldAttributeWarning: The 'frozen' attribute with value True was provided to the `Field()` function, which has no effect in the context it was used. 'frozen' is field-specific metadata, and can only be attached to a model field using `Annotated` metadata or by assignment. This may have happened because an `Annotated` type alias using the `type` statement was used, or if the `Field()` function was attached to a single member of a union type.
+  warnings.warn(
+[2026-08-30 11:10:43 TP6] Ignore import error when loading sglang.srt.models.gemma4_audio: cannot import name 'Gemma4AudioConfig' from 'transformers' (/root/miniconda3/lib/python3.11/site-packages/transformers/__init__.py)
+[2026-08-30 11:10:43 TP6] Ignore import error when loading sglang.srt.models.gemma4_causal: cannot import name 'Gemma4TextConfig' from 'transformers' (/root/miniconda3/lib/python3.11/site-packages/transformers/__init__.py)
+[2026-08-30 11:10:43 TP6] Ignore import error when loading sglang.srt.models.gemma4_mm: cannot import name 'Gemma4AudioConfig' from 'transformers' (/root/miniconda3/lib/python3.11/site-packages/transformers/__init__.py)
+[2026-08-30 11:10:44 TP6] Ignore import error when loading sglang.srt.models.gemma4_mtp: cannot import name 'Gemma4TextConfig' from 'transformers' (/root/miniconda3/lib/python3.11/site-packages/transformers/__init__.py)
+[2026-08-30 11:10:44 TP6] Ignore import error when loading sglang.srt.models.gemma4_vision: cannot import name 'Gemma4VisionConfig' from 'transformers' (/root/miniconda3/lib/python3.11/site-packages/transformers/__init__.py)
+[2026-08-30 11:10:44 TP6] Ignore import error when loading sglang.srt.models.glm_ocr: No module named 'transformers.models.glm_ocr'
+[2026-08-30 11:10:44 TP6] Ignore import error when loading sglang.srt.models.glm_ocr_nextn: No module named 'transformers.models.glm_ocr'
+[2026-08-30 11:10:44 TP6] Ignore import error when loading sglang.srt.models.glmasr: cannot import name 'GlmAsrConfig' from 'transformers' (/root/miniconda3/lib/python3.11/site-packages/transformers/__init__.py)
+🚨 Config not found for parakeet. You can manually add it to HARDCODED_CONFIG_FOR_MODELS in utils/auto_docstring.py
+🚨 Config not found for parakeet. You can manually add it to HARDCODED_CONFIG_FOR_MODELS in utils/auto_docstring.py
+🚨 Config not found for parakeet. You can manually add it to HARDCODED_CONFIG_FOR_MODELS in utils/auto_docstring.py
+[2026-08-30 11:10:52 TP6] Load weight begin. avail mem=137.98 GB
+[2026-08-30 11:11:29 TP6] Execute dequant fp8 wo_a

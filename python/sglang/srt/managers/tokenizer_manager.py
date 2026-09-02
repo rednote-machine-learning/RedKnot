@@ -1068,6 +1068,7 @@ class TokenizerManager(TokenizerControlMixin, TokenizerManagerScoreMixin):
                 num_items_assigned=obj.num_items_assigned,
                 multi_item_delimiter_indices=obj.multi_item_delimiter_indices,
                 redknot_offline_segments=getattr(obj, "redknot_offline_segments", None),
+                redknot_reuse_plan=getattr(obj, "redknot_reuse_plan", None),
             )
         elif isinstance(obj, EmbeddingReqInput):
             # Resolve unresolved embed overrides now that input_ids are available

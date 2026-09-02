@@ -1,0 +1,39 @@
+{
+  "created_utc": "20260828T085501Z",
+  "data_sha256": {
+    "2wikimqa": "dda279cf93a99e1e5bfa3291fb199fd55978d10a1feb31822953cf77a1742e37",
+    "hotpotqa": "a0005ab2a1bc2ac3a70352dccbf96cccc4e0aac6bb677f6a55180fa51b92ef6f",
+    "multifieldqa_en": "0aac182fd317dcf6d74f8e1e0f3e61029407435346c2e0b3ff9fb45ae49c5c3f",
+    "musique": "4ac69b91281c4ec6b21316cb7282e83fb6b4dda04fc68480bb8d8ed1e19ff7bd"
+  },
+  "datasets": [
+    "hotpotqa",
+    "2wikimqa",
+    "musique",
+    "multifieldqa_en"
+  ],
+  "format": "redknot_deepseek_v4_flash_release_run_v1",
+  "head_config": "/mnt/tidal-alsh01/dataset/redone/RedKnot_Deepseekv4/test/srt/redknot/head_class/deepseek_v4_flash_0731_redknot.json",
+  "head_config_sha256": "6110156cc787b7040552111c1ac15251d0c302279b21677298bee8436e0d506f",
+  "lengths": [
+    "256K",
+    "440K"
+  ],
+  "model": "/mnt/tidal-alsh01/dataset/redone/checkpoints/opensource/DeepSeek-V4-Flash-0731",
+  "model_repo_fallback": "deepseek-ai/DeepSeek-V4-Flash-0731",
+  "profile_sha256": {
+    "256K/2wikimqa": "259b7478bc6d1ec459f896a818ab0cb402ac2c54bb9a645e4a6b80bff35b0713",
+    "256K/hotpotqa": "0332d6c5b2c2fe27a5a73d704e941d51b3a953ea93a67f143981b12262029b53",
+    "256K/multifieldqa_en": "e0a0f832b1879ac6b005ba6710cabf976033e0090275934f0fdcf32623174eb4",
+    "256K/musique": "93e06b89a801df2b855fd157af49e40bb5bfa3b1b83c879c5dc354d91bd6c4a1",
+    "440K/2wikimqa": "05c2f4e50ff6bca296fe48e706f38df088a014f9f0c4dbfb0265a9a4c389add2",
+    "440K/hotpotqa": "f5876c52bfa36b272390f4e66b8535fdc9bb0f12cd0b666cced86feee3c0d4bf",
+    "440K/multifieldqa_en": "1e9c58360a153bca9045a0239f1f5273ad0c4157dcd7cb0d8d6e6f23be3de582",
+    "440K/musique": "cc683d95b8d24dbd55d5c20a204e6d1a359e16be85253342c658a0e59c32d658"
+  },
+  "python": "/root/miniconda3/bin/python3.11",
+  "repo": "/mnt/tidal-alsh01/dataset/redone/RedKnot_Deepseekv4",
+  "runs": [],
+  "sparse_config": "/mnt/tidal-alsh01/dataset/redone/RedKnot_Deepseekv4/test/srt/redknot/sparse_ffn_params/deepseek_v4_flash_0731.json",
+  "sparse_config_sha256": "0828a26de107abe5569beaf59272cb6f48ffdfe5136f767abb29e1d3016b8ff3"
+}

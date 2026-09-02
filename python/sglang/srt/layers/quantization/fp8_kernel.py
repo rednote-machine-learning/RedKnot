@@ -120,6 +120,30 @@ if _is_musa:
         return
 
 
+# RedKnot: register the fake (meta) impl for the v2 FP8 group-quant op on ALL
+# platforms so torch.compile / piecewise CUDA graph can trace it. Previously
+# this was gated behind `if _is_musa`, which left CUDA without a fake impl and
+# made piecewise CUDA graph capture fail with
+# "Operator does not support running with fake tensors". The op mutates output_q
+# and output_s in place and returns None, so the fake is a no-op.
+if not _is_musa:
+
+    @register_fake_if_exists("sgl_kernel::sgl_per_token_group_quant_8bit_v2")
+    def _(
+        input,
+        output_q,
+        output_s,
+        group_size,
+        eps,
+        fp8_min,
+        fp8_max,
+        scale_ue8m0,
+        fuse_silu_and_mul,
+        masked_m,
+    ):
+        return
+
+
 logger = logging.getLogger(__name__)
 
 
@@ -538,7 +562,22 @@ def sglang_per_token_group_quant_fp8(
 
     if x.shape[0] > 0:
         # Temporary
-        if enable_sgl_per_token_group_quant_8bit:
+        if os.environ.get("SGLANG_USE_JIT_GROUP_QUANT", "0") == "1":
+            if fuse_silu_and_mul or masked_m is not None:
+                raise ValueError(
+                    "SM103 JIT group quant does not support fused SiLU or masked M"
+                )
+            sgl_per_token_group_quant_8bit_jit(
+                input=x,
+                output_q=x_q,
+                output_s=x_s,
+                group_size=group_size,
+                eps=eps,
+                fp8_min=fp8_min,
+                fp8_max=fp8_max,
+                scale_ue8m0=scale_ue8m0,
+            )
+        elif enable_sgl_per_token_group_quant_8bit:
             if enable_v2:
                 sgl_per_token_group_quant_8bit(
                     x,

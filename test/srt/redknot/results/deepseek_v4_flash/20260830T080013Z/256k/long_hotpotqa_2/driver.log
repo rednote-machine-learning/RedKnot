@@ -1,0 +1,49 @@
+/root/miniconda3/lib/python3.11/site-packages/torch/cuda/__init__.py:63: FutureWarning: The pynvml package is deprecated. Please install nvidia-ml-py instead. If you did not install pynvml directly, please report this to the maintainers of the package that installed pynvml for you.
+  import pynvml  # type: ignore[import]
+WARNING:sglang.srt.layers.flashinfer_comm_fusion:flashinfer.comm unified allreduce_fusion API is not available, falling back to standard implementation
+[mla-off-capacity] tp=8 local_layers=[37, 37, 37, 37, 37, 37, 37, 37] bytes/token=[75822, 75822, 75822, 75822, 75822, 75822, 75822, 75822] projected=[19876282368, 19876282368, 19876282368, 19876282368, 19876282368, 19876282368, 19876282368, 19876282368]
+[pure-mla] data selection sha256=d41530e33834912b6c93860acc6e7a2efc23280e239369227df81c626a205e49 mode=offset
+[pure-mla] frozen official prompt sha256=aa7bf7576cbcfac11ebba3bd32b66fb8b0b26e9beb2adbc6f996cd77f2df61bd max_total_tokens=262238
+[pure-mla] deferring GPU capacity check to the authenticated scheduler pre-CUDA release barrier
+[pure-mla] launching server: /mnt/tidal-alsh01/dataset/redone/RedKnot_Deepseekv4/server/start_server_redknot_mla.sh (port 31998)
+[pure-mla] server ready
+[mla-off-capacity] runtime server policy verified: port=31998 chunked_prefill_size=32768 max_prefill_tokens=65536
+[pure-mla] snapshot document 0 cached independently from position0 tokens=32768
+[pure-mla] snapshot document 1 cached independently from position0 tokens=32768
+[pure-mla] snapshot document 2 cached independently from position0 tokens=32768
+[pure-mla] snapshot document 3 cached independently from position0 tokens=32768
+[pure-mla] snapshot document 4 cached independently from position0 tokens=32768
+[pure-mla] snapshot document 5 cached independently from position0 tokens=32768
+[pure-mla] snapshot document 6 cached independently from position0 tokens=32768
+[pure-mla] snapshot document 7 cached independently from position0 tokens=32768
+
+====================================================================================================
+ REDKNOT PURE MLA OFFLINE/ONLINE MERGE — qualification benchmark
+ Model: /mnt/tidal-alsh01/dataset/redone/checkpoints/opensource/DeepSeek-V4-Flash-0731
+ chunks=8x32768 total=262234 strategy=independent_position0_rope_relocation_headsplit_fullscope prompt=official_rag_v1 boundary=128 quality_repeats=2
+====================================================================================================
+ streaming TTFT: dense_p50=31.483s reuse_p50=21.176s speedup=1.49x dense_p95=31.618s reuse_p95=21.621s
+----------------------------------------------------------------------------------------------------
+ Q0: Thirukkalacherry is a village in which Indian town?
+    [DENSE OUTPUT]
+Tharangambadi  
+Thirukkalacherry is a small village in Mayiladuthurai District, Tranquebar (Tharangambadi) Taluk, Tamil Nadu, India.
+    [REDKNOT OUTPUT]
+Tharangambadi
+ Q1: Which case was brought to court first Miller v. California or Gates v. Collier ?
+    [DENSE OUTPUT]
+Gates v. Collier was brought to court first.  
+The documents state Gates v. Collier was a 1970–1971 case, while Miller v. California was decided in 1973.
+    [REDKNOT OUTPUT]
+Gates v. Collier was brought to court first.  
+The documents state Gates v. Collier was filed in 1971, while Miller v. California was decided in 1973.
+----------------------------------------------------------------------------------------------------
+ SUMMARY: streaming_ttft_speedup=1.49x online_row_saving=0.7873864154692858 scoped_mla_head_row_saving=0.6305404359015236 full_model_mla_head_row_saving=0.1153552117194775 mla_samples=1665/>=1665 formal_mla_requests=9/9 quality=False formal_reuse=False evidence=True full_local_sanity=None performance_claim_eligible=False performance=False overall=False
+ sequential service rate: dense=0.025 req/s, reuse=0.038 req/s; logical prompt dense=6519.1, reuse=9849.8 tok/s
+ online_row_saving is measured from selected transformer rows; it is not total-model FLOPs or GPU energy saving.
+ mla_head_row_saving counts omitted logical local-head rows at the attention output boundary; it is also not total-model FLOPs saving.
+ full_model_mla_head_row_saving uses all model layers, all 64 logical heads and every evidence request row; performance claims are gated on this conservative metric.
+ compact_woa_evidence certifies successful indexed inverse-RoPE/wo_a row activation only; it is not a FLOPs, utilization, or energy-saving measurement.
+====================================================================================================
+ structured result: /mnt/tidal-alsh01/dataset/redone/RedKnot_Deepseekv4/test/srt/redknot/results/deepseek_v4_flash/20260830T080013Z/256k/long_hotpotqa_2/result.json
+RedKnot pure MLA offline/online merge quality/runtime/performance gate failed

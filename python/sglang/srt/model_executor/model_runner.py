@@ -21,6 +21,7 @@ import gc
 import hashlib
 import inspect
 import logging
+import math
 import os
 import socket
 import threading
@@ -28,7 +29,7 @@ import time
 from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Callable, List, Optional, Tuple, Union
+from typing import Any, Callable, List, Mapping, Optional, Tuple, Union
 
 import torch
 import torch.distributed as dist
@@ -423,8 +424,10 @@ class ModelRunner(ModelRunnerKVCacheMixin):
         # auxiliary hidden capture mode. TODO: expose this to server args?
         self.eagle_use_aux_hidden_state = False
         self.dflash_use_aux_hidden_state = False
+        self.dspark_use_aux_hidden_state = False
         self.dflash_target_layer_ids = None
         self.dflash_draft_num_layers = None
+        self.dspark_target_layer_ids = None
         if self.spec_algorithm.is_eagle3() and not self.is_draft_worker:
             # load draft config
             draft_model_config = ModelConfig.from_server_args(
@@ -495,6 +498,13 @@ class ModelRunner(ModelRunnerKVCacheMixin):
                 target_num_layers=int(target_num_layers),
                 draft_num_layers=int(draft_num_layers),
             )
+
+        if server_args.speculative_algorithm == "DSPARK" and not self.is_draft_worker:
+            from sglang.srt.speculative.dspark_utils import parse_dspark_config
+
+            dspark_config = parse_dspark_config(self.model_config.hf_text_config)
+            self.dspark_use_aux_hidden_state = True
+            self.dspark_target_layer_ids = list(dspark_config.target_layer_ids)
 
         # Apply the rank zero filter to logger
         if server_args.show_time_cost:
@@ -911,6 +921,13 @@ class ModelRunner(ModelRunnerKVCacheMixin):
                     "set_dflash_layers_to_capture, which is required for DFLASH."
                 )
             self.model.set_dflash_layers_to_capture(self.dflash_target_layer_ids)
+        if self.dspark_use_aux_hidden_state:
+            if not hasattr(self.model, "set_dspark_layers_to_capture"):
+                raise ValueError(
+                    f"Model {self.model.__class__.__name__} does not implement "
+                    "set_dspark_layers_to_capture, which is required for D-Spark."
+                )
+            self.model.set_dspark_layers_to_capture(self.dspark_target_layer_ids)
 
     def remote_instance_init_transfer_engine(self):
         try:
@@ -2247,7 +2264,7 @@ class ModelRunner(ModelRunnerKVCacheMixin):
                 RedKnotAttnBackend,
             )
 
-            backend = self.attn_backend
+            backend = getattr(self.attn_backend, "full_attn_backend", self.attn_backend)
             if (
                 isinstance(backend, RedKnotAttnBackend)
                 and getattr(self, "model", None) is not None
@@ -2255,8 +2272,22 @@ class ModelRunner(ModelRunnerKVCacheMixin):
                 base = getattr(self.model, "model", self.model)
                 layers = getattr(base, "layers", None)
                 if layers:
-                    first_attn = getattr(layers[0], "self_attn", None)
-                    rotary_emb = getattr(first_attn, "rotary_emb", None)
+                    rotary_emb = next(
+                        (
+                            rotary
+                            for layer in layers
+                            for rotary in [
+                                getattr(layer, "rotary_emb", None),
+                                getattr(
+                                    getattr(layer, "self_attn", None),
+                                    "rotary_emb",
+                                    None,
+                                ),
+                            ]
+                            if rotary is not None
+                        ),
+                        None,
+                    )
                     if rotary_emb is not None:
                         backend.attach_rope_helper(rotary_emb)
                         logger.info(
@@ -3071,6 +3102,39 @@ class ModelRunner(ModelRunnerKVCacheMixin):
     ) -> Tuple[
         Union[LogitsProcessorOutput, PPProxyTensors, EmbeddingPoolerOutput], bool
     ]:
+        self._apply_redknot_selected_rows(forward_batch)
+        self._prepare_redknot_v4_boundary_replay(forward_batch)
+
+        # REDKNOT_V4_TIMING is a restore-only CUDA-event diagnostic.  A session
+        # is opened below only after graph replay has been ruled out; region
+        # boundaries enqueue events without synchronizing the host.
+        _rk_plans = getattr(forward_batch, "redknot_reuse_plan", None)
+        _rk_p0 = _rk_plans[0] if _rk_plans and len(_rk_plans) == 1 else None
+        _rk_drift_requested = bool(
+            _rk_plans
+            and any(
+                isinstance(plan, Mapping) and plan.get("mode") == "drift_profile"
+                for plan in _rk_plans
+            )
+        )
+        if _rk_drift_requested and (
+            len(_rk_plans) != 1
+            or not isinstance(_rk_p0, Mapping)
+            or _rk_p0.get("mode") != "drift_profile"
+        ):
+            raise RuntimeError(
+                "MLA head-drift profiling requires one explicit request plan"
+            )
+        _rk_timing_requested = bool(
+            os.environ.get("REDKNOT_V4_TIMING", "0") == "1"
+            and _rk_p0
+            and _rk_p0.get("mode") == "restore"
+        )
+        _rk_timing = False
+        _rk_timing_abort = None
+        _rk_timing_finish = None
+        _rk_timing_region = None
+
         # Setup extra arguments
         kwargs = {}
         if self.support_pp:
@@ -3097,6 +3161,11 @@ class ModelRunner(ModelRunnerKVCacheMixin):
             and self.piecewise_cuda_graph_runner.can_run(forward_batch)
         )
         if can_run_graph:
+            if _rk_drift_requested:
+                raise RuntimeError(
+                    "MLA head-drift profiling cannot run through a piecewise "
+                    "CUDA graph; disable graph replay for calibration"
+                )
             # TODO: device_timer.wrap is too broad here — it also includes
             # replay_prepare time. Move timing into the piecewise cuda graph
             # runner to capture only the model.forward part.
@@ -3109,27 +3178,1563 @@ class ModelRunner(ModelRunnerKVCacheMixin):
                 ret = self.piecewise_cuda_graph_runner.replay(forward_batch, **kwargs)
             return (ret, can_run_graph)
 
-        # Launch model forward
-        if not skip_attn_backend_init:
-            if hasattr(self.model, "prepare_forward_batch"):
-                # Prepare model-specific attention metadata before planning,
-                # e.g. Moss-VL's prefill cross-attention custom mask.
-                self.model.prepare_forward_batch(forward_batch)
-            self.attn_backend.init_forward_metadata(forward_batch)
+        if _rk_timing_requested:
+            try:
+                from sglang.srt.layers.attention.redknot.dsv4_timing import (
+                    abort_forward as _rk_timing_abort,
+                    begin_forward as _rk_timing_begin,
+                    finish_forward as _rk_timing_finish,
+                    timed as _rk_timing_region,
+                )
 
-        ctx = (
-            self.device_timer.wrap(metadata={"category": "extend"})
-            if self.device_timer
-            else contextlib.nullcontext()
-        )
-        with ctx:
-            ret = self.model.forward(
-                forward_batch.input_ids,
-                forward_batch.positions,
-                forward_batch,
-                **kwargs,
+                _rk_timing = bool(
+                    _rk_timing_begin(
+                        device=forward_batch.input_ids.device,
+                        rows=int(forward_batch.input_ids.shape[0]),
+                        forward_mode=str(forward_batch.forward_mode),
+                        batch_size=int(forward_batch.batch_size),
+                    )
+                )
+                if not _rk_timing:
+                    raise RuntimeError(
+                        "REDKNOT_V4_TIMING=1 failed to open a CUDA timing session"
+                    )
+            except BaseException:
+                if _rk_timing_abort is not None:
+                    try:
+                        _rk_timing_abort()
+                    except BaseException:
+                        pass
+                raise
+
+        # Install the projected-head capture only for the explicit calibration
+        # request.  Validation rejects chunked/cache-hit prefills, FP8 wo_a,
+        # non-TP8 topologies, and any batch other than one full EXTEND before a
+        # model layer can observe active state.
+        _rk_drift_session = None
+        if _rk_drift_requested:
+            from sglang.srt.layers.attention.redknot.mla_head_drift_runtime import (
+                begin_drift_profile_request,
             )
+
+            _rk_seq_lens = getattr(forward_batch, "orig_seq_lens", None)
+            if not torch.is_tensor(_rk_seq_lens) or _rk_seq_lens.numel() != 1:
+                _rk_seq_lens = forward_batch.seq_lens_cpu
+            if not torch.is_tensor(_rk_seq_lens) or _rk_seq_lens.numel() != 1:
+                raise RuntimeError(
+                    "MLA head-drift profiling requires one logical sequence length"
+                )
+            _rk_drift_session = begin_drift_profile_request(
+                _rk_p0,
+                positions=forward_batch.positions,
+                input_ids=forward_batch.input_ids,
+                logical_seq_len=int(_rk_seq_lens[0].item()),
+                batch_size=forward_batch.batch_size,
+                is_extend=forward_batch.forward_mode == ForwardMode.EXTEND,
+                tp_rank=self.tp_rank,
+                tp_size=self.tp_size,
+                pp_size=self.pp_size,
+                num_layers=self.model_config.num_hidden_layers,
+                fp8_wo_a=bool(envs.SGLANG_OPT_FP8_WO_A_GEMM.get()),
+                attention_backend=self.prefill_attention_backend_str,
+                sparse_ffn=bool(
+                    getattr(self.server_args, "redknot_sparse_ffn_enable", False)
+                ),
+            )
+            forward_batch._redknot_mla_head_drift_active = True
+
+        try:
+            # Launch model forward
+            if not skip_attn_backend_init:
+                if hasattr(self.model, "prepare_forward_batch"):
+                    # Prepare model-specific attention metadata before planning,
+                    # e.g. Moss-VL's prefill cross-attention custom mask.
+                    self.model.prepare_forward_batch(forward_batch)
+                if _rk_timing:
+                    with _rk_timing_region("init_forward_metadata"):
+                        self.attn_backend.init_forward_metadata(forward_batch)
+                else:
+                    self.attn_backend.init_forward_metadata(forward_batch)
+
+            ctx = (
+                self.device_timer.wrap(metadata={"category": "extend"})
+                if self.device_timer
+                else contextlib.nullcontext()
+            )
+            if _rk_timing:
+                with ctx, _rk_timing_region("model_forward"):
+                    ret = self.model.forward(
+                        forward_batch.input_ids,
+                        forward_batch.positions,
+                        forward_batch,
+                        **kwargs,
+                    )
+            else:
+                with ctx:
+                    ret = self.model.forward(
+                        forward_batch.input_ids,
+                        forward_batch.positions,
+                        forward_batch,
+                        **kwargs,
+                    )
+            if _rk_timing:
+                _rk_timing_finish()
+        except BaseException:
+            if _rk_timing and _rk_timing_abort is not None:
+                try:
+                    _rk_timing_abort()
+                except BaseException:
+                    pass
+            if _rk_drift_session is not None:
+                from sglang.srt.layers.attention.redknot.mla_head_drift_runtime import (
+                    abort_drift_profile_request,
+                )
+
+                abort_drift_profile_request(_rk_drift_session)
+            raise
+        else:
+            if _rk_drift_session is not None:
+                from sglang.srt.layers.attention.redknot.mla_head_drift_runtime import (
+                    finish_drift_profile_request,
+                )
+
+                finish_drift_profile_request(_rk_drift_session)
+        finally:
+            if _rk_drift_session is not None:
+                forward_batch._redknot_mla_head_drift_active = False
         return (ret, can_run_graph)
+
+    def _apply_redknot_selected_rows(self, forward_batch: ForwardBatch) -> None:
+        """Keep only boundary/query rows while preserving full logical KV slots.
+
+        This experimental path is intentionally limited to a single prefill
+        request. The scheduler has already allocated slots for the complete
+        logical sequence; skipped rows are restored per layer by the DSV4
+        offline-reuse hook.
+        """
+        plans = getattr(forward_batch, "redknot_reuse_plan", None)
+        if not plans or len(plans) != 1:
+            return
+        plan = plans[0]
+        if not plan or plan.get("mode") != "restore" or not plan.get("skip_forward"):
+            return
+        if forward_batch.batch_size != 1 or forward_batch.forward_mode not in (
+            ForwardMode.EXTEND,
+            ForwardMode.MIXED,
+        ):
+            if self.tp_rank == 0:
+                logger.warning(
+                    "RedKnot selected-row dense fallback: only one EXTEND/MIXED "
+                    "request is supported"
+                )
+            forward_batch.redknot_reuse_plan = [None] * forward_batch.batch_size
+            return
+
+        # The immutable document-1 radix seed is produced outside all timed
+        # observations.  It must materialize a complete transformer/KV prefix,
+        # not a selected-row shell whose scheduler length happens to be 8K.
+        # Run this one producer microforward through the ordinary full-row
+        # model path; consumers still carry the combined plan and physically
+        # prune documents 2..N.  The exact cached token ids are reauthenticated
+        # by the combined restore validator before any consumer omission.
+        if plan.get("radix_prefix_role") == "seed":
+            combined_profiles = (
+                "combined_headsplit_independent_rope_zoff_checkpoint_"
+                "rowsparse_3_37_3_v1",
+                "combined_headsplit_pro0813_independent_rope_zoff_checkpoint_"
+                "rowsparse_3_55_3_v1",
+                "combined_headsplit_pro0813_independent_rope_full_checkpoint_"
+                "rowsparse_3_55_3_v1",
+            )
+            if str(plan.get("mla_off_execution_profile", "")) not in combined_profiles:
+                raise ValueError(
+                    "selected-row radix seed received a foreign execution profile"
+                )
+            from sglang.srt.layers.attention.redknot.dsv4_context_identity import (
+                token_ids_sha256,
+            )
+
+            prefix_tokens = plan.get("radix_prefix_tokens")
+            prefix_hash = plan.get("radix_prefix_input_hash")
+            declared_total = plan.get("total_tokens")
+            positions = tuple(
+                int(value)
+                for value in forward_batch.positions.detach()
+                .to(device="cpu", dtype=torch.long)
+                .tolist()
+            )
+            input_ids = tuple(
+                int(value)
+                for value in forward_batch.input_ids.detach()
+                .to(device="cpu", dtype=torch.long)
+                .tolist()
+            )
+            if (
+                type(prefix_tokens) is not int
+                or prefix_tokens <= 0
+                or type(prefix_hash) is not str
+                or type(declared_total) is not int
+                or declared_total <= prefix_tokens
+                or not positions
+                or len(positions) != len(input_ids)
+                or any(
+                    right != left + 1
+                    for left, right in zip(positions, positions[1:])
+                )
+            ):
+                raise ValueError("selected-row radix seed geometry is invalid")
+            start = positions[0]
+            end = positions[-1] + 1
+            if start == 0:
+                if (
+                    end != prefix_tokens
+                    or token_ids_sha256(input_ids) != prefix_hash
+                ):
+                    raise ValueError(
+                        "selected-row radix seed does not contain the exact "
+                        "complete first document"
+                    )
+            elif start != prefix_tokens or end > declared_total:
+                raise ValueError(
+                    "selected-row radix seed suffix has an invalid extent"
+                )
+            forward_batch._redknot_combined_radix_dense_seed = True
+            forward_batch.redknot_reuse_plan = [None]
+            return
+
+        from sglang.srt.layers.attention.redknot.dsv4_offline_reuse_v2 import (
+            get_offline_reuse_controller_v2,
+        )
+        from sglang.srt.layers.attention.redknot.deepseek_v4_mla import (
+            deepseek_v4_redknot_topology,
+        )
+        from sglang.srt.layers.attention.redknot.v4.config import RedKnotV4Config
+        from sglang.srt.layers.attention.redknot.v4.request_selector import (
+            MAX_CHECKPOINT_ISLANDS,
+            checkpoint_effective_segment_cap_tokens,
+            checkpoint_mandatory_prefix_tokens,
+        )
+        from sglang.srt.layers.attention.redknot.v4.reuse_planner import (
+            validate_runtime_reuse_plan,
+        )
+
+        try:
+            runtime_config = RedKnotV4Config(
+                mode=os.environ.get("REDKNOT_V4_MODE", "correctness"),
+                reuse_window_kv=bool(plan.get("reuse_window_kv", False)),
+            )
+        except ValueError as error:
+            if self.tp_rank == 0:
+                logger.warning(
+                    "RedKnot selected-row dense fallback: invalid runtime config: %s",
+                    error,
+                )
+            forward_batch.redknot_reuse_plan = [None]
+            return
+        validation = validate_runtime_reuse_plan(
+            plan,
+            config=runtime_config,
+            dspark_active=self.spec_algorithm.is_speculative(),
+        )
+        if not validation.valid:
+            if self.tp_rank == 0:
+                logger.warning(
+                    "RedKnot selected-row dense fallback: reason=%s detail=%s",
+                    validation.fallback_reason.value,
+                    validation.detail,
+                )
+            # Disabling the whole plan is essential: merely returning here would
+            # leave the backend restore hook active after rows were deemed unsafe.
+            forward_batch.redknot_reuse_plan = [None]
+            return
+
+        try:
+            query_start = int(plan["query_start"])
+            positions = forward_batch.positions.to(torch.int64)
+            if positions.numel() == 0 or not bool(
+                torch.all(positions[1:] > positions[:-1]).item()
+            ):
+                raise ValueError("positions must be non-empty and strictly increasing")
+            logical_total = int(
+                plan.get(
+                    "total_tokens",
+                    max(query_start, int(forward_batch.seq_lens_cpu[0].item())),
+                )
+            )
+            if query_start < 0 or query_start > logical_total:
+                raise ValueError(
+                    f"query_start={query_start} is outside total_tokens={logical_total}"
+                )
+            orig_seq_lens = getattr(forward_batch, "orig_seq_lens", None)
+            if orig_seq_lens is not None and orig_seq_lens.numel() == 1:
+                actual_total = int(orig_seq_lens[0].item())
+                if logical_total != actual_total:
+                    raise ValueError(
+                        f"total_tokens={logical_total} differs from request={actual_total}"
+                    )
+            segments = list(plan.get("segments", ()))
+            if not segments:
+                raise ValueError("restore plan has no segments")
+            selection_policy = str(plan.get("selection_policy", "legacy"))
+            cap_ratio = float(plan.get("hot_max_per_segment_ratio", 0.75))
+            active_budget_ratio = float(
+                plan.get("active_token_budget_ratio", 0.10)
+            )
+            checkpoint_stride = int(
+                plan.get("checkpoint_stride_tokens", 0) or 0
+            )
+            checkpoint_max_islands = int(plan.get("checkpoint_max_islands", 8))
+            query_protection_policy = str(
+                plan.get("query_protection_policy", "none")
+            )
+            query_protected_segment_index = plan.get(
+                "query_protected_segment_index", -1
+            )
+            raw_query_protected_ranges = plan.get("query_protected_ranges", [])
+            if not math.isfinite(cap_ratio) or not 0.0 < cap_ratio <= 1.0:
+                raise ValueError("hot_max_per_segment_ratio must be in (0, 1]")
+            if checkpoint_stride and (
+                checkpoint_stride < 512 or checkpoint_stride % 512 != 0
+            ):
+                raise ValueError(
+                    "checkpoint_stride_tokens must be a positive multiple of 512"
+                )
+            if not 0 < checkpoint_max_islands <= MAX_CHECKPOINT_ISLANDS:
+                raise ValueError("checkpoint_max_islands must be in [1, 256]")
+            if (
+                checkpoint_max_islands > 64
+                and os.environ.get("REDKNOT_DSV4_VARIANT", "").strip().lower()
+                != "pro0813"
+            ):
+                raise ValueError(
+                    "checkpoint_max_islands above the legacy 64-island cap "
+                    "requires REDKNOT_DSV4_VARIANT=pro0813"
+                )
+            expected_offset = 0
+            for segment_index, segment in enumerate(segments):
+                offset = int(segment["global_offset"])
+                length = int(segment["length"])
+                boundary = int(segment.get("skip_first", 128))
+                canonical = int(segment.get("canonical_start_pos", 0))
+                query_score = float(segment.get("query_score", 1.0))
+                if offset != expected_offset:
+                    raise ValueError(
+                        f"segment {segment_index} begins at {offset}, "
+                        f"expected contiguous offset {expected_offset}"
+                    )
+                if length <= 0 or length % 128 != 0:
+                    raise ValueError(
+                        f"segment {segment_index} length must be positive/128-aligned"
+                    )
+                if not 0 <= boundary <= length or boundary % 128 != 0:
+                    raise ValueError(
+                        f"segment {segment_index} boundary is invalid"
+                    )
+                if selection_policy == "checkpoint_islands" and boundary != 128:
+                    raise ValueError(
+                        "checkpoint-island replay currently requires skip_first=128"
+                    )
+                if canonical != 0:
+                    raise ValueError(
+                        f"segment {segment_index} was not snapshotted at local position 0"
+                    )
+                if not math.isfinite(query_score) or query_score < 0.0:
+                    raise ValueError(
+                        f"segment {segment_index} query_score is invalid"
+                    )
+                expected_offset = offset + length
+            if expected_offset != query_start:
+                raise ValueError(
+                    f"segments cover [0,{expected_offset}), query starts at {query_start}"
+                )
+
+            def protected_segment_index_for_range(begin, end):
+                containing = [
+                    segment_index
+                    for segment_index, segment in enumerate(segments)
+                    if begin >= int(segment["global_offset"])
+                    and end
+                    <= int(segment["global_offset"]) + int(segment["length"])
+                ]
+                return containing[0] if len(containing) == 1 else None
+
+            if type(query_protected_segment_index) is not int:
+                raise ValueError("query-protected segment index is invalid")
+            if query_protection_policy == "none":
+                if (
+                    query_protected_segment_index != -1
+                    or raw_query_protected_ranges != []
+                ):
+                    raise ValueError(
+                        "disabled query protection requires index=-1/ranges=[]"
+                    )
+                query_protected_ranges = []
+            elif query_protection_policy in {
+                "lexical_top1_full_segment_v1",
+                "lexical_top1_block_windows_v1",
+                "lexical_topk_block_windows_v2",
+            }:
+                if not 0 <= query_protected_segment_index < len(segments):
+                    raise ValueError(
+                        "query-protected segment is outside the restore chain"
+                    )
+                if (
+                    not isinstance(raw_query_protected_ranges, list)
+                    or not raw_query_protected_ranges
+                ):
+                    raise ValueError("query-protected ranges are absent")
+                protected_segment = segments[query_protected_segment_index]
+                segment_begin = int(protected_segment["global_offset"])
+                segment_end = segment_begin + int(protected_segment["length"])
+                cursor = 0
+                query_protected_ranges = []
+                protected_segment_indices = set()
+                for item in raw_query_protected_ranges:
+                    if not isinstance(item, dict) or frozenset(item) != {
+                        "start",
+                        "end",
+                    }:
+                        raise ValueError("query-protected range schema is invalid")
+                    begin, end = int(item["start"]), int(item["end"])
+                    containing = protected_segment_index_for_range(begin, end)
+                    if (
+                        containing is None
+                        or begin < cursor
+                        or begin >= end
+                        or begin % 512 != 0
+                        or end % 512 != 0
+                    ):
+                        raise ValueError("query-protected range geometry is invalid")
+                    query_protected_ranges.append((begin, end))
+                    protected_segment_indices.add(containing)
+                    cursor = end
+                if (
+                    query_protection_policy == "lexical_top1_full_segment_v1"
+                    and query_protected_ranges != [(segment_begin, segment_end)]
+                ):
+                    raise ValueError("full-segment query protection is incomplete")
+                if (
+                    query_protection_policy == "lexical_top1_block_windows_v1"
+                    and protected_segment_indices
+                    != {query_protected_segment_index}
+                ):
+                    raise ValueError(
+                        "top1 query protection escaped its selected segment"
+                    )
+                if query_protection_policy == "lexical_topk_block_windows_v2" and (
+                    query_protected_segment_index not in protected_segment_indices
+                    or len(protected_segment_indices) != 2
+                ):
+                    raise ValueError(
+                        "topk query protection must cover exactly two segments"
+                    )
+            else:
+                raise ValueError("query protection policy is unsupported")
+            if str(plan.get("radix_prefix_role", "")) == "consume":
+                query_protected_ranges_online = [
+                    (begin, end)
+                    for begin, end in query_protected_ranges
+                    if protected_segment_index_for_range(begin, end) != 0
+                ]
+            else:
+                query_protected_ranges_online = query_protected_ranges
+            protected_segment_online = (
+                query_protection_policy == "lexical_top1_full_segment_v1"
+                and bool(query_protected_ranges_online)
+            )
+            if positions[-1].item() >= logical_total:
+                raise ValueError("forward positions exceed total_tokens")
+            chunk_token_range = (
+                int(positions[0].item()),
+                int(positions[-1].item()) + 1,
+            )
+            if (
+                chunk_token_range[0] % 128 != 0
+                or (
+                    chunk_token_range[1] != logical_total
+                    and chunk_token_range[1] % 128 != 0
+                )
+            ):
+                raise ValueError(
+                    "selected-row scheduler chunk boundaries must be 128-aligned"
+                )
+            crosses_segment_boundary = (
+                runtime_config.mode != "correctness"
+                and any(
+                    chunk_token_range[0]
+                    < int(segment["global_offset"]) + int(segment["length"])
+                    < chunk_token_range[1]
+                    for segment in segments
+                )
+            )
+            if crosses_segment_boundary:
+                from sglang.srt.layers.attention.redknot.v4.merged_prefill import (
+                    allow_cross_segment_merged_prefill,
+                )
+
+                merged_prefill_allowed = allow_cross_segment_merged_prefill(
+                    plan,
+                    batch_size=forward_batch.batch_size,
+                    logical_chunk_start=chunk_token_range[0],
+                    logical_chunk_tokens=(
+                        chunk_token_range[1] - chunk_token_range[0]
+                    ),
+                    server_max_prefill_tokens=self.server_args.max_prefill_tokens,
+                    server_opt_in_cap=int(
+                        os.environ.get(
+                            "REDKNOT_V4_MERGED_PREFILL_MAX_TOKENS", "0"
+                        )
+                    ),
+                )
+            else:
+                merged_prefill_allowed = False
+            if crosses_segment_boundary and not merged_prefill_allowed:
+                # SWA for a completed offline segment is restored by the layer
+                # hook before attention. Cross-segment execution is nevertheless
+                # restricted to the explicit, bounded merged-prefill opt-in.
+                raise RuntimeError(
+                    "selected-row scheduler chunks must not cross segment boundaries"
+                )
+            forward_batch.redknot_original_chunk_token_range = chunk_token_range
+            if "hot_budget_tokens" in plan:
+                explicit_budget = int(plan["hot_budget_tokens"])
+                if explicit_budget < 0:
+                    raise ValueError("hot_budget_tokens must be non-negative")
+                mandatory = max(0, logical_total - query_start)
+                if selection_policy == "checkpoint_islands":
+                    mandatory += sum(
+                        checkpoint_mandatory_prefix_tokens(
+                            segment_global_offset=int(segment["global_offset"]),
+                            segment_length=int(segment["length"]),
+                        )
+                        for segment in segments
+                    )
+                else:
+                    skip_prefix = bool(plan.get("skip_prefix_recompute", True))
+                    mandatory += sum(
+                        0
+                        if (int(segment["global_offset"]) == 0)
+                        else int(segment.get("skip_first", 128))
+                        for segment in segments
+                        if not (
+                            skip_prefix and int(segment["global_offset"]) == 0
+                        )
+                    )
+                if query_protected_ranges_online:
+                    for protected_begin, protected_end in query_protected_ranges_online:
+                        segment_index = protected_segment_index_for_range(
+                            protected_begin, protected_end
+                        )
+                        protected_segment = segments[segment_index]
+                        base_end = int(protected_segment["global_offset"]) + (
+                            checkpoint_mandatory_prefix_tokens(
+                                segment_global_offset=int(
+                                    protected_segment["global_offset"]
+                                ),
+                                segment_length=int(protected_segment["length"]),
+                            )
+                            if selection_policy == "checkpoint_islands"
+                            else int(protected_segment.get("skip_first", 128))
+                        )
+                        mandatory += (protected_end - protected_begin) - max(
+                            0,
+                            min(protected_end, base_end) - protected_begin,
+                        )
+                max_extra = max(
+                    0,
+                    math.floor(runtime_config.abort_cost_ratio * logical_total)
+                    - mandatory,
+                )
+                if explicit_budget > max_extra:
+                    raise ValueError(
+                        f"hot_budget_tokens={explicit_budget} exceeds safe "
+                        f"request budget {max_extra}"
+                    )
+        except (KeyError, TypeError, ValueError) as error:
+            if self.tp_rank == 0:
+                logger.warning(
+                    "RedKnot selected-row dense fallback: invalid runtime metadata: %s",
+                    error,
+                )
+            forward_batch.redknot_reuse_plan = [None]
+            return
+
+        if selection_policy not in {
+            "legacy",
+            "request_global",
+            "checkpoint_islands",
+        }:
+            if self.tp_rank == 0:
+                logger.warning(
+                    "RedKnot selected-row dense fallback: unsupported selection "
+                    "policy %s",
+                    selection_policy,
+                )
+            forward_batch.redknot_reuse_plan = [None]
+            return
+        if selection_policy in {"request_global", "checkpoint_islands"}:
+            requested_ratio = active_budget_ratio
+            if not 0.0 < requested_ratio < runtime_config.abort_cost_ratio:
+                if self.tp_rank == 0:
+                    logger.warning(
+                        "RedKnot selected-row dense fallback: active budget ratio "
+                        "%.4f is outside (0, %.4f)",
+                        requested_ratio,
+                        runtime_config.abort_cost_ratio,
+                    )
+                forward_batch.redknot_reuse_plan = [None]
+                return
+            if int(plan.get("interior_stride", 0) or 0) != 0:
+                if self.tp_rank == 0:
+                    logger.warning(
+                        "RedKnot selected-row dense fallback: selected replay "
+                        "does not allow interior_stride"
+                    )
+                forward_batch.redknot_reuse_plan = [None]
+                return
+            if selection_policy == "checkpoint_islands" and checkpoint_stride == 0:
+                if self.tp_rank == 0:
+                    logger.warning(
+                        "RedKnot selected-row dense fallback: checkpoint-island "
+                        "replay requires checkpoint_stride_tokens"
+                    )
+                forward_batch.redknot_reuse_plan = [None]
+                return
+        if envs.SGLANG_OPT_USE_COMPRESSOR_V2.get():
+            if self.tp_rank == 0:
+                logger.warning(
+                    "RedKnot selected-row dense fallback: segmented replay "
+                    "currently requires SGLANG_OPT_USE_COMPRESSOR_V2=0"
+                )
+            forward_batch.redknot_reuse_plan = [None]
+            return
+        if (
+            selection_policy == "checkpoint_islands"
+            and envs.SGLANG_OPT_USE_ONLINE_COMPRESS.get()
+        ):
+            if self.tp_rank == 0:
+                logger.warning(
+                    "RedKnot selected-row dense fallback: checkpoint islands "
+                    "require SGLANG_OPT_USE_ONLINE_COMPRESS=0 because the "
+                    "online-C128 state layout has no independent checkpoint slots"
+                )
+            forward_batch.redknot_reuse_plan = [None]
+            return
+        if (
+            self.server_args.enable_dp_attention
+            or self.attn_cp_size != 1
+            or self.moe_ep_size != 1
+        ):
+            if self.tp_rank == 0:
+                logger.warning(
+                    "RedKnot selected-row dense fallback: DP/CP attention and "
+                    "expert parallelism are unsupported"
+                )
+            forward_batch.redknot_reuse_plan = [None]
+            return
+        # Text-only scheduler batches normally carry ``mm_inputs=[None]``.
+        # Testing the list itself treats that placeholder as real multimodal
+        # state and silently disables selected-row execution for every request.
+        # Keep the conservative fallback, but base it on actual payloads and log
+        # the precise field so a future model-specific extension is diagnosable.
+        unsupported_aux = []
+        if forward_batch.input_embeds is not None:
+            unsupported_aux.append("input_embeds")
+        if forward_batch.replace_embeds is not None:
+            unsupported_aux.append("replace_embeds")
+        if any(item is not None for item in (forward_batch.mm_inputs or ())):
+            unsupported_aux.append("mm_inputs")
+        if any(forward_batch.lora_ids or ()):
+            unsupported_aux.append("lora_ids")
+        if forward_batch.token_type_ids is not None:
+            unsupported_aux.append("token_type_ids")
+        if forward_batch.mrope_positions is not None:
+            unsupported_aux.append("mrope_positions")
+        if forward_batch.ngram_embedding_info is not None:
+            unsupported_aux.append("ngram_embedding_info")
+        if forward_batch.multi_item_delimiter_indices is not None:
+            unsupported_aux.append("multi_item_delimiter_indices")
+        if forward_batch.tbo_split_seq_index is not None or forward_batch.tbo_children:
+            unsupported_aux.append("two_batch_overlap")
+        if unsupported_aux:
+            if self.tp_rank == 0:
+                logger.warning(
+                    "RedKnot selected-row dense fallback: per-token auxiliary "
+                    "inputs are unsupported: %s",
+                    ",".join(unsupported_aux),
+                )
+            forward_batch.redknot_reuse_plan = [None]
+            return
+        use_indexer_hot = (
+            os.environ.get("REDKNOT_V4_INDEXER_KV_REUSE", "0") == "1"
+        )
+        if selection_policy in {"request_global", "checkpoint_islands"} and (
+            not use_indexer_hot
+            or not runtime_config.reuse_window_kv
+            or not bool(plan.get("refresh_selected_c4_rows", False))
+            or os.environ.get("REDKNOT_V4_SEGMENTED_COMPRESSOR", "0") != "1"
+        ):
+            if self.tp_rank == 0:
+                logger.warning(
+                    "RedKnot selected-row dense fallback: selected-row "
+                    "replay requires Indexer reuse, SWA reuse, prefix refresh, "
+                    "and segmented compressor"
+                )
+            forward_batch.redknot_reuse_plan = [None]
+            return
+        ctrl_hot = get_offline_reuse_controller_v2()
+        topology = deepseek_v4_redknot_topology(self.model_config.hf_config)
+        target_ratios = tuple(topology["target_compress_ratios"])
+        c128_state_group_width = (
+            1 if envs.SGLANG_OPT_USE_ONLINE_COMPRESS.get() else 128
+        )
+        expected_state_group_widths = {
+            index: (4 if ratio == 4 else c128_state_group_width)
+            for index, ratio in enumerate(target_ratios)
+            if ratio in (4, 128)
+        }
+        readiness = ctrl_hot.validate_restore_segments(
+            segments,
+            expected_c4_layers=int(topology["num_c4_layers"]),
+            expected_c128_layers=int(topology["num_c128_layers"]),
+            expected_swa_layer_ids=(
+                tuple(range(int(topology["num_target_layers"])))
+                if runtime_config.reuse_window_kv
+                else None
+            ),
+            expected_c4_layer_ids=tuple(
+                index for index, ratio in enumerate(target_ratios) if ratio == 4
+            ),
+            expected_c128_layer_ids=tuple(
+                index for index, ratio in enumerate(target_ratios) if ratio == 128
+            ),
+            expected_state_group_widths=expected_state_group_widths,
+            require_indexer_units=(
+                use_indexer_hot
+                and selection_policy in {"request_global", "checkpoint_islands"}
+            ),
+            required_checkpoint_stride=(
+                checkpoint_stride
+                if selection_policy == "checkpoint_islands"
+                else None
+            ),
+            require_swa_checkpoints=(selection_policy == "checkpoint_islands"),
+        )
+        ready_vote = torch.tensor(
+            [1.0 if readiness.ready else 0.0],
+            dtype=torch.float32,
+            device=positions.device,
+        )
+        ready_votes = self.tp_group.all_reduce(ready_vote)
+        globally_ready = (
+            int(round(float(ready_votes.item()))) == self.tp_group.world_size
+        )
+        if not globally_ready:
+            if self.tp_rank == 0:
+                logger.warning(
+                    "RedKnot selected-row dense fallback: cache readiness failed "
+                    "on at least one TP rank (local=%s)",
+                    readiness.reason or "ready",
+                )
+            forward_batch.redknot_reuse_plan = [None]
+            return
+
+        if runtime_config.mode == "correctness":
+            # Correctness mode may still reuse compressed state, but it must keep
+            # the complete online hidden stream.
+            if self.tp_rank == 0:
+                logger.warning(
+                    "RedKnot V4 correctness mode ignores unsafe skip_forward request"
+                )
+            forward_batch.redknot_rows_pruned = False
+            return
+
+        # Diagnostic: report this forward's token span so we can see whether the
+        # scheduler chunked the request (each chunk is a separate forward_extend).
+        _dbg_pos = forward_batch.positions
+        logger.info(
+            "RedKnot selected-rows ENTER: n_tokens=%d pos=[%d..%d] query_start=%s",
+            int(_dbg_pos.numel()),
+            int(_dbg_pos.min().item()) if _dbg_pos.numel() else -1,
+            int(_dbg_pos.max().item()) if _dbg_pos.numel() else -1,
+            plan.get("query_start"),
+        )
+
+        active_mask = positions >= query_start
+        skip_prefix_seg = bool(plan.get("skip_prefix_recompute", True))
+        base_prefixes = {}
+        for segment_index, segment in enumerate(segments):
+            offset = int(segment["global_offset"])
+            length = int(segment["length"])
+            if selection_policy == "checkpoint_islands":
+                # Segment zero remains canonical.  A migrated segment pays only
+                # one mandatory 128-token boundary block; [128, 512) is an
+                # optional contiguous bridge that competes with checkpoint cells
+                # in the request-global budget below.
+                boundary = checkpoint_mandatory_prefix_tokens(
+                    segment_global_offset=offset,
+                    segment_length=length,
+                )
+            else:
+                if skip_prefix_seg and offset == 0:
+                    continue
+                # Segment zero has no cross-segment SWA boundary. Migrated
+                # segments keep a 128-token prefix after the previous segment's
+                # offline SWA tail is materialized by its earlier chunk.
+                boundary = min(int(segment.get("skip_first", 128)), length)
+                if offset == 0:
+                    boundary = 0
+            base_prefixes[segment_index] = boundary
+            active_mask |= (positions >= offset) & (positions < offset + boundary)
+        for protected_begin, protected_end in query_protected_ranges_online:
+            active_mask |= (positions >= protected_begin) & (positions < protected_end)
+
+        # TP0 composes the query-weighted Indexer signal on CPU, then broadcasts
+        # one compact mask.  Prefix-only allocation is deliberate: arbitrary C4
+        # islands cannot reconstruct the skipped SWA/compressor history.
+        hot_global_cpu = (
+            torch.zeros(logical_total, dtype=torch.uint8)
+            if self.tp_rank == 0
+            else None
+        )
+        prefix_lengths_cpu = (
+            torch.zeros(len(segments), dtype=torch.int32)
+            if self.tp_rank == 0
+            else None
+        )
+        if prefix_lengths_cpu is not None:
+            for segment_index, prefix_tokens in base_prefixes.items():
+                prefix_lengths_cpu[segment_index] = prefix_tokens
+        hot_budget_tokens = 0
+        selected_hot_tokens = 0
+        checkpoint_descriptors_cpu = (
+            torch.full(
+                (checkpoint_max_islands, 4),
+                -1,
+                dtype=torch.int64,
+            )
+            if self.tp_rank == 0
+            else None
+        )
+        checkpoint_island_count_cpu = 0
+        selection_ok = torch.ones(1, dtype=torch.int32, device=positions.device)
+        if use_indexer_hot and self.tp_rank == 0:
+            try:
+                if selection_policy not in {
+                    "request_global",
+                    "checkpoint_islands",
+                }:
+                    raise ValueError(
+                        "Indexer selected-row replay requires a supported policy"
+                    )
+                from sglang.srt.layers.attention.redknot.v4.request_selector import (
+                    CheckpointBridgeCandidates,
+                    CheckpointCellCandidates,
+                    SegmentPrefixCandidates,
+                    allocate_checkpoint_cell_islands,
+                    allocate_checkpoint_cell_islands_fast,
+                    allocate_request_global_prefixes,
+                    materialize_checkpoint_replay_layout,
+                )
+
+                mandatory_tokens = max(0, logical_total - query_start)
+                mandatory_tokens += sum(base_prefixes.values())
+                if query_protected_ranges_online:
+                    for protected_begin, protected_end in query_protected_ranges_online:
+                        segment_index = protected_segment_index_for_range(
+                            protected_begin, protected_end
+                        )
+                        protected_segment = segments[segment_index]
+                        base_end = int(protected_segment["global_offset"]) + (
+                            base_prefixes.get(segment_index, 0)
+                        )
+                        mandatory_tokens += (protected_end - protected_begin) - max(
+                            0,
+                            min(protected_end, base_end) - protected_begin,
+                        )
+                if "hot_budget_tokens" in plan:
+                    hot_budget_tokens = max(0, int(plan["hot_budget_tokens"]))
+                else:
+                    target_active = math.ceil(logical_total * active_budget_ratio)
+                    hot_budget_tokens = max(0, target_active - mandatory_tokens)
+                if selection_policy == "request_global":
+                    candidates = []
+                    for segment_index, segment in enumerate(segments):
+                        offset = int(segment["global_offset"])
+                        length = int(segment["length"])
+                        if skip_prefix_seg and offset == 0:
+                            continue
+                        if (
+                            protected_segment_online
+                            and segment_index == query_protected_segment_index
+                        ):
+                            continue
+                        base_prefix = base_prefixes[segment_index]
+                        scored = ctrl_hot.get_indexer_unit_scores(
+                            str(segment["seg_hash"])
+                        )
+                        if scored is None:
+                            raise ValueError(
+                                f"segment {segment_index} has no Indexer score artifact"
+                            )
+                        ordinals, scores = scored
+                        candidates.append(
+                            SegmentPrefixCandidates(
+                                segment_index=segment_index,
+                                length=length,
+                                base_prefix_tokens=base_prefix,
+                                query_weight=float(segment.get("query_score", 1.0)),
+                                unit_ordinals=ordinals.tolist(),
+                                unit_scores=scores.tolist(),
+                            )
+                        )
+                    selected = allocate_request_global_prefixes(
+                        candidates,
+                        hot_budget_tokens=hot_budget_tokens,
+                        per_segment_cap_ratio=cap_ratio,
+                    )
+                    for item in selected:
+                        segment = segments[item.segment_index]
+                        offset = int(segment["global_offset"])
+                        begin = offset + base_prefixes[item.segment_index]
+                        end = offset + item.prefix_tokens
+                        hot_global_cpu[begin:end] = 1
+                        prefix_lengths_cpu[item.segment_index] = item.prefix_tokens
+                else:
+                    bridges = []
+                    cells = []
+                    for segment_index, segment in enumerate(segments):
+                        offset = int(segment["global_offset"])
+                        length = int(segment["length"])
+                        if skip_prefix_seg and offset == 0:
+                            # Document one is the immutable offline prefix in
+                            # the RAG closure experiment.  Do not let its
+                            # internal checkpoint cells compete for online
+                            # budget after its mandatory prefix was skipped.
+                            continue
+                        if (
+                            protected_segment_online
+                            and segment_index == query_protected_segment_index
+                        ):
+                            continue
+                        scored = ctrl_hot.get_indexer_unit_scores(
+                            str(segment["seg_hash"])
+                        )
+                        if scored is None:
+                            raise ValueError(
+                                f"segment {segment_index} has no Indexer score artifact"
+                            )
+                        ordinals, scores = scored
+                        unit_scores = {
+                            int(ordinal): float(score)
+                            for ordinal, score in zip(
+                                ordinals.tolist(), scores.tolist()
+                            )
+                        }
+                        query_weight = max(
+                            0.05, float(segment.get("query_score", 1.0))
+                        )
+
+                        def score_block(block_begin: int) -> float:
+                            first_unit = block_begin // 4
+                            return query_weight * sum(
+                                unit_scores.get(unit, 0.0)
+                                for unit in range(first_unit, first_unit + 32)
+                            )
+
+                        # The first 128 rows of a migrated segment are mandatory.
+                        # The rest of its first checkpoint cell is one contiguous
+                        # prefix choice, scored in the same DP as all 512+ cells.
+                        bridge_begin = base_prefixes[segment_index]
+                        bridge_end = min(checkpoint_stride, length)
+                        bridge_block_count = (
+                            (bridge_end - bridge_begin) // 128
+                            if offset != 0
+                            else 0
+                        )
+                        if any(
+                            begin < offset + bridge_end
+                            and end > offset + bridge_begin
+                            for begin, end in query_protected_ranges_online
+                        ):
+                            bridge_block_count = 0
+                        if bridge_block_count > 0:
+                            bridges.append(
+                                CheckpointBridgeCandidates(
+                                    segment_index=segment_index,
+                                    block_scores=[
+                                        score_block(
+                                            bridge_begin + block_index * 128
+                                        )
+                                        for block_index in range(bridge_block_count)
+                                    ],
+                                )
+                            )
+
+                        # Sparse restart artifacts begin at the first 512-token
+                        # checkpoint anchor; cell zero is represented by the
+                        # mandatory boundary plus the optional bridge above.
+                        for cell_index in range(
+                            1,
+                            (length + checkpoint_stride - 1)
+                            // checkpoint_stride,
+                        ):
+                            cell_begin = cell_index * checkpoint_stride
+                            cell_global_begin = offset + cell_begin
+                            cell_global_end = min(
+                                offset + length,
+                                cell_global_begin + checkpoint_stride,
+                            )
+                            # A checkpoint restore may only start a fresh
+                            # online range.  Query-protected rows immediately
+                            # before/after the cell would make the two ranges
+                            # contiguous and either overwrite a freshly
+                            # computed compressor state or violate the
+                            # segmented-compressor restore contract.  Keep one
+                            # boundary window on both sides; all endpoints are
+                            # 512-aligned, so the next eligible cell remains a
+                            # cheap, deterministic alternative.
+                            checkpoint_guard_tokens = int(
+                                runtime_config.boundary_replay_tokens
+                            )
+                            if any(
+                                begin
+                                < cell_global_end + checkpoint_guard_tokens
+                                and end
+                                > cell_global_begin - checkpoint_guard_tokens
+                                for begin, end in query_protected_ranges_online
+                            ):
+                                continue
+                            block_count = min(
+                                checkpoint_stride // 128,
+                                (length - cell_begin) // 128,
+                            )
+                            if block_count <= 0:
+                                continue
+                            cells.append(
+                                CheckpointCellCandidates(
+                                    segment_index=segment_index,
+                                    cell_index=cell_index,
+                                    block_scores=[
+                                        score_block(
+                                            cell_begin + block_index * 128
+                                        )
+                                        for block_index in range(block_count)
+                                    ],
+                                )
+                            )
+                    max_replay_by_segment = {}
+                    effective_cap_by_segment = {}
+                    for segment_index, segment in enumerate(segments):
+                        effective_cap = checkpoint_effective_segment_cap_tokens(
+                            segment_length=int(segment["length"]),
+                            cap_ratio=cap_ratio,
+                            mandatory_prefix_tokens=base_prefixes.get(
+                                segment_index, 0
+                            ),
+                        )
+                        effective_cap_by_segment[segment_index] = effective_cap
+                        base_end = int(segment["global_offset"]) + (
+                            base_prefixes.get(segment_index, 0)
+                        )
+                        protected_extra = sum(
+                            (end - begin)
+                            - max(0, min(end, base_end) - begin)
+                            for begin, end in query_protected_ranges_online
+                            if protected_segment_index_for_range(begin, end)
+                            == segment_index
+                        )
+                        max_replay_by_segment[segment_index] = max(
+                            0,
+                            effective_cap
+                            - base_prefixes.get(segment_index, 0)
+                            - protected_extra,
+                        )
+                    checkpoint_allocator = (
+                        allocate_checkpoint_cell_islands_fast
+                        if plan.get("row_sparse_closure") is True
+                        else allocate_checkpoint_cell_islands
+                    )
+                    selected_islands = checkpoint_allocator(
+                        cells,
+                        token_budget_tokens=hot_budget_tokens,
+                        checkpoint_stride=checkpoint_stride,
+                        max_islands=checkpoint_max_islands,
+                        max_tokens_by_segment=max_replay_by_segment,
+                        bridges=bridges,
+                    )
+                    has_eligible_positive_score = any(
+                        max_replay_by_segment.get(candidate.segment_index, 0) >= 128
+                        and any(score > 0.0 for score in candidate.block_scores)
+                        for candidate in (*bridges, *cells)
+                    )
+                    if (
+                        hot_budget_tokens >= 128
+                        and has_eligible_positive_score
+                        and not selected_islands
+                    ):
+                        raise AssertionError(
+                            "checkpoint allocator dropped all positive candidates"
+                        )
+                    layout = materialize_checkpoint_replay_layout(
+                        selected_islands,
+                        base_prefix_tokens_by_segment=base_prefixes,
+                        checkpoint_stride=checkpoint_stride,
+                    )
+                    per_segment_tokens = {}
+                    for item in selected_islands:
+                        segment = segments[item.segment_index]
+                        offset = int(segment["global_offset"])
+                        begin = offset + item.token_begin
+                        end = offset + item.token_end
+                        hot_global_cpu[begin:end] = 1
+                        per_segment_tokens[item.segment_index] = (
+                            per_segment_tokens.get(item.segment_index, 0)
+                            + item.token_end
+                            - item.token_begin
+                        )
+                    for segment_index, prefix_tokens in (
+                        layout.selected_prefix_tokens
+                    ):
+                        prefix_lengths_cpu[segment_index] = prefix_tokens
+                    if len(layout.restore_islands) > checkpoint_max_islands:
+                        raise AssertionError(
+                            "checkpoint allocator violated the restore-island limit"
+                        )
+                    for descriptor_index, item in enumerate(
+                        layout.restore_islands
+                    ):
+                        checkpoint_descriptors_cpu[descriptor_index] = torch.tensor(
+                            [
+                                item.segment_index,
+                                item.token_begin,
+                                item.token_end,
+                                item.token_begin,
+                            ],
+                            dtype=torch.int64,
+                        )
+                    checkpoint_island_count_cpu = len(layout.restore_islands)
+                    if any(
+                        per_segment_tokens.get(segment_index, 0)
+                        + base_prefixes.get(segment_index, 0)
+                        > effective_cap_by_segment[segment_index]
+                        for segment_index in range(len(segments))
+                    ):
+                        raise AssertionError(
+                            "checkpoint allocator violated a segment replay cap"
+                        )
+                selected_hot_tokens = int(hot_global_cpu.sum().item())
+                if mandatory_tokens + selected_hot_tokens > math.floor(
+                    runtime_config.abort_cost_ratio * logical_total
+                ):
+                    raise ValueError("selected replay mask exceeds abort cost ratio")
+            except Exception as error:
+                selection_ok.zero_()
+                logger.warning(
+                    "RedKnot selected-row selection failed on TP0: %s", error
+                )
+        self.tp_group.broadcast(selection_ok, src=0)
+        if not bool(selection_ok.item()):
+            forward_batch.redknot_reuse_plan = [None]
+            return
+        hot_global = torch.zeros(
+            logical_total, dtype=torch.uint8, device=positions.device
+        )
+        if self.tp_rank == 0 and hot_global_cpu is not None:
+            hot_global.copy_(hot_global_cpu.to(device=positions.device))
+        self.tp_group.broadcast(hot_global, src=0)
+        prefix_lengths = torch.zeros(
+            len(segments), dtype=torch.int32, device=positions.device
+        )
+        if self.tp_rank == 0 and prefix_lengths_cpu is not None:
+            prefix_lengths.copy_(prefix_lengths_cpu.to(device=positions.device))
+        self.tp_group.broadcast(prefix_lengths, src=0)
+        forward_batch.redknot_selected_prefix_tokens = tuple(
+            int(value) for value in prefix_lengths.to(device="cpu").tolist()
+        )
+        checkpoint_island_count = torch.zeros(
+            1, dtype=torch.int32, device=positions.device
+        )
+        checkpoint_descriptors = torch.full(
+            (checkpoint_max_islands, 4),
+            -1,
+            dtype=torch.int64,
+            device=positions.device,
+        )
+        if self.tp_rank == 0:
+            checkpoint_island_count.fill_(checkpoint_island_count_cpu)
+            if checkpoint_descriptors_cpu is not None:
+                checkpoint_descriptors.copy_(
+                    checkpoint_descriptors_cpu.to(device=positions.device)
+                )
+        self.tp_group.broadcast(checkpoint_island_count, src=0)
+        self.tp_group.broadcast(checkpoint_descriptors, src=0)
+        checkpoint_islands = []
+        descriptor_error = ""
+        try:
+            descriptor_count = int(checkpoint_island_count.item())
+            if not 0 <= descriptor_count <= checkpoint_max_islands:
+                raise ValueError("broadcast checkpoint island count is invalid")
+            descriptor_rows = checkpoint_descriptors[:descriptor_count].to(
+                device="cpu"
+            )
+            if selection_policy != "checkpoint_islands" and descriptor_count:
+                raise ValueError("non-checkpoint policy broadcast checkpoint islands")
+            if selection_policy == "checkpoint_islands":
+                expected_hot = torch.zeros_like(hot_global)
+                previous_key = None
+                previous_end_by_segment = {}
+                for segment_index, segment in enumerate(segments):
+                    offset = int(segment["global_offset"])
+                    length = int(segment["length"])
+                    base_prefix = int(base_prefixes.get(segment_index, 0))
+                    online_prefix = int(prefix_lengths[segment_index].item())
+                    if (
+                        online_prefix < base_prefix
+                        or online_prefix > length
+                        or online_prefix % 128 != 0
+                    ):
+                        raise ValueError("broadcast online prefix is invalid")
+                    if online_prefix > base_prefix:
+                        expected_hot[
+                            offset + base_prefix : offset + online_prefix
+                        ] = 1
+                    previous_end_by_segment[segment_index] = online_prefix
+
+                for raw_row in descriptor_rows.tolist():
+                    segment_index, local_begin, local_end, anchor = map(
+                        int, raw_row
+                    )
+                    if not 0 <= segment_index < len(segments):
+                        raise ValueError(
+                            "broadcast checkpoint segment index is invalid"
+                        )
+                    segment = segments[segment_index]
+                    offset = int(segment["global_offset"])
+                    length = int(segment["length"])
+                    key = (segment_index, local_begin)
+                    if previous_key is not None and key <= previous_key:
+                        raise ValueError(
+                            "broadcast checkpoint islands are not strictly ordered"
+                        )
+                    previous_key = key
+                    if (
+                        anchor != local_begin
+                        or anchor <= 0
+                        or anchor % checkpoint_stride != 0
+                        or local_begin % 128 != 0
+                        or local_end % 128 != 0
+                        or local_end <= local_begin
+                        or local_end > length
+                    ):
+                        raise ValueError("broadcast checkpoint island is invalid")
+                    previous_end = previous_end_by_segment[segment_index]
+                    if local_begin - previous_end < 128:
+                        raise ValueError(
+                            "checkpoint islands with overlapping SWA carry "
+                            "were not merged"
+                        )
+                    previous_end_by_segment[segment_index] = local_end
+                    expected_hot[
+                        offset + local_begin : offset + local_end
+                    ] = 1
+                    checkpoint_islands.append(
+                        {
+                            "segment_index": segment_index,
+                            "checkpoint_anchor": anchor,
+                            "global_begin": offset + local_begin,
+                            "global_end": offset + local_end,
+                        }
+                    )
+                if not torch.equal(expected_hot, hot_global):
+                    raise ValueError(
+                        "checkpoint descriptors do not match the selected hot mask"
+                    )
+        except Exception as error:
+            descriptor_error = str(error)
+
+        descriptor_vote = torch.tensor(
+            [0.0 if descriptor_error else 1.0],
+            dtype=torch.float32,
+            device=positions.device,
+        )
+        descriptor_votes = self.tp_group.all_reduce(descriptor_vote)
+        descriptors_globally_valid = (
+            int(round(float(descriptor_votes.item()))) == self.tp_group.world_size
+        )
+        if not descriptors_globally_valid:
+            if self.tp_rank == 0:
+                logger.warning(
+                    "RedKnot selected-row dense fallback: invalid checkpoint "
+                    "descriptor on at least one TP rank (local=%s)",
+                    descriptor_error or "valid",
+                )
+            forward_batch.redknot_reuse_plan = [None]
+            return
+        forward_batch.redknot_checkpoint_islands = tuple(checkpoint_islands)
+        if use_indexer_hot:
+            valid = (positions >= 0) & (positions < logical_total)
+            hot_local = torch.zeros_like(active_mask)
+            if bool(valid.any().item()):
+                hot_local[valid] = hot_global.index_select(
+                    0, positions[valid]
+                ).to(torch.bool)
+            active_mask |= hot_local
+
+        active_indices = torch.nonzero(active_mask, as_tuple=False).flatten()
+        full_tokens = int(forward_batch.input_ids.shape[0])
+        all_rows_active = active_indices.numel() == full_tokens
+        if active_indices.numel() == 0:
+            # Prefix-only chunk (segment 0 skipped, no query/hot rows): keep a
+            # single placeholder row so the forward pipeline stays valid. Its
+            # output is discarded — the chunk's KV is fully served from offline
+            # reuse. This lets the pure-prefix chunk cost ~1 row instead of 8192.
+            active_indices = active_indices.new_zeros(1)
+            forward_batch.redknot_placeholder_only = True
+
+        active_n = int(active_indices.numel())
+        active_ratio = active_n / max(1, full_tokens)
+        if self.tp_rank == 0:
+            logger.info(
+                "REDKNOT_SELECTION_LAYOUT policy=%s prefixes=%s islands=%s",
+                selection_policy,
+                tuple(forward_batch.redknot_selected_prefix_tokens),
+                tuple(
+                    (
+                        int(item["segment_index"]),
+                        int(item["checkpoint_anchor"]),
+                        int(item["global_begin"]),
+                        int(item["global_end"]),
+                    )
+                    for item in checkpoint_islands
+                ),
+            )
+            logger.info(
+                "REDKNOT_METRIC active_rows policy=%s active=%d full=%d "
+                "active_ratio=%.6f online_row_saving=%.6f "
+                "hot_budget_tokens=%d selected_hot_tokens=%d",
+                selection_policy,
+                active_n,
+                full_tokens,
+                active_ratio,
+                1.0 - active_ratio,
+                hot_budget_tokens,
+                selected_hot_tokens,
+            )
+
+        # Build and validate both compressor schedules before deleting any rows.
+        # A schedule/descriptor error is still recoverable here as a true dense
+        # fallback; after the index_select below, skipped hidden rows no longer
+        # exist and a layer-local fallback would be unsound.
+        forward_batch.redknot_active_row_indices = active_indices
+        planned_positions = positions.index_select(0, active_indices)
+        schedule_ready = self._prepare_redknot_v4_boundary_replay(
+            forward_batch,
+            positions_override=planned_positions,
+        )
+        schedule_vote = torch.tensor(
+            [1.0 if schedule_ready else 0.0],
+            dtype=torch.float32,
+            device=positions.device,
+        )
+        schedule_votes = self.tp_group.all_reduce(schedule_vote)
+        schedules_globally_ready = (
+            int(round(float(schedule_votes.item()))) == self.tp_group.world_size
+        )
+        if not schedules_globally_ready:
+            if self.tp_rank == 0:
+                logger.warning(
+                    "RedKnot selected-row dense fallback: compressor schedule "
+                    "was invalid on at least one TP rank"
+                )
+            forward_batch.redknot_reuse_plan = [None]
+            for attr_name in (
+                "redknot_v4_boundary_replay",
+                "redknot_v4_compressor_schedules",
+                "redknot_active_row_indices",
+                "redknot_placeholder_only",
+            ):
+                try:
+                    delattr(forward_batch, attr_name)
+                except AttributeError:
+                    # ForwardBatch dataclass defaults are visible through
+                    # hasattr even when no instance value was installed.
+                    pass
+            return
+
+        if all_rows_active:
+            # The selection is still included in accounting, but no tensor or
+            # extend metadata needs mutation when every row remains online.
+            forward_batch.redknot_active_row_count = full_tokens
+            forward_batch.redknot_active_global_positions = positions
+            forward_batch.redknot_rows_pruned = False
+            return
+
+        forward_batch.input_ids = forward_batch.input_ids.index_select(0, active_indices)
+        forward_batch.positions = forward_batch.positions.index_select(0, active_indices)
+        forward_batch.out_cache_loc = forward_batch.out_cache_loc.index_select(
+            0, active_indices
+        )
+        active_count = int(active_indices.numel())
+        forward_batch.extend_num_tokens = active_count
+        forward_batch.extend_seq_lens = forward_batch.extend_seq_lens.new_tensor(
+            [active_count]
+        )
+        forward_batch.extend_seq_lens_cpu = [active_count]
+        forward_batch.extend_start_loc = forward_batch.extend_start_loc.new_zeros((1,))
+        if forward_batch.extend_logprob_start_lens_cpu is not None:
+            # Selected-row execution cannot return prompt-token logprobs. Setting
+            # the start to extend_len keeps only the final sampling row, which is
+            # sufficient for generated-token top-logprobs used by the benchmark.
+            forward_batch.extend_logprob_start_lens_cpu = [active_count]
+        forward_batch.num_token_non_padded_cpu = active_count
+        if forward_batch.num_token_non_padded is not None:
+            forward_batch.num_token_non_padded.fill_(active_count)
+        # Record which logical rows stayed online so the per-layer reuse hook
+        # only injects offline compressed state for the skipped interior rows.
+        forward_batch.redknot_active_row_indices = active_indices
+        forward_batch.redknot_active_row_count = active_count
+        forward_batch.redknot_active_global_positions = forward_batch.positions
+        forward_batch.redknot_rows_pruned = True
+
+    def _prepare_redknot_v4_boundary_replay(
+        self,
+        forward_batch: ForwardBatch,
+        *,
+        positions_override: Optional[torch.Tensor] = None,
+    ) -> bool:
+        if (
+            getattr(forward_batch, "redknot_v4_boundary_replay", None) is not None
+            and getattr(
+                forward_batch, "redknot_v4_compressor_schedules", None
+            )
+            is not None
+        ):
+            return True
+        plans = getattr(forward_batch, "redknot_reuse_plan", None)
+        if not plans or len(plans) != 1:
+            return False
+        plan = plans[0]
+        if not plan or plan.get("mode") != "restore":
+            return False
+        from sglang.srt.layers.attention.redknot.v4.reuse_planner import (
+            MLA_OFF_INDEPENDENT_RELOCATION_PROFILE,
+            MLA_OFF_EXECUTION_PROFILE,
+        )
+
+        if (
+            positions_override is None
+            and plan.get("mla_off_execution_profile")
+            in {
+                MLA_OFF_EXECUTION_PROFILE,
+                MLA_OFF_INDEPENDENT_RELOCATION_PROFILE,
+            }
+            and bool(plan.get("reuse_mla_off", False))
+            and not bool(plan.get("capture_mla_off", False))
+            and not bool(plan.get("skip_forward", False))
+        ):
+            # Pure logical-head MLA reuse neither prunes transformer rows nor
+            # restores the legacy C4/C128/Indexer state.  Preserve its plan for
+            # RedKnotMLAAttnBackend and do not subject it to the unrelated
+            # boundary-replay/compressor validator below.  This method's return
+            # value is ignored by the ordinary full-row forward call.  Return
+            # True nevertheless: the helper's contract is "schedule
+            # requirement satisfied", and this is an intentional no-op.
+            return True
+
+        from sglang.srt.layers.attention.redknot.v4.boundary_replay import (
+            build_boundary_replay,
+        )
+        from sglang.srt.layers.attention.redknot.v4.config import RedKnotV4Config
+        from sglang.srt.layers.attention.redknot.v4.reuse_planner import (
+            validate_runtime_reuse_plan,
+        )
+
+        try:
+            config = RedKnotV4Config(
+                mode=os.environ.get("REDKNOT_V4_MODE", "correctness"),
+                reuse_window_kv=bool(plan.get("reuse_window_kv", False)),
+            )
+        except ValueError as error:
+            if self.tp_rank == 0:
+                logger.warning(
+                    "RedKnot boundary replay disabled by runtime config: %s", error
+                )
+            # Keep the backend and compressor on the same dense fallback path.
+            forward_batch.redknot_reuse_plan = [None]
+            return False
+        validation = validate_runtime_reuse_plan(
+            plan,
+            config=config,
+            dspark_active=self.spec_algorithm.is_speculative(),
+        )
+        if not validation.valid:
+            if self.tp_rank == 0:
+                logger.warning(
+                    "RedKnot boundary replay dense fallback: reason=%s detail=%s",
+                    validation.fallback_reason.value,
+                    validation.detail,
+                )
+            forward_batch.redknot_reuse_plan = [None]
+            return False
+        orig_seq_lens = getattr(forward_batch, "orig_seq_lens", None)
+        total_tokens = (
+            int(orig_seq_lens[0].item())
+            if orig_seq_lens is not None and orig_seq_lens.numel() == 1
+            else int(forward_batch.seq_lens_cpu[0].item())
+        )
+        from sglang.srt.layers.attention.redknot.v4.segmented_compressor import (
+            build_segmented_compressor_schedule,
+        )
+
+        try:
+            replay = build_boundary_replay(
+                segments=plan.get("segments", ()),
+                total_tokens=total_tokens,
+                boundary_tokens=config.boundary_replay_tokens,
+            )
+            schedule_positions = (
+                positions_override
+                if positions_override is not None
+                else forward_batch.positions
+            )
+            positions = schedule_positions.detach().to(device="cpu").tolist()
+            schedules = {
+                ratio: build_segmented_compressor_schedule(
+                    replay=replay,
+                    positions=positions,
+                    compress_ratio=ratio,
+                    # Every retained selected-row token is intentional online
+                    # work: boundary/prefix, checkpoint replay, or query.
+                    include_all_present_rows=(
+                        bool(plan.get("refresh_selected_c4_rows", False))
+                        and plan.get("selection_policy")
+                        in {"request_global", "checkpoint_islands"}
+                        and hasattr(forward_batch, "redknot_active_row_indices")
+                    ),
+                    logical_chunk_range=getattr(
+                        forward_batch,
+                        "redknot_original_chunk_token_range",
+                        None,
+                    ),
+                    checkpoint_islands=getattr(
+                        forward_batch, "redknot_checkpoint_islands", ()
+                    ),
+                )
+                for ratio in (4, 128)
+            }
+        except Exception as error:
+            if self.tp_rank == 0:
+                logger.warning(
+                    "RedKnot selected-row dense fallback: compressor schedule "
+                    "validation failed: %s",
+                    error,
+                )
+            forward_batch.redknot_reuse_plan = [None]
+            return False
+        forward_batch.redknot_v4_boundary_replay = replay
+        forward_batch.redknot_v4_compressor_schedules = schedules
+        return True
 
     def forward_idle(
         self, forward_batch: ForwardBatch, pp_proxy_tensors=None
@@ -3198,6 +4803,47 @@ class ModelRunner(ModelRunnerKVCacheMixin):
         split_forward_count: int = 1,
     ) -> ModelRunnerOutput:
         self.forward_pass_id += 1
+        # ForwardBatch objects and inference tensors may be recycled by the
+        # scheduler.  Give attention backends a monotonic, runner-scoped
+        # generation so per-forward CPU/layout certificates cannot survive an
+        # in-place refill of the same tensor storage.  Split-prefill slices are
+        # one logical forward and retain the generation installed at split 0.
+        split_prefill = forward_batch.forward_mode.is_split_prefill()
+        current_generation = getattr(
+            forward_batch, "_redknot_forward_generation_id", None
+        )
+        starts_redknot_forward = (
+            not split_prefill
+            or int(getattr(forward_batch, "split_index", 0)) == 0
+            or not (
+                isinstance(current_generation, tuple)
+                and len(current_generation) == 2
+            )
+        )
+        if starts_redknot_forward:
+            forward_batch._redknot_forward_generation_id = (
+                id(self),
+                int(self.forward_pass_id),
+            )
+            for attribute in (
+                "redknot_v4_boundary_replay",
+                "redknot_v4_compressor_schedules",
+                "redknot_active_row_indices",
+                "redknot_active_row_count",
+                "redknot_active_global_positions",
+                "redknot_original_chunk_token_range",
+                "redknot_selected_prefix_tokens",
+                "redknot_checkpoint_islands",
+                "redknot_placeholder_only",
+                "redknot_rows_pruned",
+                "redknot_indexer_selected_tokens",
+            ):
+                try:
+                    delattr(forward_batch, attribute)
+                except AttributeError:
+                    # Clearing a recycled ForwardBatch must be idempotent;
+                    # class-level dataclass defaults are not instance state.
+                    pass
 
         # Try msprob debugger
         if self.msprobe_debugger is not None:
@@ -3219,6 +4865,14 @@ class ModelRunner(ModelRunnerKVCacheMixin):
                 forward_batch,
             ) as recorder_outputs,
         ):
+            if forward_batch.redknot_reuse_plan:
+                from sglang.srt.layers.attention.redknot.glm52_latent import (
+                    process_glm52_h0_before_forward,
+                )
+
+                process_glm52_h0_before_forward(
+                    forward_batch, self.token_to_kv_pool, self.req_to_token_pool
+                )
             output = self._forward_raw(
                 forward_batch,
                 skip_attn_backend_init,
@@ -3226,6 +4880,14 @@ class ModelRunner(ModelRunnerKVCacheMixin):
                 reinit_attn_backend,
                 split_forward_count,
             )
+            if forward_batch.redknot_reuse_plan:
+                from sglang.srt.layers.attention.redknot.glm52_latent import (
+                    process_glm52_h0_after_forward,
+                )
+
+                process_glm52_h0_after_forward(
+                    forward_batch, self.token_to_kv_pool, self.req_to_token_pool
+                )
             if self.enable_elastic_ep:
                 output = self._maybe_rebalance_after_rank_fault(
                     output,

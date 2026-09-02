@@ -1,0 +1,70 @@
+{
+  "data_selection_sha256": "ea66a8416fa0934d79e581b0ab8a1f597525305e9f865f357ec65e682d1833a2",
+  "dataset": {
+    "bytes": 6052108,
+    "name": "2wikimqa",
+    "row_id_base": 0,
+    "sha256": "dda279cf93a99e1e5bfa3291fb199fd55978d10a1feb31822953cf77a1742e37"
+  },
+  "format": "redknot_pure_mla_prompt_v1",
+  "geometry": {
+    "chunk_tokens": 32768,
+    "num_chunks": 4,
+    "online_suffix_tokens": 88,
+    "query_start": 131072,
+    "total_tokens": 131160
+  },
+  "output_blind": true,
+  "prompt": {
+    "answers_sha256": "sha256:719a6f01f7ce1cf80d2ffc26f7d05275a5711aff44e92b87ca552d324eee2d6e",
+    "full_input_ids_sha256": "sha256:7bb659db303d5319c52b47f5b6d381dfb21aaeeff2a4fa099b6b9a7a37ffd322",
+    "offline_chunk_hashes": [
+      "sha256:c3da8961ca10585a5c8554bde63b4196af1e6a56b943f65a8d8ab8ccbf105a5c",
+      "sha256:1bdff320e1992e8d2c563358700b3c2f63523e3901f7396a2117adde5e63d5b2",
+      "sha256:62f724e0b9f173a169c291188bc7f304823487c688b6177981446080be20324e",
+      "sha256:a9d62344e6c688d9efa4bb10ffacb99d2a10417613f67a99deab2c505f32a446"
+    ],
+    "offline_prefix_hash": "sha256:b95d5245611f7c5184ce6c6727ef8b556a1678135d8a05cb3b5f4177e729e26b",
+    "online_suffix_hash": "sha256:17bac05c6310a3b66a9f078fadb2388bce7cda327bd9a3302bca20264a3ba721",
+    "question_sha256": "sha256:1220430e9ec955e69c11bf7ea4193f72232e768071faf749354520b203cd6ac9",
+    "text_sha256": "sha256:909784d125431df0903d89a5a3cb34fae97eb0014fa2f03eca683aa4f9893ba6"
+  },
+  "prompt_manifest_sha256": "7a12606e4c5dd4e4b7fdada503e6e3d0d7b2168a318c307a0f8f13eb8e474246",
+  "prompt_mode": "official_rag_v1",
+  "protocol": {
+    "add_default_bos_token": true,
+    "answer_style": "direct_answer_plus_document_evidence_v1",
+    "document_delimiter": "\n\n",
+    "drop_thinking": true,
+    "encoder_path": "/mnt/tidal-alsh01/dataset/redone/checkpoints/opensource/DeepSeek-V4-Flash-0731/encoding/encoding_dsv4.py",
+    "encoder_sha256": "sha256:abc0d26120250dda0ae077dc64aa28836026e61e970854aaeb792445e6a0dde6",
+    "query_instruction": "\n\nAnswer the question using only the documents above. Put the direct answer alone on the first line. Then give one or two concise sentences explaining the supporting evidence from the documents. Do not use bullets or introduce outside facts. Keep the complete response between 25 and 35 tokens (target: about 30 tokens).\nQuestion: Who is Renaud Ii, Count Of Soissons's uncle?\nAnswer:",
+    "reasoning_effort": "low",
+    "target_output_token_range": [
+      25,
+      35
+    ],
+    "target_output_tokens": 30,
+    "thinking_mode": "chat",
+    "tokenizer_config_path": "/mnt/tidal-alsh01/dataset/redone/checkpoints/opensource/DeepSeek-V4-Flash-0731/tokenizer_config.json",
+    "tokenizer_config_sha256": "sha256:6ac8c8dc065ed118161d02dd532749ae3f52c243deac27872134fae2f50d8547",
+    "tokenizer_path": "/mnt/tidal-alsh01/dataset/redone/checkpoints/opensource/DeepSeek-V4-Flash-0731/tokenizer.json",
+    "tokenizer_sha256": "sha256:8f9f37ca37fdc4f5fd36d5cf4d3b0e8392edb4e894fd10cc0d70b4957c8633cf"
+  },
+  "source": {
+    "chunk_hashes": [
+      "sha256:e112cc4ca87d7ea965028158d35330a6884e7a6c8ff58de9e2cfe06673f123e3",
+      "sha256:8b37ea65d47728b42a9163f829d1fc0a28c49bfff30b7850408b18a8fb6c329e",
+      "sha256:4de87ef0cf4f114abf64eac03c8fd1c353c859b37a2eb621495ea5ee38ee03ef",
+      "sha256:1fa6a06a61cc7cdf2e87e0f696b7c54fd5f997ce151932d3003e063782961b2d"
+    ],
+    "chunk_order": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "expected_source_chunk": 0,
+    "query_row_id": 12
+  }
+}

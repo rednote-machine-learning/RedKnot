@@ -1,0 +1,64 @@
+{
+  "data_selection_sha256": "f3100e4e0390c4507469548104e44fc850123de6008fe20e26ae56d952057084",
+  "dataset": {
+    "bytes": 11483614,
+    "name": "hotpotqa",
+    "row_id_base": 0,
+    "sha256": "a0005ab2a1bc2ac3a70352dccbf96cccc4e0aac6bb677f6a55180fa51b92ef6f"
+  },
+  "format": "redknot_pure_mla_prompt_v1",
+  "geometry": {
+    "chunk_tokens": 16384,
+    "num_chunks": 4,
+    "online_suffix_tokens": 75,
+    "query_start": 65536,
+    "total_tokens": 65611
+  },
+  "output_blind": true,
+  "prompt": {
+    "answers_sha256": "sha256:deafa4c8623c39df754dad65f332f3e4ff51bee1b25be7606fc2f6680f8b37a3",
+    "full_input_ids_sha256": "sha256:d0679f1387162b4a44b5a9cd278bf3bad1f665ccb37f3efae2e64665201d8480",
+    "offline_chunk_hashes": [
+      "sha256:25da815b126bce7e17466fc047f162222a32a5b6086a5450ea1d44645d5ad346",
+      "sha256:48135852086bc9d5a21a3d6280bd1b47ece823e88d8aaf3bfe351a9c7945aafe",
+      "sha256:d5ce891070bdadfe26a6a1f20928d0da34d4099185ef5a7308c22aa85a5b6977",
+      "sha256:716ebcaebbb9743369f9e7199fcf7eda2fccbbf669e5bf61adb8d224b9f2ab47"
+    ],
+    "offline_prefix_hash": "sha256:df1d832c8182fd947bf40e3e81f11f947d9d31e63c84cd18d72638b43033aa30",
+    "online_suffix_hash": "sha256:092fab1f95ea4b363f30d4ce1f0252f384b996d0027e43b137a33e6b2018aaa8",
+    "question_sha256": "sha256:966abfc6519a35ca932b5755523251d150eea6be4393b191badf8ed9794c2845",
+    "text_sha256": "sha256:3f18a3dfc7511b8546b5d6909f914abf4a37dbee61606ec48502d471e6feea0d"
+  },
+  "prompt_manifest_sha256": "663c312df9ba5b713de5d3a81c0dcf0ead4f4e5456df5071fecd197110136db6",
+  "prompt_mode": "official_rag_v1",
+  "protocol": {
+    "add_default_bos_token": true,
+    "document_delimiter": "\n\n",
+    "drop_thinking": true,
+    "encoder_path": "/mnt/tidal-alsh01/dataset/redone/checkpoints/opensource/DeepSeek-V4-Flash-0731/encoding/encoding_dsv4.py",
+    "encoder_sha256": "sha256:abc0d26120250dda0ae077dc64aa28836026e61e970854aaeb792445e6a0dde6",
+    "query_instruction": "\n\nAnswer the question using only the documents above. Return the shortest exact answer span only, with no explanation.\nQuestion: The actor that plays Phileas Fogg in \"Around the World in 80 Days\", co-starred with Gary Cooper in a 1939 Goldwyn Productions film based on a novel by what author?\nAnswer:",
+    "reasoning_effort": "low",
+    "thinking_mode": "chat",
+    "tokenizer_config_path": "/mnt/tidal-alsh01/dataset/redone/checkpoints/opensource/DeepSeek-V4-Flash-0731/tokenizer_config.json",
+    "tokenizer_config_sha256": "sha256:6ac8c8dc065ed118161d02dd532749ae3f52c243deac27872134fae2f50d8547",
+    "tokenizer_path": "/mnt/tidal-alsh01/dataset/redone/checkpoints/opensource/DeepSeek-V4-Flash-0731/tokenizer.json",
+    "tokenizer_sha256": "sha256:8f9f37ca37fdc4f5fd36d5cf4d3b0e8392edb4e894fd10cc0d70b4957c8633cf"
+  },
+  "source": {
+    "chunk_hashes": [
+      "sha256:bc369a9116954c7706719d9a1053120b343f6c486dda0517befa0e11d6d28350",
+      "sha256:61bbcd6434b996b7bab8ff0d6ac08cc070c4a2d69c8451fdfd57d6fee85e524d",
+      "sha256:4dbad3af67e70348ed7000ce7437c296a0e88f8d83ffb95164485dc59a54ff78",
+      "sha256:f7d6e6d76cb07c73c35a61136700b59ef2fa40873038efeb79b7d0c45b07378e"
+    ],
+    "chunk_order": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "expected_source_chunk": 0,
+    "query_row_id": 1
+  }
+}

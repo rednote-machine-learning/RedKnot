@@ -21,6 +21,7 @@
 from __future__ import annotations
 
 import logging
+import os
 from contextlib import nullcontext
 from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
 
@@ -430,7 +431,14 @@ class MoEGate(nn.Module):
             )
 
         if get_global_server_args().enable_deterministic_inference:
-            return F.linear(hidden_states, self.weight, None)
+            logits = F.linear(hidden_states, self.weight, None)
+            if self.is_deepseek_v4:
+                # Both DSV4 routing consumers have an FP32 logits contract:
+                # HashTopK's CUDA ABI and the ordinary fused MoE gate.  The
+                # optimized non-deterministic router already emits FP32, while
+                # deterministic F.linear inherits the BF16 input dtype.
+                logits = logits.float()
+            return logits
 
         if (
             not self.is_deepseek_v4
@@ -479,6 +487,57 @@ class MoEGate(nn.Module):
         return logits
 
 
+def redknot_progressive_topk(layer_id: int, default_topk: int) -> int:
+    """Per-layer routed Top-K for Progressive Assignment-Sparse MoE.
+
+    Schedule comes from ``redknot_progressive_topk_schedule`` with the same
+    ``"start-end:k,..."`` inclusive-range format used by the Qwen MoE path.  An
+    empty schedule (the default) returns ``default_topk`` so existing DeepSeek
+    V2/V3/V4 deployments are bit-identical.  This is the assignment-sparse
+    lever: every token still receives a routed update, but deeper layers
+    dispatch to fewer experts, which cuts grouped-GEMM and dispatch work without
+    dropping any token.
+
+    Parsing/validation lives in
+    ``sglang.srt.layers.moe.redknot_progressive_topk`` so this path and the
+    Qwen MoE path cannot drift apart.
+    """
+
+    from sglang.srt.layers.moe.redknot_progressive_topk import resolve_routed_topk
+
+    return resolve_routed_topk(layer_id, default_topk)
+
+
+_REDKNOT_PROGRESSIVE_TOPK_LOGGED = set()
+
+
+def _log_redknot_progressive_topk_once(config, default_topk: int) -> None:
+    """Emit the resolved schedule once per (schedule, model) on each worker.
+
+    The one line records which layers were actually shrunk and by how much, so a
+    measurement run carries its own provenance instead of relying on the caller
+    having exported the right env var.
+    """
+
+    from sglang.srt.layers.moe.redknot_progressive_topk import (
+        format_schedule_summary,
+        schedule_from_server_args,
+    )
+
+    schedule = schedule_from_server_args()
+    if not schedule:
+        return
+    num_layers = int(getattr(config, "num_hidden_layers", 0) or 0)
+    key = (schedule, num_layers, int(default_topk))
+    if key in _REDKNOT_PROGRESSIVE_TOPK_LOGGED:
+        return
+    _REDKNOT_PROGRESSIVE_TOPK_LOGGED.add(key)
+    try:
+        logger.info(format_schedule_summary(num_layers, default_topk, schedule))
+    except ValueError as exc:
+        logger.error("RedKnot progressive top-K schedule is unusable: %s", exc)
+
+
 class DeepseekV2MoE(nn.Module):
 
     def __init__(
@@ -525,6 +584,15 @@ class DeepseekV2MoE(nn.Module):
                 config.n_routed_experts + self.num_fused_shared_experts
             )
             top_k_for_moe = config.num_experts_per_tok + self.num_fused_shared_experts
+
+        # Progressive assignment-sparse MoE: shrink only the routed component so
+        # any fused shared-expert slots stay intact.
+        _routed_default = int(config.num_experts_per_tok)
+        _routed_effective = redknot_progressive_topk(layer_id, _routed_default)
+        if _routed_effective != _routed_default:
+            top_k_for_moe -= _routed_default - _routed_effective
+        self.redknot_routed_topk = _routed_effective
+        _log_redknot_progressive_topk_once(config, _routed_default)
 
         self.config = config
         self.layer_id = layer_id
@@ -590,7 +658,7 @@ class DeepseekV2MoE(nn.Module):
 
         if self.is_hash and not (is_nextn and is_deepseek_v4):
             self.topk = HashTopK(
-                topk=config.num_experts_per_tok + self.num_fused_shared_experts,
+                topk=top_k_for_moe,
                 num_experts=config.n_routed_experts,
                 num_fused_shared_experts=self.num_fused_shared_experts,
                 vocab_size=config.vocab_size,
@@ -601,7 +669,7 @@ class DeepseekV2MoE(nn.Module):
         else:
             # Default: grouped noaux_tc top-k. Covers V3/V3.2/GLM-5/Glm4MoeLite.
             topk_kwargs = dict(
-                top_k=config.num_experts_per_tok + self.num_fused_shared_experts,
+                top_k=top_k_for_moe,
                 layer_id=self.layer_id,
                 renormalize=config.norm_topk_prob,
                 use_grouped_topk=True,
@@ -706,7 +774,7 @@ class DeepseekV2MoE(nn.Module):
                         self.shared_experts.gate_up_proj.quant_method.quant_config.weight_block_size
                     )
 
-        self.top_k = config.num_experts_per_tok
+        self.top_k = int(getattr(self, "redknot_routed_topk", config.num_experts_per_tok))
 
         if (
             get_moe_a2a_backend().is_deepep()
@@ -750,6 +818,56 @@ class DeepseekV2MoE(nn.Module):
             )
         ]
 
+    def _maybe_profile_redknot_adaptive_topk(
+        self,
+        topk_output,
+        forward_batch: Optional[ForwardBatch],
+    ) -> None:
+        """Observe native K6 router concentration without mutating routing."""
+
+        if os.environ.get("REDKNOT_ADAPTIVE_TOPK_PROFILE", "0") != "1":
+            return
+        if forward_batch is None:
+            return
+        from sglang.srt.layers.moe.redknot_adaptive_topk_profile import (
+            maybe_profile_dsv4_router_distribution,
+        )
+
+        maybe_profile_dsv4_router_distribution(
+            layer_id=self.layer_id,
+            topk_output=topk_output,
+            forward_batch=forward_batch,
+            correction_bias=self.gate.e_score_correction_bias,
+            scoring_func=str(self.config.scoring_func),
+            num_routed_experts=int(self.config.n_routed_experts),
+            native_routed_topk=int(self.config.num_experts_per_tok),
+            num_fused_shared_experts=int(self.num_fused_shared_experts),
+        )
+
+    def _maybe_apply_redknot_adaptive_topk(
+        self,
+        hidden_states: torch.Tensor,
+        topk_output,
+        forward_batch: Optional[ForwardBatch] = None,
+    ):
+        """Apply training-free token-level route compaction when enabled."""
+
+        from sglang.srt.layers.moe.redknot_adaptive_topk import (
+            maybe_apply_dsv4_adaptive_topk,
+        )
+
+        adaptive = maybe_apply_dsv4_adaptive_topk(
+            layer_id=int(self.layer_id),
+            num_hidden_layers=int(self.config.num_hidden_layers),
+            native_routed_topk=int(self.config.num_experts_per_tok),
+            num_fused_shared_experts=int(self.num_fused_shared_experts),
+            is_hash_layer=bool(self.is_hash),
+            hidden_states=hidden_states,
+            topk_output=topk_output,
+            forward_batch=forward_batch,
+        )
+        return topk_output if adaptive is None else adaptive
+
     def forward(
         self,
         hidden_states: torch.Tensor,
@@ -790,6 +908,7 @@ class DeepseekV2MoE(nn.Module):
                     gemm_output_zero_allocator,
                     input_ids,
                     input_ids_global=input_ids_global,
+                    forward_batch=forward_batch,
                 )
             else:
                 return self.forward_normal(
@@ -799,6 +918,7 @@ class DeepseekV2MoE(nn.Module):
                     gemm_output_zero_allocator,
                     input_ids,
                     input_ids_global=input_ids_global,
+                    forward_batch=forward_batch,
                 )
         else:
             return self.forward_deepep(
@@ -813,6 +933,7 @@ class DeepseekV2MoE(nn.Module):
         gemm_output_zero_allocator: BumpAllocator = None,
         input_ids: Optional[torch.Tensor] = None,
         input_ids_global: Optional[torch.Tensor] = None,
+        forward_batch: Optional[ForwardBatch] = None,
     ) -> torch.Tensor:
         current_stream = torch.cuda.current_stream()
         self.alt_stream.wait_stream(current_stream)
@@ -838,6 +959,12 @@ class DeepseekV2MoE(nn.Module):
                 router_logits,
                 expert_location_dispatch_info=dispatch_info,
                 **topk_kwargs,
+            )
+            self._maybe_profile_redknot_adaptive_topk(
+                topk_output, forward_batch
+            )
+            topk_output = self._maybe_apply_redknot_adaptive_topk(
+                hidden_states, topk_output, forward_batch
             )
             final_hidden_states = self.experts(hidden_states, topk_output)
             if (
@@ -877,6 +1004,7 @@ class DeepseekV2MoE(nn.Module):
         gemm_output_zero_allocator: BumpAllocator = None,
         input_ids: Optional[torch.Tensor] = None,
         input_ids_global: Optional[torch.Tensor] = None,
+        forward_batch: Optional[ForwardBatch] = None,
     ) -> torch.Tensor:
         if hasattr(self, "shared_experts") and use_intel_amx_backend(
             self.shared_experts.gate_up_proj
@@ -906,6 +1034,12 @@ class DeepseekV2MoE(nn.Module):
                 router_logits,
                 expert_location_dispatch_info=dispatch_info,
                 **topk_kwargs,
+            )
+            self._maybe_profile_redknot_adaptive_topk(
+                topk_output, forward_batch
+            )
+            topk_output = self._maybe_apply_redknot_adaptive_topk(
+                hidden_states, topk_output, forward_batch
             )
         else:
             shared_output = None
@@ -1270,6 +1404,97 @@ class DeepseekV2MoE(nn.Module):
             )
         else:
             return None
+
+    def forward_shared_only(self, hidden_states: torch.Tensor) -> torch.Tensor:
+        """Run only the shared expert for RedKnot low-salience tokens.
+
+        Routed expert selection remains entirely in the normal ``forward``
+        path used by FULL tokens. This method requires separate shared-expert
+        weights so it cannot be used when shared-expert fusion is enabled.
+        """
+
+        if self.num_fused_shared_experts != 0 or not hasattr(self, "shared_experts"):
+            raise RuntimeError(
+                "RedKnot SHARED_ONLY requires --disable-shared-experts-fusion"
+            )
+        shared_output = self._forward_shared_experts(hidden_states)
+        if shared_output is None:
+            return torch.zeros_like(hidden_states)
+        if self.tp_size > 1 and not self._shared_expert_tp1:
+            shared_output = tensor_model_parallel_all_reduce(shared_output)
+        return shared_output
+
+    def forward_redknot_sparse(
+        self,
+        hidden_states: torch.Tensor,
+        full_indices: torch.Tensor,
+        *,
+        input_ids_global: Optional[torch.Tensor] = None,
+    ) -> torch.Tensor:
+        """Shared(all tokens) + routed(FULL compact) with one TP reduction."""
+
+        if self.num_fused_shared_experts != 0 or not hasattr(self, "shared_experts"):
+            raise RuntimeError(
+                "RedKnot sparse MoE requires --disable-shared-experts-fusion"
+            )
+
+        def _run_routed_compact() -> torch.Tensor:
+            output = torch.zeros_like(hidden_states)
+            if full_indices.numel() == 0:
+                return output
+            full_hidden = hidden_states.index_select(0, full_indices)
+            router_logits = self.gate(full_hidden)
+            topk_kwargs = {}
+            if getattr(self, "is_hash", False):
+                if input_ids_global is None:
+                    raise ValueError("Hash MoE sparse dispatch requires input_ids_global")
+                topk_kwargs["input_ids"] = input_ids_global.index_select(
+                    0, full_indices
+                )
+            topk_output = self.topk(
+                full_hidden,
+                router_logits,
+                expert_location_dispatch_info=ExpertLocationDispatchInfo.init_new(
+                    layer_id=self.layer_id
+                ),
+                **topk_kwargs,
+            )
+            routed_output = self.experts(full_hidden, topk_output)
+            if (
+                not _is_cuda
+                and not _is_musa
+                and not _is_xpu
+                and not _use_aiter
+                or isinstance(self.experts.quant_method, KTEPWrapperMethod)
+            ):
+                routed_output *= self.routed_scaling_factor
+            routed_output = maybe_fuse_routed_scale_and_shared_add(
+                self.experts,
+                routed_output,
+                None,
+                self.routed_scaling_factor,
+            )
+            output.index_copy_(0, full_indices, routed_output)
+            return output
+
+        if self.alt_stream is not None and hidden_states.shape[0] > 0:
+            current_stream = torch.cuda.current_stream()
+            self.alt_stream.wait_stream(current_stream)
+            shared_output = self._forward_shared_experts(hidden_states)
+            with torch.cuda.stream(self.alt_stream):
+                output = _run_routed_compact()
+            current_stream.wait_stream(self.alt_stream)
+        else:
+            shared_output = self._forward_shared_experts(hidden_states)
+            output = _run_routed_compact()
+
+        if shared_output is not None and not self._shared_expert_tp1:
+            output.add_(shared_output)
+        if self.tp_size > 1:
+            output = tensor_model_parallel_all_reduce(output)
+        if shared_output is not None and self._shared_expert_tp1:
+            output.add_(shared_output)
+        return output
 
     def op_gate(self, state):
         if is_non_idle_and_non_empty(

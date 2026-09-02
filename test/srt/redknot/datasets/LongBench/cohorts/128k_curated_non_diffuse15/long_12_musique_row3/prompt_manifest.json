@@ -1,0 +1,70 @@
+{
+  "data_selection_sha256": "125a50828d14eb905c61acb4bf1e389e30df0753d5b93ce2135ba978b564af73",
+  "dataset": {
+    "bytes": 14085077,
+    "name": "musique",
+    "row_id_base": 0,
+    "sha256": "4ac69b91281c4ec6b21316cb7282e83fb6b4dda04fc68480bb8d8ed1e19ff7bd"
+  },
+  "format": "redknot_pure_mla_prompt_v1",
+  "geometry": {
+    "chunk_tokens": 32768,
+    "num_chunks": 4,
+    "online_suffix_tokens": 104,
+    "query_start": 131072,
+    "total_tokens": 131176
+  },
+  "output_blind": true,
+  "prompt": {
+    "answers_sha256": "sha256:212389869a7b53565197e0970bf5c5d5fd14bd0c33e3c80fa4ef8c6a59e9dbc8",
+    "full_input_ids_sha256": "sha256:89c9c6661896ce55833871a7a0d60f894105d589bbe6111c5e4df00637c29021",
+    "offline_chunk_hashes": [
+      "sha256:df2646d33b3a7180cdcff801f5dfe09a6e84dea1720943ef4f5f09535a69f384",
+      "sha256:eb8c969f792b47cdd18b9bd183ba9b761f02b6d7cdbbff9ec2d15149b6412342",
+      "sha256:8c95c04dfb43d8aabd0cb2163e4eff4606f132f35c60fc7ded1f9b09bc51a257",
+      "sha256:4f2bece614c4a4936f38e8d5adaea2b1e16d0d6f07e937056601f9c5a313d066"
+    ],
+    "offline_prefix_hash": "sha256:3171c03c89f65006850eb010371c59bdf93239878ab4d6f9ef86b5c2dce4ec9c",
+    "online_suffix_hash": "sha256:953b2d4d175f466785ad4e691609842ff320bf9b071e5aaa4e1782bf8ddbcc07",
+    "question_sha256": "sha256:39f44234f9b1789878768e823dd65bebbef877b16f8bd0514791e69496b6fbcb",
+    "text_sha256": "sha256:6fbee7bba49c86b0103306fdc0cbd0394ac5ea0b1d648ecb0a3027fdb8b19d8e"
+  },
+  "prompt_manifest_sha256": "939375112886b0f2f5bc83d2b747bc86d461214f77436a210ad62be678ab96d6",
+  "prompt_mode": "official_rag_v1",
+  "protocol": {
+    "add_default_bos_token": true,
+    "answer_style": "direct_answer_plus_document_evidence_v1",
+    "document_delimiter": "\n\n",
+    "drop_thinking": true,
+    "encoder_path": "/mnt/tidal-alsh01/dataset/redone/checkpoints/opensource/DeepSeek-V4-Flash-0731/encoding/encoding_dsv4.py",
+    "encoder_sha256": "sha256:abc0d26120250dda0ae077dc64aa28836026e61e970854aaeb792445e6a0dde6",
+    "query_instruction": "\n\nAnswer the question using only the documents above. Put the direct answer alone on the first line. Then give one or two concise sentences explaining the supporting evidence from the documents. Do not use bullets or introduce outside facts. Keep the complete response between 25 and 35 tokens (target: about 30 tokens).\nQuestion: Who is the child of the Italian navigator who sailed for England and explored the eastern coast of the continent Francisco Bojado's birthplace is located?\nAnswer:",
+    "reasoning_effort": "low",
+    "target_output_token_range": [
+      25,
+      35
+    ],
+    "target_output_tokens": 30,
+    "thinking_mode": "chat",
+    "tokenizer_config_path": "/mnt/tidal-alsh01/dataset/redone/checkpoints/opensource/DeepSeek-V4-Flash-0731/tokenizer_config.json",
+    "tokenizer_config_sha256": "sha256:6ac8c8dc065ed118161d02dd532749ae3f52c243deac27872134fae2f50d8547",
+    "tokenizer_path": "/mnt/tidal-alsh01/dataset/redone/checkpoints/opensource/DeepSeek-V4-Flash-0731/tokenizer.json",
+    "tokenizer_sha256": "sha256:8f9f37ca37fdc4f5fd36d5cf4d3b0e8392edb4e894fd10cc0d70b4957c8633cf"
+  },
+  "source": {
+    "chunk_hashes": [
+      "sha256:6bf48652268f7eb5dd61d654cdb590271d72598a967403736f89b94cb51ab109",
+      "sha256:95a496503add4b125dd3ea35de0d494dd651b3f7eb2441532ae78f2298460dbf",
+      "sha256:d1aea3022ca953ad646664cb4c0ed9be276ac31ed89bcad818a8d977494325c7",
+      "sha256:0332078c351789291860d328a3226e2fe0894392abaff72456c36d2143bbf1d5"
+    ],
+    "chunk_order": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "expected_source_chunk": 0,
+    "query_row_id": 3
+  }
+}

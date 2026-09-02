@@ -582,6 +582,10 @@ def release_kv_cache(req: Req, tree_cache: BasePrefixCache, is_insert: bool = Tr
         req,
         is_insert=is_insert and not getattr(req, "skip_radix_cache_insert", False),
     )
+    glm52_h0_prefix_indices = getattr(req, "glm52_h0_prefix_indices", None)
+    if glm52_h0_prefix_indices is not None and not getattr(tree_cache, "disable", False):
+        tree_cache.token_to_kv_pool_allocator.free(glm52_h0_prefix_indices)
+        req.glm52_h0_prefix_indices = None
 
     # StreamingSession.cache_finished_req handles speculative tail trim
     # and bookkeeping flag sync internally, then sets req_pool_idx = None.

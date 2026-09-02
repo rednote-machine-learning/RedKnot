@@ -157,6 +157,7 @@ from sglang.srt.managers.schedule_batch import (
 )
 from sglang.srt.managers.schedule_policy import (
     AddReqResult,
+    CLIP_MAX_NEW_TOKENS,
     PrefillAdder,
     SchedulePolicy,
 )
@@ -886,6 +887,7 @@ class Scheduler(
         elif self.chunked_prefill_size is not None and self.chunked_prefill_size <= 0:
             self.chunked_prefill_size = None
         self.chunked_req = None
+        self._redknot_merged_prefill_fail_closed_logged = set()
         # Tracks whether the current self.chunked_req was actually scheduled
         # into last iteration's batch (i.e., in can_run_list -> got a fresh
         # req_pool_idx from prepare_for_extend). Used to gate the
@@ -1897,6 +1899,7 @@ class Scheduler(
                 redknot_offline_segments=getattr(
                     recv_req, "redknot_offline_segments", None
                 ),
+                redknot_reuse_plan=getattr(recv_req, "redknot_reuse_plan", None),
             )
             req.tokenizer = self.tokenizer
 
@@ -2542,6 +2545,133 @@ class Scheduler(
             if dynamic_size is not None:
                 chunked_prefill_size = dynamic_size
 
+        from sglang.srt.layers.attention.redknot.v4.merged_prefill import (
+            _merged_prefill_alignment_origin,
+            choose_merged_prefill_tokens,
+            merged_prefill_capacity_preflight,
+            merged_prefill_tokens_from_plan,
+        )
+
+        try:
+            merged_prefill_server_cap = int(
+                os.environ.get("REDKNOT_V4_MERGED_PREFILL_MAX_TOKENS", "0")
+            )
+        except ValueError:
+            merged_prefill_server_cap = 0
+        active_chunked_logical_offset = (
+            len(self.chunked_req.prefix_indices)
+            if self.chunked_req is not None
+            else None
+        )
+        active_chunked_plan = (
+            getattr(self.chunked_req, "redknot_reuse_plan", None)
+            if self.chunked_req is not None
+            else None
+        )
+        active_plan_tokens = (
+            merged_prefill_tokens_from_plan(
+                active_chunked_plan,
+                self.chunked_prefill_size,
+                server_max_prefill_tokens=self.max_prefill_tokens,
+                server_opt_in_cap=merged_prefill_server_cap,
+            )
+            if self.chunked_req is not None
+            else None
+        )
+        merged_prefill_tokens = choose_merged_prefill_tokens(
+            global_chunk_tokens=self.chunked_prefill_size,
+            server_max_prefill_tokens=self.max_prefill_tokens,
+            server_opt_in_cap=merged_prefill_server_cap,
+            running_batch_size=running_bs,
+            has_active_chunked_req=self.chunked_req is not None,
+            waiting_queue_size=len(self.waiting_queue),
+            active_chunked_logical_offset=active_chunked_logical_offset,
+            active_chunked_plan=active_chunked_plan,
+            first_waiting_plan=(
+                getattr(self.waiting_queue[0], "redknot_reuse_plan", None)
+                if self.chunked_req is None and self.waiting_queue
+                else None
+            ),
+        )
+        # Once a request has fallen back to the global chunk size, an active
+        # offset that is not aligned to the requested merge group must never be
+        # enlarged mid-group. This also disables dynamic chunking for that pass.
+        if active_plan_tokens is not None and merged_prefill_tokens is None:
+            chunked_prefill_size = self.chunked_prefill_size
+        if merged_prefill_tokens is not None:
+            candidate_req = (
+                self.chunked_req
+                if self.chunked_req is not None
+                else self.waiting_queue[0]
+            )
+            capacity_ok = False
+            if not self.is_hybrid_swa:
+                capacity_reason = "hybrid SWA allocator is required"
+            else:
+                try:
+                    max_new_tokens = min(
+                        max(
+                            candidate_req.sampling_params.max_new_tokens
+                            - len(candidate_req.output_ids),
+                            0,
+                        ),
+                        CLIP_MAX_NEW_TOKENS,
+                    )
+                    candidate_extend_tokens = max(
+                        len(candidate_req.origin_input_ids)
+                        + len(candidate_req.output_ids)
+                        - len(candidate_req.prefix_indices),
+                        0,
+                    )
+                    capacity_ok, capacity_reason = merged_prefill_capacity_preflight(
+                        merged_prefill_tokens,
+                        candidate_extend_tokens=candidate_extend_tokens,
+                        locked_prefix_tokens=(
+                            _merged_prefill_alignment_origin(
+                                getattr(candidate_req, "redknot_reuse_plan", None)
+                            )
+                            if self.chunked_req is None
+                            else 0
+                        ),
+                        page_size=self.page_size,
+                        full_available_tokens=int(
+                            self.token_to_kv_pool_allocator.full_available_size()
+                        ),
+                        full_evictable_tokens=int(
+                            self.tree_cache.full_evictable_size()
+                        ),
+                        swa_available_tokens=int(
+                            self.token_to_kv_pool_allocator.swa_available_size()
+                        ),
+                        swa_evictable_tokens=int(self.tree_cache.swa_evictable_size()),
+                        sliding_window_tokens=int(self.tree_cache.sliding_window_size),
+                        max_new_tokens=int(max_new_tokens),
+                    )
+                except (AttributeError, TypeError, ValueError) as exc:
+                    capacity_reason = f"capacity inspection failed: {exc}"
+            if capacity_ok:
+                chunked_prefill_size = merged_prefill_tokens
+            else:
+                chunked_prefill_size = self.chunked_prefill_size
+                log_key = (
+                    getattr(candidate_req, "rid", None),
+                    merged_prefill_tokens,
+                )
+                if (
+                    self.ps.tp_rank == 0
+                    and log_key not in self._redknot_merged_prefill_fail_closed_logged
+                ):
+                    self._redknot_merged_prefill_fail_closed_logged.add(log_key)
+                    logger.warning(
+                        "RedKnot merged prefill fail-closed to global chunk=%s: "
+                        "rid=%s requested=%s reason=%s",
+                        self.chunked_prefill_size,
+                        getattr(candidate_req, "rid", None),
+                        merged_prefill_tokens,
+                        capacity_reason,
+                    )
+                merged_prefill_tokens = None
+
         # Prefill policy
         adder = PrefillAdder(
             self.page_size,
@@ -2555,7 +2685,11 @@ class Scheduler(
             self.priority_scheduling_preemption_threshold,
             max_prefill_bs=self.max_prefill_bs,
             max_running_requests=self.max_running_requests,
-            prefill_max_requests=self.server_args.prefill_max_requests,
+            prefill_max_requests=(
+                1
+                if merged_prefill_tokens is not None
+                else self.server_args.prefill_max_requests
+            ),
             prefill_delayer_single_pass=prefill_delayer_single_pass,
             dllm_config=self.dllm_config,
             waiting_queue_len=len(self.waiting_queue),
@@ -2594,8 +2728,9 @@ class Scheduler(
                     self.running_batch.batch_is_full = True
 
             if self.running_batch.batch_is_full:
-                if not self.enable_priority_preemption or not adder.preempt_to_schedule(
-                    req, self.server_args
+                if (
+                    not self.enable_priority_preemption
+                    or not adder.preempt_to_schedule(req, self.server_args)
                 ):
                     break
 
@@ -2609,12 +2744,80 @@ class Scheduler(
                     req.rid
                 )
 
+            plan = getattr(req, "redknot_reuse_plan", None)
+            trace_redknot_radix = (
+                isinstance(plan, dict)
+                and plan.get("mode") == "restore"
+                and plan.get("reuse_mla_off") is True
+                and plan.get("radix_prefix_role") == "consume"
+                and not getattr(req, "_redknot_scheduler_trace_logged", False)
+            )
+            radix_started = time.perf_counter()
+            if trace_redknot_radix:
+                logger.info(
+                    "RedKnot scheduler before radix match: rid=%s "
+                    "origin_tokens=%s output_tokens=%s requested_chunk=%s",
+                    req.rid,
+                    len(req.origin_input_ids),
+                    len(req.output_ids),
+                    merged_prefill_tokens,
+                )
             req.init_next_round_input(self.tree_cache)
+            if trace_redknot_radix:
+                logger.info(
+                    "RedKnot scheduler after radix match: rid=%s prefix=%s "
+                    "extend=%s elapsed_ms=%.3f",
+                    req.rid,
+                    len(req.prefix_indices),
+                    req.extend_input_len,
+                    (time.perf_counter() - radix_started) * 1000.0,
+                )
+            if isinstance(plan, dict) and plan.get("mode") in (
+                "glm52_h0_snapshot",
+                "glm52_h0_restore",
+            ):
+                req.skip_radix_cache_insert = True
+            if isinstance(plan, dict) and plan.get("mode") == "glm52_h0_restore":
+                prefix_len = int(plan.get("prefix_len", 0))
+                if prefix_len <= 0 or prefix_len % self.page_size != 0:
+                    raise ValueError(
+                        "GLM H0 restore prefix_len must be a positive multiple "
+                        f"of page_size={self.page_size}"
+                    )
+                if prefix_len >= len(req.fill_ids):
+                    raise ValueError(
+                        "GLM H0 restore request must include a query suffix"
+                    )
+                if req.last_node is not None:
+                    self.tree_cache.dec_lock_ref(req.last_node)
+                prefix_slots = self.token_to_kv_pool_allocator.alloc(prefix_len)
+                if prefix_slots is None:
+                    raise RuntimeError("No free KV pages for GLM H0 restore")
+                req.prefix_indices = prefix_slots
+                req.last_node = self.tree_cache.root_node
+                req.cache_protected_len = prefix_len
+                req.set_extend_input_len(len(req.fill_ids) - prefix_len)
+                req.glm52_h0_prefix_indices = prefix_slots
+            admission_started = time.perf_counter()
             res = adder.add_one_req(
                 req,
                 has_chunked_req=(self.chunked_req is not None),
                 truncation_align_size=self.truncation_align_size,
             )
+            if trace_redknot_radix:
+                logger.info(
+                    "RedKnot scheduler admission: rid=%s result=%s "
+                    "scheduled_extend=%s chunk=%s rem_total=%s rem_swa=%s "
+                    "elapsed_ms=%.3f",
+                    req.rid,
+                    res,
+                    req.extend_input_len,
+                    chunked_prefill_size,
+                    int(adder.rem_total_tokens),
+                    int(adder.rem_swa_tokens) if adder.is_hybrid_swa else -1,
+                    (time.perf_counter() - admission_started) * 1000.0,
+                )
+                req._redknot_scheduler_trace_logged = True
 
             if self.enable_lora:
                 running_loras.add(req.lora_id)
@@ -3829,6 +4032,91 @@ def configure_scheduler_process(
     return dp_rank
 
 
+def _wait_for_redknot_gpu_holder_release(
+    *, gpu_id: int, tp_rank: int, tp_size: int
+) -> None:
+    """Pause an owned TP worker immediately before its first CUDA access.
+
+    The long Python/config import phase happens before this point.  An external
+    supervisor can therefore keep a cluster-retention holder resident until
+    every TP worker is alive and ready, then release the holder and acknowledge
+    all ranks at once.  The hook is opt-in, create-only, rank-bound, and fails
+    closed on stale files, malformed configuration, or timeout.
+    """
+
+    ready_dir = os.environ.get(
+        "REDKNOT_GPU_HOLDER_WORKER_READY_DIR", ""
+    ).strip()
+    go_file = os.environ.get(
+        "REDKNOT_GPU_HOLDER_WORKER_GO_FILE", ""
+    ).strip()
+    expected_raw = os.environ.get(
+        "REDKNOT_GPU_HOLDER_EXPECTED_WORKERS", ""
+    ).strip()
+    configured = (bool(ready_dir), bool(go_file), bool(expected_raw))
+    if not any(configured):
+        return
+    if not all(configured):
+        raise ValueError(
+            "RedKnot worker GPU-holder barrier requires ready dir, go file, "
+            "and expected worker count"
+        )
+    if not os.path.isabs(ready_dir) or not os.path.isabs(go_file):
+        raise ValueError("RedKnot worker GPU-holder barrier paths must be absolute")
+    expected_workers = int(expected_raw)
+    if expected_workers <= 0 or int(tp_size) != expected_workers:
+        raise ValueError(
+            "RedKnot worker GPU-holder barrier count differs from TP size"
+        )
+    if not 0 <= int(tp_rank) < expected_workers:
+        raise ValueError("RedKnot worker GPU-holder barrier rank is invalid")
+    os.makedirs(ready_dir, exist_ok=True)
+    ready_path = os.path.join(ready_dir, f"rank{int(tp_rank):03d}.ready")
+    payload = (
+        f"pid={os.getpid()} gpu_id={int(gpu_id)} tp_rank={int(tp_rank)} "
+        f"tp_size={int(tp_size)}\n"
+    )
+    fd = os.open(
+        ready_path,
+        os.O_WRONLY | os.O_CREAT | os.O_EXCL,
+        0o600,
+    )
+    try:
+        os.write(fd, payload.encode("ascii"))
+        os.fsync(fd)
+    finally:
+        os.close(fd)
+    logger.info(
+        "RedKnot TP worker ready before CUDA: rank=%s gpu=%s pid=%s",
+        tp_rank,
+        gpu_id,
+        os.getpid(),
+    )
+    timeout_s = float(
+        os.environ.get("REDKNOT_GPU_HOLDER_RELEASE_TIMEOUT_S", "300")
+    )
+    if not 0.0 < timeout_s < float("inf"):
+        raise ValueError("RedKnot worker GPU-holder timeout must be finite and positive")
+    expected_go = f"release_workers={expected_workers}\n"
+    deadline = time.monotonic() + timeout_s
+    while time.monotonic() < deadline:
+        if os.path.exists(go_file):
+            with open(go_file, "r", encoding="ascii") as handle:
+                observed_go = handle.read()
+            if observed_go != expected_go:
+                raise RuntimeError(
+                    "RedKnot worker GPU-holder acknowledgement mismatch"
+                )
+            logger.info(
+                "RedKnot TP worker GPU release acknowledged: rank=%s pid=%s",
+                tp_rank,
+                os.getpid(),
+            )
+            return
+        time.sleep(0.05)
+    raise TimeoutError("RedKnot worker GPU-holder release timed out")
+
+
 def run_scheduler_process(
     server_args: ServerArgs,
     port_args: PortArgs,
@@ -3866,6 +4154,11 @@ def run_scheduler_process(
         moe_ep_rank,
         pp_rank,
         dp_rank,
+    )
+    _wait_for_redknot_gpu_holder_release(
+        gpu_id=gpu_id,
+        tp_rank=tp_rank,
+        tp_size=server_args.tp_size,
     )
     parent_process = psutil.Process().parent()
 

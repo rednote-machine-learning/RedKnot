@@ -1,193 +1,212 @@
 <div align="center" id="redknottop">
-<img src="RedKnot_Logo.png" alt="RedKnot logo" width="600" margin="10px"></img>
+  <img src="RedKnot_Logo.png" alt="RedKnot logo" width="600" />
 
-**Head-Classified KV Reuse + Elastic Sparsity for Long-Context LLM Inference**
+  <p><strong>Head-aware reuse and token-selective execution for long-context LLM serving.</strong></p>
 
-[![SGLang](https://img.shields.io/badge/built%20on-SGLang-blue)](https://github.com/sgl-project/sglang)
-[![license](https://img.shields.io/badge/license-Apache--2.0-green)](./LICENSE)
-[![models](https://img.shields.io/badge/models-Qwen3%20%7C%20Mistral%20%7C%20Llama3.3%20%7C%20Qwen3.5--MoE%20%7C%20DeepSeek--V4-orange)]()
+  <p>
+    <a href="https://github.com/sgl-project/sglang"><img src="https://img.shields.io/badge/built%20on-SGLang-blue" alt="Built on SGLang" /></a>
+    <a href="./LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-green" alt="Apache-2.0 License" /></a>
+    <a href="#deepseek-v4-flash-release"><img src="https://img.shields.io/badge/DeepSeek--V4--Flash-TP8%20release-orange" alt="DeepSeek V4 Flash TP8 release" /></a>
+  </p>
 
+  <p>
+    <a href="#deepseek-v4-flash-release">Quick start</a> ·
+    <a href="#what-is-redknot">Technology</a> ·
+    <a href="#other-benchmark-entrypoints">Benchmarks</a> ·
+    <a href="#partners">Partners</a> ·
+    <a href="https://arxiv.org/abs/2606.06256">Paper</a>
+  </p>
 </div>
 
---------------------------------------------------------------------------------
+> **Research release.** RedKnot is an SGLang-based research system for long-context inference. Its kernels, policy contracts and supported models are actively evolving. Reproduce the frozen benchmark manifests before using a reported result to compare systems or hardware.
 
-## About
+## Performance at a glance
 
-**RedKnot** is a long-context inference acceleration integration built on top of [SGLang](https://github.com/sgl-project/sglang). Its core idea is: **not every attention head needs the full KV, and not every token needs to go through the full FFN**. RedKnot achieves this through:
+![Qualified long-context operating envelope](assets/redknot-performance-overview.svg)
 
-- **Head Classification**: each `(layer, kv_head)` is categorized into one of four classes — `global / local / retrieval / dense` — and the KV storage and reuse strategy is decided per class;
-- **Offline KV Reuse + RoPE Relocation**: KV for reusable segments is stored offline; at serving time only the necessary tokens are selectively recomputed, and RoPE relocation guarantees numerical alignment;
-- **Elastic Sparsity / Sparse FFN**: token-selective FFN based on attention importance, skipping the feed-forward computation for low-contribution tokens;
-- **SegPagedAttention Runtime**: per-head page table + segmented KV store, allowing different head classes to have different visible windows;
-- **DeepSeek-V4** and the **full Qwen 3.5 series** will be fully updated and adapted in the next release; only the base version is open-sourced for now.
+On qualified long-context profiles, RedKnot targets quality regression within
+**1 percentage point**, a **2–5× hot-state TTFT speedup**, and **70–90%
+arithmetic compute-ledger saving**. Blue denotes the Recomputed reference;
+yellow denotes the RedKnot operating envelope. The achieved point depends on
+the model, context length, GPU topology and frozen policy; per-suite result
+JSON is the source of truth.
 
-While staying at **near-lossless accuracy** (in some scenarios even better than the dense baseline), it reduces long-context prefill **FLOPs by roughly 50%–70%** and delivers **1.35x–3.2x TTFT speedup** (the gains grow larger as context length increases).
+The compute ledger intentionally excludes memory traffic, kernel-launch cost,
+TP communication and all uncredited runtime components; it is therefore not a
+claim about total system energy or universal end-to-end throughput.
 
-- **Paper**: **RedKnot: Efficient Long-Context LLM Serving with Head-Aware KV Reuse and SegPagedAttention** — Yang Liu, ZhaoKai Luo, HuaYi Jin, ZhiYong Wang, RuoZhou He, BoYu Wang, Guanjie Chen, Junhao Hu (<https://arxiv.org/abs/2606.06256>)
+## News
 
-> This repository is built on SGLang and retains all of SGLang's high-performance serving capabilities (RadixAttention, zero-overhead scheduler, PD disaggregation, continuous batching, quantization, etc.). RedKnot is integrated as an attention-layer extension under `python/sglang/srt/layers/attention/redknot/`.
+- **2026-09 — Ascend NPU adaptation notes published.** The upstream SGLang Ascend baseline (Atlas 800I A2 / A3 containers, `docker/npu.Dockerfile`, `docs/platforms/ascend/`) has landed, and RedKnot's Ascend port status, known gaps and bring-up workflow are now documented in [`docs/ASCEND.md`](docs/ASCEND.md). The port is work in progress; Ascend numbers are preliminary until qualification profiles are co-published.
+- **2026-08 — DeepSeek V4 Flash TP8 release.** This repository now includes a packaged DeepSeek-V4-Flash + RedKnot path with one-command reproduction over frozen 64K, 128K, 256K and 440K LongBench-derived RAG suites.
+- **2026-07 — Lab-model adapters.** RedKnot released experimental adapters and RAG benchmarks for Mistral, Qwen3, Qwen3.5 MoE and Llama 3.3, covering native SWA, GQA/MHA head policies and sparse-FFN execution.
+- **2026-06 — Paper.** [*RedKnot: Efficient Long-Context LLM Serving with Head-Aware KV Reuse and SegPagedAttention*](https://arxiv.org/abs/2606.06256) is available on arXiv.
 
-## Ascend Adaptation
+## Future Work
 
-Huawei Cloud is actively adapting RedKnot for Ascend NPUs. Ascend support is currently work in progress; compatibility notes, deployment instructions, and performance results will be updated as the adaptation matures.
+- **September–October 2026 — Hybrid-architecture models.** We plan to publish
+  adaptation results for the Qwen3.5-to-Qwen4 family and GLM-5.3. If there is
+  another model you would like RedKnot to support, please
+  [open an issue](https://github.com/rednote-machine-learning/RedKnot/issues).
+- **DeepSeek V4 series.** We will continue supporting the DeepSeek V4 family,
+  with DeepSeek V4 Pro adaptation coming soon.
+- **Ascend NPU port.** Huawei Cloud is driving the Ascend adaptation. Short
+  term we target functional parity with the upstream SGLang NPU baseline in
+  RedKnot's Recomputed reference path; medium term we will publish
+  Ascend-side qualification profiles for the frozen 64K / 128K / 256K / 440K
+  suites. Current status and known gaps are tracked in
+  [`docs/ASCEND.md`](docs/ASCEND.md).
 
-## Key Ideas
+## What is RedKnot?
 
-| Mechanism | Description | Code Location |
-|---|---|---|
-| Head classification config | `global / local / retrieval / dense` four-class strategy + JSON loading | `redknot/head_config.py`, `head_profiler.py` |
-| Offline KV cache + RoPE relocation | Segment-level offline KV storage and relocation (numerical alignment) | `redknot/offline_cache.py`, `rope_helper.py` |
-| Head-aware attention recovery | FlashAttention-2 / FA-3 bucketed attention | `redknot/ops_flash.py`, `ops_flash3.py` |
-| Sparse FFN (Elastic Sparsity) | Token-selective FFN, skipping computation by importance | `redknot/sparse_ffn.py` |
-| SegPagedAttention runtime | Per-head page table + segmented KV store | `redknot/segpaged.py`, `segpaged_v2/` |
-| DeepSeek-V4 MLA integration | Reuse indexer top-k for selective recomputation | `redknot/deepseek_v4_mla.py`, `dsv4_offline_reuse.py` |
-| PD KV transfer / head-aware scheduling | Head-class KV shard transfer and capacity model | `redknot/pd_transfer.py`, `scheduler.py` |
+RedKnot is a model-aware long-context execution framework built around three
+composable ideas rather than one model-specific cache shortcut:
 
-See `python/sglang/srt/layers/attention/redknot/ROADMAP.md` for a more detailed phase plan.
+1. **Head decomposition and aggregation.** Attention heads are classified by
+   their long-context behavior. Reusable local heads are prepared offline;
+   global, retrieval or recovery heads remain online. Their projected
+   contributions are merged back into the model without changing the model's
+   external interface. The same abstraction maps to MLA, MHA, GQA and native
+   sliding-window attention, with model-specific projection and RoPE handling.
+2. **Sparse FFN and MoE execution.** Token-level importance controls which rows
+   enter expensive FFN work, while adaptive expert Top-K assigns more experts
+   only when the router distribution requires them. Dense boundary layers and
+   protected query rows preserve the critical path.
+3. **SegPagedAttention.** KV pages and visibility are organized per head and
+   segment, allowing global, local and retrieval heads to consume different
+   context scopes without forcing one uniform cache layout.
 
-## Getting Started
+Together, these mechanisms reduce redundant work at the head, token and expert
+levels. RedKnot keeps a full online Recomputed path as its reference; reported
+gains are therefore measured against the same checkpoint and input IDs rather
+than against a prefix-cache hit.
 
-RedKnot reuses SGLang's installation flow:
+## DeepSeek V4 Flash release
 
-```bash
-# Install (development mode)
-pip install -e "python[all]"
-```
+The DeepSeek-V4-Flash release is the primary reproducible path in this repository. It runs on a TP8 server and ships all frozen inputs, head policy, sparse-MoE policy and execution manifests required for the packaged benchmark.
 
-Some models (the `qwen3_5_moe` architecture of `Qwen3.5-*`, and `DeepSeek-V4`) require transformers 5.x.
-The repository ships with `.venv_tf5` (transformers 5.12.0). The system transformers 4.57 cannot load these models.
+### Verified high-efficiency configuration
 
-- Install: <https://docs.sglang.io/get_started/install.html>
-- Quick start: <https://docs.sglang.io/basic_usage/send_request.html>
-
-## Benchmarks (RAG Accuracy / Speed)
-
-All benchmark scripts live in `test/srt/redknot/`; the accompanying scripts, plots, and docs are archived under `test/srt/redknot/utils/`.
-Each benchmark uses an **honest dense baseline** (one full FlashAttention-2 prefill) to compare against RedKnot's head-class KV reuse path, reporting accuracy (SQuAD F1 / EM), speed (TTFT, speedup, decode tok/s), and background overhead.
-
-> Hardware: NVIDIA L20Y ×8 (80GB each) | 4 samples per model | Date: 2026-06-26
-
-### Qwen3-32B — HotpotQA ✅ Best
-
-| Context | base F1 | RedKnot F1 | base TTFT | RedKnot TTFT | speedup | FLOPs saved |
-|---|---|---|---|---|---|---|
-| 16K | 0.750 | **1.000** | 3.24s | 2.33s | **1.39x** | 69.2% |
-| 24K | 1.000 | **1.000** | 5.25s | 2.96s | **1.77x** | 70.9% |
-| 32K | 0.750 | **1.000** | 7.74s | 4.02s | **1.93x** | 72.2% |
-
-RedKnot F1 is **always ≥ baseline** (lossless or better), TTFT speedup grows with context (1.39→1.93x), and FLOPs savings stay stable at ~70%.
-
-### Qwen3.5-35B-A3B (MoE) — LongBench
-
-| Context | Dataset | std F1 | RedKnot F1 | compute saved | TTFT speedup |
-|---|---|---|---|---|---|
-| 16K | triviaqa | 1.000 | 1.000 | 46.4% | **1.87x** |
-| 32K | multifieldqa_en | 0.792 | 0.576 | 50.4% | **2.02x** |
-| 64K | triviaqa | 0.875 | 0.750 | 53.8% | **2.16x** |
-
-TTFT speedup grows with context (1.87→2.16x); lossless at 16K, with some degradation at long context (the cost of linear attention + MoE sparsity).
-
-### Mistral-7B-Instruct-v0.1 — native SWA KV reuse
-
-> Hardware: NVIDIA A800-SXM4-80GB ×1 | Date: 2026-08-16
-> Model: `mistralai/Mistral-7B-Instruct-v0.1` (`sliding_window=4096`) | bf16 | vs full FA-2 prefill
-
-Default eval (`longbench_rag.jsonl`, 4-doc RAG, ~30K):
-
-| n | exact match | EM (base / RedKnot) | logits cosine | base TTFT | RedKnot TTFT | speedup | GPU save |
-|---|---|---|---|---|---|---|---|
-| 25 | **23/25 (92%)** | 0.440 / 0.440 | 0.998 | 1.46s | **0.45s** | **3.22x** | **68.9%** |
-
-Decode stays matched (~33 tok/s). First-token logits cosine 0.998 means the reuse path tracks full FA-2 prefill.
-
-Long-context LongBench (where each document is long enough for native SWA reuse to matter):
-
-| Dataset | n | base F1 | RedKnot F1 | base TTFT | RedKnot TTFT | speedup | GPU save |
-|---|---|---|---|---|---|---|---|
-| hotpotqa | 200 | 0.389 | **0.392** | 1.24s | 0.38s | **3.27x** | 69.4% |
-| musique | 200 | 0.143 | **0.146** | 1.50s | 0.44s | **3.42x** | 70.7% |
-| triviaqa | 200 | 0.494 | **0.506** | 1.14s | 0.41s | **2.80x** | 64.3% |
-
-RedKnot F1 is **≥ baseline** on these sets. TTFT speedup is ~3x, GPU savings ~65–70%, and the gain is larger on the longer contexts (musique / hotpotqa).
-
-### Known Issues
-
-- **Llama-3.3-70B-Instruct**: the baseline works normally, but the RedKnot decode path degrades (repeated tokens) under long-context LongBench, and single-GPU INT4 easily OOMs while multi-GPU bf16 triggers cross-device errors. This is a pre-existing algorithm/config issue of RedKnot on Llama3.3, pending a separate investigation into `driver_batched` Llama compatibility and the quality of the `head_class/llama-70B_*.json` configs.
-
-## How to Run
-
-Benchmark scripts are all located in `test/srt/redknot/`. At runtime they depend on the `head_class/`, `sparse_ffn_params/`, and `datasets/` config/data directories in the same folder, as well as `utils/` (e.g. `fp8_offline_patch.py`).
-
-### One-command reproduction
-
-```bash
-cd test/srt/redknot
-
-# Default small/medium models (Mistral/Qwen3 on HotpotQA + Llama/Qwen35 on LongBench)
-bash run_all_rag.sh
-
-# Custom models and sizes
-RK_MODELS="mistral qwen3" RK_SAMPLES=4 RK_LENGTHS=16K,24K,32K \
-  bash run_all_rag.sh
-```
-
-### Run all RAG benchmarks
-
-Run the RAG benchmarks for all five models in sequence (Qwen3.5-MoE / Qwen3 / Mistral / Llama3.3 / DeepSeek-V4):
-
-```bash
-cd test/srt/redknot
-
-python benchmark_RedKnot_Qwen35_RAG.py
-python benchmark_RedKnot_Qwen3_RAG.py
-python benchmark_RedKnot_Mistral_RAG.py
-python benchmark_RedKnot_Llama3.3_RAG.py
-python benchmark_RedKnot_DeepSeekV4_RAG.py
-```
-
-> Note: `Qwen3.5-MoE` and `DeepSeek-V4` require transformers 5.x; run the corresponding scripts with `.venv_tf5/bin/python`.
-
-### Minimal single-model check (results in a few minutes)
-
-```bash
-# Qwen3-32B (INT4 NF4, single GPU)
-REDKNOT_N_SAMPLES=1 REDKNOT_LENGTHS=16K REDKNOT_MAX_NEW=8 \
-  CUDA_VISIBLE_DEVICES=0 python test/srt/redknot/benchmark_RedKnot_Qwen3_RAG.py
-
-# Qwen3.5-35B-A3B / Qwen3.5-397B-A17B (MoE, requires transformers 5, use .venv_tf5)
-PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True HF_HUB_OFFLINE=1 \
-REDKNOT_N_SAMPLES=1 REDKNOT_MAX_NEW=8 CUDA_VISIBLE_DEVICES=0,1 \
-  .venv_tf5/bin/python test/srt/redknot/benchmark_RedKnot_Qwen35_397B_RAG.py
-
-# Mistral-7B-Instruct-v0.1 (native SWA 4096, bf16, single GPU)
-REDKNOT_N_SAMPLES=25 REDKNOT_TEXT_ONLY=0 CUDA_VISIBLE_DEVICES=0 \
-  python test/srt/redknot/benchmark_RedKnot_Mistral_RAG.py
-
-# Llama-3.3-70B-Instruct (INT4 NF4, single GPU)
-REDKNOT_N_SAMPLES=3 CUDA_VISIBLE_DEVICES=0 \
-  python test/srt/redknot/benchmark_RedKnot_Llama3.3_RAG.py
-
-# DeepSeek-V4 (MLA + indexer, requires large VRAM / .venv_tf5)
-CUDA_VISIBLE_DEVICES=0 \
-  .venv_tf5/bin/python test/srt/redknot/benchmark_RedKnot_DeepSeekV4_RAG.py
-```
-
-### Key environment variables
-
-| Variable | Description |
+| Component | Frozen release setting |
 |---|---|
-| `REDKNOT_N_SAMPLES` | Number of evaluation samples |
-| `REDKNOT_LENGTHS` | Context lengths (HotpotQA models, e.g. `16K,24K,32K`) |
-| `REDKNOT_DATASETS` | LongBench datasets (LongBench models) |
-| `REDKNOT_MAX_NEW` | Maximum number of generated tokens |
-| `REDKNOT_DTYPE` | `int4` or `bf16` |
-| `REDKNOT_COMPILE` | Whether to enable `torch.compile` (`0`/`1`) |
-| `CUDA_VISIBLE_DEVICES` | Visible GPUs |
+| Model | `deepseek-ai/DeepSeek-V4-Flash-0731` |
+| Hardware used for the published run | 8× NVIDIA H200, 143,771 MiB per GPU, TP8; driver 570.148.08 |
+| Runtime | CPython 3.11.13, PyTorch 2.9.1 + CUDA 12.8, Triton 3.5.1 |
+| Kernels | FlashMLA `1.0.0+9241ae3`, SGL Kernel 0.3.20, FlashInfer 0.5.3 |
+| MLA policy | Layers 0–2 and 40–42 fully online; layers 3–39 use 8 online global heads and 56 reusable local heads, with online RoPE relocation and projection merge |
+| Token and expert sparsity | Checkpoint-island row selection plus plan-scoped adaptive expert Top-K; cumulative router mass 0.50, physical Top-K buckets 3/4/5/6 |
+| TTFT protocol | Hot state; 3 unmeasured paired warmups followed by 10 measured Recomputed/RedKnot pairs per case; streaming first output token, p50/p95 |
 
-All run logs are saved under `test/srt/redknot/rag_logs/`.
+| Suite | Prompt-token target | Frozen document geometry | Runtime static-memory fraction |
+|---|---:|---:|---:|
+| 64K | 65,536 | 4 × 16,384 tokens | 0.45 |
+| 128K | 131,072 | 4 × 32,768 tokens | 0.40 |
+| 256K | 262,144 | 8 × 32,768 tokens | 0.45 |
+| 440K | 450,560 | 8 × 56,320 tokens | 0.29 |
 
-## Acknowledgment
+Each frozen suite contains 15 cases: 10 short-answer cases and 5 supplemental
+30-token long-output cases. The Recomputed reference performs a complete
+online prefill with no RedKnot prefix reuse; RedKnot materializes the first
+document as the certified prefix and applies the published reuse, row-sparse
+and adaptive-Top-K policy to the remaining documents.
 
-RedKnot is built on top of [SGLang](https://github.com/sgl-project/sglang) and reuses designs and implementations from many projects in its ecosystem:
-- [SGLang](https://github.com/sgl-project/sglang)
-- [vLLM](https://github.com/vllm-project/vllm)
+All measurements and validation experiments in this repository were run on
+8× NVIDIA H200 or 8× NVIDIA B300 nodes in TP8. No L20X/L20Y measurements are
+reported. H200 uses the certified Hopper release configuration; B300 uses the
+separate SM103 hardware profile and rebuilds the hardware-specific FlashMLA,
+DeepGEMM and SGL kernels before running the same frozen suites.
+
+### Quick start
+
+```bash
+git clone git@github.com:rednote-machine-learning/RedKnot.git
+cd RedKnot/test/srt/redknot
+
+# Creates or validates the pinned environment, then runs all four suites.
+./run_deepseek_v4_flash_reproduction.sh
+```
+
+The wrapper uses the local DeepSeek-V4-Flash checkpoint by default. Set `REDKNOT_MODEL_PATH` or pass `--model-path` to select another checkpoint path. If the checkpoint is unavailable, the Python entrypoint can download the published model unless `--no-download-model` is set.
+
+For a new shell on a prepared machine:
+
+```bash
+cd test/srt/redknot
+./setup_deepseek_v4_flash_env.sh --check-only
+source ./environment-deepseek-v4-flash.env
+python benchmark_RedKnot_DeepSeekV4Flash.py
+```
+
+The default run is intentionally comprehensive and sequential: it needs the same eight GPUs for each suite and does not run two TP8 servers concurrently.
+
+The suite order, SHA256 digests, TTFT contract and full result layout are documented in the [DeepSeek V4 Flash release guide](test/srt/redknot/README_DEEPSEEK_V4_FLASH.md).
+
+## Other benchmark entrypoints
+
+Alongside the DeepSeek-V4-Flash release path, the repository contains
+model-specific RedKnot benchmark entrypoints for Mistral, Qwen and Llama:
+
+| Family | Entry point | Status |
+|---|---|---|
+| Mistral | `benchmark_RedKnot_Mistral_RAG.py` | Native-SWA reuse benchmark |
+| Qwen3 | `benchmark_RedKnot_Qwen3_RAG.py` | Head-aware RAG benchmark |
+| Qwen3.5 MoE | `benchmark_RedKnot_Qwen35_RAG.py` | MoE benchmark; requires the pinned Transformers 5 environment |
+| Llama 3.3 | `benchmark_RedKnot_Llama3.3_RAG.py` | Experimental; validate its model-specific result contract |
+
+Run them from the release directory after installing the required model weights:
+
+```bash
+cd test/srt/redknot
+
+# Mistral and Qwen3
+python benchmark_RedKnot_Mistral_RAG.py
+python benchmark_RedKnot_Qwen3_RAG.py
+
+# Qwen3.5 MoE: use the pinned Transformers 5 environment
+../../.venv_tf5/bin/python benchmark_RedKnot_Qwen35_RAG.py
+
+# Llama 3.3: experimental path
+python benchmark_RedKnot_Llama3.3_RAG.py
+```
+
+Each script owns its model-specific configuration, dataset and hardware
+requirements. Do not compare their numbers directly with the DeepSeek V4 Flash
+TP8 release unless their reported input, precision and measurement contract
+match.
+
+## Repository layout
+
+```text
+python/sglang/srt/layers/attention/redknot/   RedKnot runtime integration
+test/srt/redknot/                             Benchmarks, release launcher and docs
+test/srt/redknot/head_class/                  Frozen head-policy publication
+test/srt/redknot/sparse_ffn_params/           Sparse-MoE policy publication
+test/srt/redknot/datasets/                    LongBench inputs, suites and provenance
+test/srt/redknot/server/                      TP8 server launcher and policy checks
+docs/ASCEND.md                                RedKnot Ascend NPU adaptation notes
+```
+
+## Partners
+
+<p align="center">
+  <a href="https://www.xiaohongshu.com"><img src="assets/partners/xiaohongshu.png" alt="Xiaohongshu" width="72" /></a>
+  &emsp;&emsp;
+  <a href="https://www.pku.edu.cn"><img src="assets/partners/peking-university.png" alt="Peking University" width="174" /></a>
+  &emsp;&emsp;
+  <a href="https://www.huawei.com"><img src="assets/partners/huawei.png" alt="Huawei" width="132" /></a>
+  &emsp;&emsp;
+  <a href="https://www.ubiquant.com"><img src="assets/partners/ubiquant.svg" alt="Ubiquant" width="205" /></a>
+  &emsp;&emsp;
+  <img src="assets/partners/quanjie.jpg" alt="Quanjie" width="126" />
+</p>
+
+## Citation
+
+If you use RedKnot, please cite the paper:
+> Yang Liu, ZhaoKai Luo, HuaYi Jin, ZhiYong Wang, RuoZhou He, BoYu Wang, Guanjie Chen, and Junhao Hu. *RedKnot: Efficient Long-Context LLM Serving with Head-Aware KV Reuse and SegPagedAttention.* [arXiv:2606.06256](https://arxiv.org/abs/2606.06256).
+
+## Acknowledgements & License
+
+RedKnot is built on [SGLang](https://github.com/sgl-project/sglang) and benefits from the broader serving ecosystem, including [vLLM](https://github.com/vllm-project/vllm).
+
+RedKnot is released under the [Apache License 2.0](LICENSE). Third-party components remain subject to their respective licenses and notices.

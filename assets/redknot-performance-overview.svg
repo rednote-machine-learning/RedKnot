@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="470" viewBox="0 0 1120 470" role="img" aria-labelledby="title desc">
+  <title id="title">RedKnot qualified long-context operating envelope</title>
+  <desc id="desc">Vertical bar charts compare the blue Recomputed reference with the yellow RedKnot operating envelope for quality retention, hot-state TTFT speedup, and arithmetic compute saving.</desc>
+  <rect width="1120" height="470" rx="18" fill="#ffffff"/>
+  <rect x="1" y="1" width="1118" height="468" rx="17" fill="none" stroke="#d9e1ec"/>
+  <text x="560" y="45" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="25" font-weight="700" fill="#14213d">Qualified Long-Context Operating Envelope</text>
+  <rect x="735" y="67" width="16" height="16" rx="3" fill="#2563eb"/><text x="759" y="80" font-family="Arial, Helvetica, sans-serif" font-size="15" fill="#334155">Recomputed reference</text>
+  <rect x="934" y="67" width="16" height="16" rx="3" fill="#f59e0b"/><text x="958" y="80" font-family="Arial, Helvetica, sans-serif" font-size="15" fill="#334155">RedKnot range</text>
+
+  <g transform="translate(110,115)">
+    <text x="110" y="0" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" fill="#1e293b">Quality retention</text>
+    <text x="110" y="24" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" fill="#64748b">higher is better (%)</text>
+    <line x1="0" y1="270" x2="220" y2="270" stroke="#94a3b8"/>
+    <line x1="0" y1="65" x2="0" y2="270" stroke="#94a3b8"/>
+    <line x1="0" y1="65" x2="220" y2="65" stroke="#e2e8f0" stroke-dasharray="5 5"/>
+    <text x="-10" y="70" text-anchor="end" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#64748b">100</text>
+    <text x="-10" y="274" text-anchor="end" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#64748b">0</text>
+    <rect x="42" y="65" width="55" height="205" rx="5" fill="#2563eb"/>
+    <rect x="125" y="67" width="55" height="203" rx="5" fill="#f59e0b"/>
+    <text x="69" y="57" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="700" fill="#1e3a8a">100%</text>
+    <text x="152" y="59" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="700" fill="#92400e">≥99%</text>
+    <text x="69" y="295" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#475569">Reference</text>
+    <text x="152" y="295" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#475569">RedKnot</text>
+  </g>
+
+  <g transform="translate(450,115)">
+    <text x="110" y="0" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" fill="#1e293b">Hot-state TTFT</text>
+    <text x="110" y="24" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" fill="#64748b">relative speed (×)</text>
+    <line x1="0" y1="270" x2="220" y2="270" stroke="#94a3b8"/>
+    <line x1="0" y1="65" x2="0" y2="270" stroke="#94a3b8"/>
+    <line x1="0" y1="65" x2="220" y2="65" stroke="#e2e8f0" stroke-dasharray="5 5"/>
+    <text x="-10" y="70" text-anchor="end" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#64748b">5×</text>
+    <text x="-10" y="274" text-anchor="end" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#64748b">0</text>
+    <rect x="42" y="229" width="55" height="41" rx="5" fill="#2563eb"/>
+    <rect x="125" y="65" width="55" height="205" rx="5" fill="#f59e0b"/>
+    <rect x="125" y="188" width="55" height="82" fill="#fbbf24" opacity="0.6"/>
+    <line x1="120" y1="188" x2="185" y2="188" stroke="#92400e" stroke-width="2"/>
+    <text x="69" y="221" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="700" fill="#1e3a8a">1×</text>
+    <text x="152" y="57" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="700" fill="#92400e">2–5×</text>
+    <text x="69" y="295" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#475569">Reference</text>
+    <text x="152" y="295" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#475569">RedKnot</text>
+  </g>
+
+  <g transform="translate(790,115)">
+    <text x="110" y="0" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" fill="#1e293b">Arithmetic compute saving</text>
+    <text x="110" y="24" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" fill="#64748b">compute-ledger (%)</text>
+    <line x1="0" y1="270" x2="220" y2="270" stroke="#94a3b8"/>
+    <line x1="0" y1="65" x2="0" y2="270" stroke="#94a3b8"/>
+    <line x1="0" y1="65" x2="220" y2="65" stroke="#e2e8f0" stroke-dasharray="5 5"/>
+    <text x="-10" y="70" text-anchor="end" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#64748b">100</text>
+    <text x="-10" y="274" text-anchor="end" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#64748b">0</text>
+    <rect x="42" y="268" width="55" height="2" rx="2" fill="#2563eb"/>
+    <rect x="125" y="86" width="55" height="184" rx="5" fill="#f59e0b"/>
+    <rect x="125" y="65" width="55" height="41" rx="5" fill="#fbbf24" opacity="0.6"/>
+    <line x1="120" y1="127" x2="185" y2="127" stroke="#92400e" stroke-width="2"/>
+    <text x="69" y="257" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="700" fill="#1e3a8a">0%</text>
+    <text x="152" y="57" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="700" fill="#92400e">70–90%</text>
+    <text x="69" y="295" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#475569">Reference</text>
+    <text x="152" y="295" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#475569">RedKnot</text>
+  </g>
+  <text x="560" y="437" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="13" fill="#64748b">Profile- and hardware-dependent qualified range; consult frozen-suite result JSON for measured values.</text>
+</svg>

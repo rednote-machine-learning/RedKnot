@@ -157,6 +157,12 @@ class HashTopK(nn.Module):
             input_ids.shape[0] == hidden_states.shape[0] == router_logits.shape[0]
         ), f"{input_ids.shape=} {hidden_states.shape=} {router_logits.shape=}"
 
+        # The fused DSV4 HashTopK ABI consumes FP32 logits.  The ordinary DSV4
+        # router already produces FP32, but deterministic inference deliberately
+        # uses F.linear and therefore inherits the BF16 input dtype.  Normalize at
+        # this boundary so both fused and torch fallbacks score the same tensor.
+        router_logits = router_logits.float()
+
         if envs.SGLANG_OPT_USE_FUSED_HASH_TOPK.get():
             from sglang.jit_kernel.dsv4 import hash_topk
 

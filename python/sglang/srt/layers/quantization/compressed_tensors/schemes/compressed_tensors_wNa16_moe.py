@@ -61,7 +61,15 @@ class CompressedTensorsWNA16MoE(CompressedTensorsMoEScheme):
 
     def __init__(self, quant_config: CompressedTensorsConfig, num_gpu_experts=-1):
         self.quant_config = quant_config
-        config = self.quant_config.target_scheme_map["Linear"].get("weights")
+        # Some quant recipes only use regex targets (e.g. ``re:.*mlp.experts.*``)
+        # and never register a plain ``"Linear"`` key in ``target_scheme_map``.
+        # In that case fall back to the first available scheme (all MoE expert
+        # projections in one recipe share the same weight scheme).
+        _scheme_map = self.quant_config.target_scheme_map
+        _linear_scheme = _scheme_map.get("Linear")
+        if _linear_scheme is None:
+            _linear_scheme = next(iter(_scheme_map.values()))
+        config = _linear_scheme.get("weights")
         self.num_bits = config.num_bits
         self.packed_factor = 32 // config.num_bits
         self.strategy = config.strategy

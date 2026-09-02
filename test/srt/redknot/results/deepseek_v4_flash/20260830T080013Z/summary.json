@@ -1,0 +1,422 @@
+{
+  "answer_style": "mixed_short10_long5",
+  "cases_per_dataset": 0,
+  "created_utc": "20260830T080013Z",
+  "data_sha256": {
+    "2wikimqa": "dda279cf93a99e1e5bfa3291fb199fd55978d10a1feb31822953cf77a1742e37",
+    "hotpotqa": "a0005ab2a1bc2ac3a70352dccbf96cccc4e0aac6bb677f6a55180fa51b92ef6f",
+    "multifieldqa_en": "0aac182fd317dcf6d74f8e1e0f3e61029407435346c2e0b3ff9fb45ae49c5c3f",
+    "musique": "4ac69b91281c4ec6b21316cb7282e83fb6b4dda04fc68480bb8d8ed1e19ff7bd",
+    "triviaqa": "ed2529de2e10b12c00f49981870c23c7c51667069cdd8d0740e1423ff337d7fa"
+  },
+  "datasets": [
+    "hotpotqa",
+    "musique",
+    "multifieldqa_en"
+  ],
+  "format": "redknot_deepseek_v4_flash_release_run_v1",
+  "head_config": "/mnt/tidal-alsh01/dataset/redone/RedKnot_Deepseekv4/test/srt/redknot/head_class/deepseek_v4_flash_0731_redknot.json",
+  "head_config_sha256": "6110156cc787b7040552111c1ac15251d0c302279b21677298bee8436e0d506f",
+  "lengths": [
+    "256K"
+  ],
+  "long_output_showcase_sha256": {},
+  "long_output_target_tokens": "mixed",
+  "model": "/mnt/tidal-alsh01/dataset/redone/checkpoints/opensource/DeepSeek-V4-Flash-0731",
+  "model_repo_fallback": "deepseek-ai/DeepSeek-V4-Flash-0731",
+  "profile_sha256": {
+    "long_hotpotqa_2": "603ee90c1870ec0ef261b0306a4310e105531d91be6452fcfe1b2c2b72be4a79",
+    "long_multifieldqa_en_1": "1bb683be015bd5877e864430b27121f40b3b25a02380b576340628237ab9d4fc",
+    "long_musique_2": "033646ce8b8ea373bce7d240121db501c331d9f873b7e07c09b8028982a12b02",
+    "short_hotpotqa_10": "1f9162019a03c6cf636ded9a95d6b92494f93deb6d91826e0ec4f2477b420c71"
+  },
+  "python": "/mnt/tidal-alsh01/dataset/redone/RedKnot_Deepseekv4/.venv_tf5/bin/python",
+  "repo": "/mnt/tidal-alsh01/dataset/redone/RedKnot_Deepseekv4",
+  "run_mode": "release_256k_15case_suite",
+  "runs": [
+    {
+      "dataset": "hotpotqa",
+      "exit_code": 1,
+      "length": "256K",
+      "long_output_target_tokens": 0,
+      "metrics": {
+        "compute_saving": {
+          "excluded_from_credit": [
+            "indexer",
+            "compressor",
+            "router",
+            "normalization",
+            "memory_traffic",
+            "kernel_launch",
+            "TP_communication"
+          ],
+          "full_input_saving_with_first_document_prefix": 0.5081748569753866,
+          "method": "conservative_deepseek_v4_major_kernel_arithmetic_v1",
+          "mla_head_arithmetic_saving": 0.10573425381004099,
+          "moe_arithmetic_saving": 0.6538239784242313,
+          "online_compute_ratio": 0.56206964693053,
+          "token_full_ratio": 0.22701786030906634,
+          "total_online_saving": 0.43793035306947004
+        },
+        "dense_ttft_p50_s": 31.525584145449102,
+        "full_model_head_row_saving": 0.10573425381004099,
+        "model_internal_ttft_speedup": 2.031794084657221,
+        "online_row_saving": 0.7729821396909337,
+        "overall_pass": false,
+        "qps": null,
+        "redknot_ttft_p50_s": 15.616217914037406,
+        "scoped_head_row_saving": 0.6194686998747555,
+        "sequential_service_rate": {
+          "dense_logical_prompt_tokens_per_second": 8132.19167808075,
+          "dense_requests_per_second": 0.03101518830482173,
+          "reuse_logical_prompt_tokens_per_second": 11381.648974977345,
+          "reuse_requests_per_second": 0.04340822254962082
+        },
+        "ttft_speedup": 2.01877204320457
+      },
+      "output_comparisons": [
+        {
+          "case_id": "short_hotpotqa_10-row0",
+          "dense_output": "Gates v. Collier",
+          "dense_output_tokens": 6,
+          "eligible_for_accuracy_aggregate": true,
+          "query_index": 0,
+          "question": "Which case was brought to court first Miller v. California or Gates v. Collier ?",
+          "redknot_output": "Gates v. Collier",
+          "redknot_output_tokens": 6,
+          "repeat": 0,
+          "selection_origin": "output_blind_standard_256k",
+          "suite_case_index": 0
+        },
+        {
+          "case_id": "short_hotpotqa_10-row3",
+          "dense_output": "Sun",
+          "dense_output_tokens": 2,
+          "eligible_for_accuracy_aggregate": true,
+          "query_index": 1,
+          "question": "Gary L. Bennett was a part of the space missions that have a primary destination of what celestial body?",
+          "redknot_output": "Sun",
+          "redknot_output_tokens": 2,
+          "repeat": 0,
+          "selection_origin": "output_blind_standard_256k",
+          "suite_case_index": 1
+        },
+        {
+          "case_id": "short_hotpotqa_10-row6",
+          "dense_output": "Thirukkalachery is a village in Mayiladuthurai District, Tranquebar (Tharangambadi) Taluk.",
+          "dense_output_tokens": 31,
+          "eligible_for_accuracy_aggregate": true,
+          "query_index": 2,
+          "question": "Thirukkalacherry is a village in which Indian town?",
+          "redknot_output": "Tharangambadi",
+          "redknot_output_tokens": 5,
+          "repeat": 0,
+          "selection_origin": "output_blind_standard_256k",
+          "suite_case_index": 2
+        },
+        {
+          "case_id": "short_hotpotqa_10-row10",
+          "dense_output": "October 13, 1980",
+          "dense_output_tokens": 8,
+          "eligible_for_accuracy_aggregate": true,
+          "query_index": 3,
+          "question": "When was the American singer, songwriter, record producer, dancer and actress born who's second studio album is Chapter II?",
+          "redknot_output": "October 13, 1980",
+          "redknot_output_tokens": 8,
+          "repeat": 0,
+          "selection_origin": "output_blind_standard_256k",
+          "suite_case_index": 3
+        },
+        {
+          "case_id": "short_hotpotqa_10-row13",
+          "dense_output": "number five",
+          "dense_output_tokens": 3,
+          "eligible_for_accuracy_aggregate": true,
+          "query_index": 4,
+          "question": "Finally includes the song that peaked at what on the US Hot 100",
+          "redknot_output": "number five",
+          "redknot_output_tokens": 3,
+          "repeat": 0,
+          "selection_origin": "output_blind_standard_256k",
+          "suite_case_index": 4
+        },
+        {
+          "case_id": "short_hotpotqa_10-row16",
+          "dense_output": "Claudio López",
+          "dense_output_tokens": 4,
+          "eligible_for_accuracy_aggregate": true,
+          "query_index": 5,
+          "question": "Which retired Argentine footballer who played as a forward was a main player for Valencia CF?",
+          "redknot_output": "Claudio López",
+          "redknot_output_tokens": 4,
+          "repeat": 0,
+          "selection_origin": "output_blind_standard_256k",
+          "suite_case_index": 5
+        },
+        {
+          "case_id": "short_hotpotqa_10-row19",
+          "dense_output": "George Harrison",
+          "dense_output_tokens": 3,
+          "eligible_for_accuracy_aggregate": true,
+          "query_index": 6,
+          "question": "Name a member of a British-American supergroup who recored a version of Nobody's child in 1990",
+          "redknot_output": "George Harrison",
+          "redknot_output_tokens": 3,
+          "repeat": 0,
+          "selection_origin": "output_blind_standard_256k",
+          "suite_case_index": 6
+        },
+        {
+          "case_id": "short_hotpotqa_10-row22",
+          "dense_output": "Long Island",
+          "dense_output_tokens": 3,
+          "eligible_for_accuracy_aggregate": true,
+          "query_index": 7,
+          "question": "Oak Beach, New York and Great South Bay are both situated between what same island?",
+          "redknot_output": "Jones Beach Island",
+          "redknot_output_tokens": 4,
+          "repeat": 0,
+          "selection_origin": "output_blind_standard_256k",
+          "suite_case_index": 7
+        },
+        {
+          "case_id": "short_hotpotqa_10-row1",
+          "dense_output": "Charles L. Clifford",
+          "dense_output_tokens": 5,
+          "eligible_for_accuracy_aggregate": true,
+          "query_index": 8,
+          "question": "The actor that plays Phileas Fogg in \"Around the World in 80 Days\", co-starred with Gary Cooper in a 1939 Goldwyn Productions film based on a novel by what author?",
+          "redknot_output": "Charles L. Clifford",
+          "redknot_output_tokens": 5,
+          "repeat": 0,
+          "selection_origin": "output_blind_standard_256k",
+          "suite_case_index": 8
+        },
+        {
+          "case_id": "short_hotpotqa_10-row4",
+          "dense_output": "film",
+          "dense_output_tokens": 2,
+          "eligible_for_accuracy_aggregate": true,
+          "query_index": 9,
+          "question": "Was Atom Egoyans biggest commercial success on stage or on film?",
+          "redknot_output": "film",
+          "redknot_output_tokens": 2,
+          "repeat": 0,
+          "selection_origin": "output_blind_standard_256k",
+          "suite_case_index": 9
+        }
+      ],
+      "result": "/mnt/tidal-alsh01/dataset/redone/RedKnot_Deepseekv4/test/srt/redknot/results/deepseek_v4_flash/20260830T080013Z/256k/short_hotpotqa_10/result.json",
+      "result_sha256": "ca4e89c695f0b34fce74ea140caeb956e20df04a547dae402e949e46c21d43f5",
+      "run_id": "short_hotpotqa_10"
+    },
+    {
+      "dataset": "hotpotqa",
+      "exit_code": 1,
+      "length": "256K",
+      "long_output_target_tokens": 30,
+      "metrics": {
+        "compute_saving": {
+          "excluded_from_credit": [
+            "indexer",
+            "compressor",
+            "router",
+            "normalization",
+            "memory_traffic",
+            "kernel_launch",
+            "TP_communication"
+          ],
+          "full_input_saving_with_first_document_prefix": 0.5139645228555093,
+          "method": "conservative_deepseek_v4_major_kernel_arithmetic_v1",
+          "mla_head_arithmetic_saving": 0.1153552117194775,
+          "moe_arithmetic_saving": 0.6591358542096037,
+          "online_compute_ratio": 0.5554418838237838,
+          "token_full_ratio": 0.2126135845307142,
+          "total_online_saving": 0.4445581161762162
+        },
+        "dense_ttft_p50_s": 31.483169986866415,
+        "full_model_head_row_saving": 0.1153552117194775,
+        "model_internal_ttft_speedup": 1.4913087571450079,
+        "online_row_saving": 0.7873864154692858,
+        "overall_pass": false,
+        "qps": null,
+        "redknot_ttft_p50_s": 21.175855519250035,
+        "scoped_head_row_saving": 0.6305404359015236,
+        "sequential_service_rate": {
+          "dense_logical_prompt_tokens_per_second": 6519.084561690443,
+          "dense_requests_per_second": 0.024859609518488854,
+          "reuse_logical_prompt_tokens_per_second": 9849.764924554207,
+          "reuse_requests_per_second": 0.037560689320132276
+        },
+        "ttft_speedup": 1.4867484318754656
+      },
+      "output_comparisons": [
+        {
+          "case_id": "long_hotpotqa_2-row6",
+          "dense_output": "Tharangambadi  \nThirukkalacherry is a small village in Mayiladuthurai District, Tranquebar (Tharangambadi) Taluk, Tamil Nadu, India.",
+          "dense_output_tokens": 42,
+          "eligible_for_accuracy_aggregate": false,
+          "query_index": 0,
+          "question": "Thirukkalacherry is a village in which Indian town?",
+          "redknot_output": "Tharangambadi",
+          "redknot_output_tokens": 5,
+          "repeat": 0,
+          "selection_origin": "posthoc_long_output_showcase_20260830",
+          "suite_case_index": 10
+        },
+        {
+          "case_id": "long_hotpotqa_2-row0",
+          "dense_output": "Gates v. Collier was brought to court first.  \nThe documents state Gates v. Collier was a 1970–1971 case, while Miller v. California was decided in 1973.",
+          "dense_output_tokens": 42,
+          "eligible_for_accuracy_aggregate": false,
+          "query_index": 1,
+          "question": "Which case was brought to court first Miller v. California or Gates v. Collier ?",
+          "redknot_output": "Gates v. Collier was brought to court first.  \nThe documents state Gates v. Collier was filed in 1971, while Miller v. California was decided in 1973.",
+          "redknot_output_tokens": 39,
+          "repeat": 0,
+          "selection_origin": "posthoc_long_output_showcase_20260830",
+          "suite_case_index": 11
+        }
+      ],
+      "result": "/mnt/tidal-alsh01/dataset/redone/RedKnot_Deepseekv4/test/srt/redknot/results/deepseek_v4_flash/20260830T080013Z/256k/long_hotpotqa_2/result.json",
+      "result_sha256": "72328914a51434c02284a8a71e8c35e11187febd1e7606712209ec7df8adfd6b",
+      "run_id": "long_hotpotqa_2"
+    },
+    {
+      "dataset": "musique",
+      "exit_code": 1,
+      "length": "256K",
+      "long_output_target_tokens": 30,
+      "metrics": {
+        "compute_saving": {
+          "excluded_from_credit": [
+            "indexer",
+            "compressor",
+            "router",
+            "normalization",
+            "memory_traffic",
+            "kernel_launch",
+            "TP_communication"
+          ],
+          "full_input_saving_with_first_document_prefix": 0.5206313490344145,
+          "method": "conservative_deepseek_v4_major_kernel_arithmetic_v1",
+          "mla_head_arithmetic_saving": 0.08992058285065578,
+          "moe_arithmetic_saving": 0.6860978659397523,
+          "online_compute_ratio": 0.547821834191455,
+          "token_full_ratio": 0.13950038155076175,
+          "total_online_saving": 0.452178165808545
+        },
+        "dense_ttft_p50_s": 31.513936271890998,
+        "full_model_head_row_saving": 0.08992058285065578,
+        "model_internal_ttft_speedup": 2.0892921790392256,
+        "online_row_saving": 0.8604996184492383,
+        "overall_pass": false,
+        "qps": null,
+        "redknot_ttft_p50_s": 15.195411511696875,
+        "scoped_head_row_saving": 0.7491183739205287,
+        "sequential_service_rate": {
+          "dense_logical_prompt_tokens_per_second": 6444.477630716817,
+          "dense_requests_per_second": 0.024574309969195986,
+          "reuse_logical_prompt_tokens_per_second": 9432.573233754312,
+          "reuse_requests_per_second": 0.03596862177759424
+        },
+        "ttft_speedup": 2.073911341435717
+      },
+      "output_comparisons": [
+        {
+          "case_id": "long_musique_2-row0",
+          "dense_output": "Salma Hayek  \nIn Grown Ups, Salma Hayek plays Roxanne, the wife of Lenny Feder, who is a Hollywood talent agent, not the producer of Here Comes the Boom.",
+          "dense_output_tokens": 42,
+          "eligible_for_accuracy_aggregate": false,
+          "query_index": 0,
+          "question": "Who plays the wife of the producer of Here Comes the Boom in Grown Ups?",
+          "redknot_output": "Salma Hayek plays the wife of the producer of Here Comes the Boom in Grown Ups.",
+          "redknot_output_tokens": 21,
+          "repeat": 0,
+          "selection_origin": "posthoc_long_output_showcase_20260830",
+          "suite_case_index": 12
+        },
+        {
+          "case_id": "long_musique_2-row3",
+          "dense_output": "Sebastian Cabot  \nSebastian Cabot was the son of John Cabot, the Italian navigator who sailed for England. Francisco Bojado was born in Mexico, not on a continent's eastern coast.",
+          "dense_output_tokens": 46,
+          "eligible_for_accuracy_aggregate": false,
+          "query_index": 1,
+          "question": "Who is the child of the Italian navigator who sailed for England and explored the eastern coast of the continent Francisco Bojado's birthplace is located?",
+          "redknot_output": "Sebastian Cabot  \nSebastian Cabot was the son of John Cabot, the Italian navigator who sailed for England. Francisco Bojado was born in Mexico, which is in North America.",
+          "redknot_output_tokens": 44,
+          "repeat": 0,
+          "selection_origin": "posthoc_long_output_showcase_20260830",
+          "suite_case_index": 13
+        }
+      ],
+      "result": "/mnt/tidal-alsh01/dataset/redone/RedKnot_Deepseekv4/test/srt/redknot/results/deepseek_v4_flash/20260830T080013Z/256k/long_musique_2/result.json",
+      "result_sha256": "6a2d38fdfb21b131a9e5f5e81c48331423fea3cc63e021fff766797dbe6f85c7",
+      "run_id": "long_musique_2"
+    },
+    {
+      "dataset": "multifieldqa_en",
+      "exit_code": 1,
+      "length": "256K",
+      "long_output_target_tokens": 30,
+      "metrics": {
+        "compute_saving": {
+          "excluded_from_credit": [
+            "indexer",
+            "compressor",
+            "router",
+            "normalization",
+            "memory_traffic",
+            "kernel_launch",
+            "TP_communication"
+          ],
+          "full_input_saving_with_first_document_prefix": 0.5108479928346497,
+          "method": "conservative_deepseek_v4_major_kernel_arithmetic_v1",
+          "mla_head_arithmetic_saving": 0.11508018272866852,
+          "moe_arithmetic_saving": 0.653479787619933,
+          "online_compute_ratio": 0.5590061975835733,
+          "token_full_ratio": 0.22795120654414552,
+          "total_online_saving": 0.4409938024164267
+        },
+        "dense_ttft_p50_s": 31.461586288176477,
+        "full_model_head_row_saving": 0.11508018272866852,
+        "model_internal_ttft_speedup": 1.4406187601943605,
+        "online_row_saving": 0.7720487934558544,
+        "overall_pass": false,
+        "qps": null,
+        "redknot_ttft_p50_s": 21.899814523756504,
+        "scoped_head_row_saving": 0.5867125513813211,
+        "sequential_service_rate": {
+          "dense_logical_prompt_tokens_per_second": 6651.337009007372,
+          "dense_requests_per_second": 0.025364999557659917,
+          "reuse_logical_prompt_tokens_per_second": 8983.03407407224,
+          "reuse_requests_per_second": 0.03425697044169031
+        },
+        "ttft_speedup": 1.4366142806391142
+      },
+      "output_comparisons": [
+        {
+          "case_id": "long_multifieldqa_en_1-row0",
+          "dense_output": "South West Ultras fan club.  \nThe club is a de facto representative of the Malatia-Sebastia District, and its most active fan group is the South West Ultras.",
+          "dense_output_tokens": 37,
+          "eligible_for_accuracy_aggregate": false,
+          "query_index": 0,
+          "question": "What is the name of the most active fan club?",
+          "redknot_output": "South West Ultras fan club.  \nThe documents state that the most active group of fans is the South West Ultras fan club, composed mainly of residents from the Malatia-Sebastia District.",
+          "redknot_output_tokens": 40,
+          "repeat": 0,
+          "selection_origin": "posthoc_long_output_showcase_20260830",
+          "suite_case_index": 14
+        }
+      ],
+      "result": "/mnt/tidal-alsh01/dataset/redone/RedKnot_Deepseekv4/test/srt/redknot/results/deepseek_v4_flash/20260830T080013Z/256k/long_multifieldqa_en_1/result.json",
+      "result_sha256": "35bc0d3c20d69f76690d036e9fb6ffd760c11a7f521e7d764dc05b58c0557b40",
+      "run_id": "long_multifieldqa_en_1"
+    }
+  ],
+  "sparse_config": "/mnt/tidal-alsh01/dataset/redone/RedKnot_Deepseekv4/test/srt/redknot/sparse_ffn_params/deepseek_v4_flash_0731.json",
+  "sparse_config_sha256": "0828a26de107abe5569beaf59272cb6f48ffdfe5136f767abb29e1d3016b8ff3",
+  "suite_case_count": 15,
+  "suite_jsonl": "/mnt/tidal-alsh01/dataset/redone/RedKnot_Deepseekv4/test/srt/redknot/datasets/LongBench/suites/release_256k_15case.jsonl",
+  "suite_jsonl_sha256": "fda5444c9a1fc00c12248340f6c064ac5963b5fbbdbc60830020c029ffd8a5e7"
+}

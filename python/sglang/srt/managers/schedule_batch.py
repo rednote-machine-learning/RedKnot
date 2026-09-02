@@ -39,7 +39,9 @@ import copy
 import dataclasses
 import logging
 import re
+import time
 from array import array
+from collections.abc import Mapping, Sequence
 from concurrent.futures import Future
 from enum import Enum, auto
 from functools import lru_cache
@@ -92,6 +94,68 @@ from sglang.srt.model_executor.forward_batch_info import (
     ForwardBatch,
     ForwardMode,
 )
+
+
+def _redknot_radix_match_limit(plan: object, default_limit: int) -> int:
+    """Limit a certified RedKnot consumer to its materialized radix prefix.
+
+    Independent-document RedKnot restores deliberately materialize only the
+    first document in the ordinary radix cache.  Documents two onward must be
+    served by the MLA offline/online merge path.  Matching the whole 128K/256K
+    request is therefore both wasteful and semantically too permissive.
+
+    Malformed or unrelated plans retain the ordinary scheduler behaviour; the
+    stronger backend plan/receipt checks remain fail-closed.
+    """
+
+    if (
+        isinstance(default_limit, bool)
+        or not isinstance(default_limit, int)
+        or default_limit <= 0
+        or not isinstance(plan, Mapping)
+        or plan.get("mode") != "restore"
+        or plan.get("reuse_mla_off") is not True
+        or plan.get("radix_prefix_role") != "consume"
+    ):
+        return int(default_limit)
+
+    prefix_tokens = plan.get("radix_prefix_tokens")
+    prefix_hash = plan.get("radix_prefix_input_hash")
+    receipt_key = plan.get("radix_prefix_receipt_key")
+    query_start = plan.get("query_start")
+    segments = plan.get("segments")
+    if (
+        isinstance(prefix_tokens, bool)
+        or not isinstance(prefix_tokens, int)
+        or prefix_tokens <= 0
+        or prefix_tokens > default_limit
+        or not isinstance(query_start, int)
+        or isinstance(query_start, bool)
+        or query_start < prefix_tokens
+        or not isinstance(prefix_hash, str)
+        or not re.fullmatch(r"sha256:[0-9a-f]{64}", prefix_hash)
+        or not isinstance(receipt_key, str)
+        or not re.fullmatch(r"sha256:[0-9a-f]{64}", receipt_key)
+        or not isinstance(segments, Sequence)
+        or isinstance(segments, (str, bytes))
+        or not segments
+        or not isinstance(segments[0], Mapping)
+    ):
+        return int(default_limit)
+
+    first = segments[0]
+    first_start = first.get("global_offset", first.get("source_start"))
+    first_end = first.get("source_end")
+    first_length = first.get("length")
+    first_hash = first.get("full_input_hash", first.get("token_hash"))
+    if (
+        first_start != 0
+        or (first_end is not None and first_end != prefix_tokens)
+        or first_length != prefix_tokens
+        or first_hash != prefix_hash
+    ):
+        return int(default_limit)
+    return int(prefix_tokens)
 from sglang.srt.observability.metrics_collector import (
     DPCooperationInfo,
     SchedulerMetricsCollector,
@@ -687,6 +751,7 @@ class Req(ReqDllmMixin):
         return_pooled_hidden_states: bool = False,
         multi_item_delimiter_indices: Optional[List[int]] = None,
         redknot_offline_segments: Optional[List[str]] = None,
+        redknot_reuse_plan: Optional[dict] = None,
     ):
         # Input and output info
         self.rid = rid
@@ -757,6 +822,7 @@ class Req(ReqDllmMixin):
         self.routing_key = routing_key
         # RedKnot offline (RAG) segment ids for the true sparse path.
         self.redknot_offline_segments = redknot_offline_segments
+        self.redknot_reuse_plan = redknot_reuse_plan
 
         # Memory pool info
         self.req_pool_idx: Optional[int] = None
@@ -1073,7 +1139,11 @@ class Req(ReqDllmMixin):
             )
             self.logprob_start_len = -1
 
-        token_ids_to_match = self.fill_ids[: self._compute_max_prefix_len(input_len)]
+        default_match_limit = self._compute_max_prefix_len(input_len)
+        match_limit = _redknot_radix_match_limit(
+            getattr(self, "redknot_reuse_plan", None), default_match_limit
+        )
+        token_ids_to_match = self.fill_ids[:match_limit]
 
         # Disable prefix caching when embed overrides are present: same token IDs
         # with different override vectors must not share cached KV values.
@@ -1081,6 +1151,7 @@ class Req(ReqDllmMixin):
             token_ids_to_match = array("q")
 
         if tree_cache is not None:
+            redknot_match_started = time.perf_counter()
             if cow_mamba is None:
                 cow_mamba = tree_cache.supports_mamba()
             match_result = tree_cache.match_prefix(
@@ -1094,6 +1165,18 @@ class Req(ReqDllmMixin):
             )
             if envs.SGLANG_RADIX_FORCE_MISS.get():
                 match_result = zero_match_result(tree_cache, match_result)
+            if match_limit != default_match_limit:
+                logger.info(
+                    "RedKnot radix-prefix match: rid=%s input_tokens=%s "
+                    "ordinary_limit=%s certified_limit=%s matched=%s "
+                    "elapsed_ms=%.3f",
+                    self.rid,
+                    input_len,
+                    default_match_limit,
+                    match_limit,
+                    int(match_result.device_indices.numel()),
+                    (time.perf_counter() - redknot_match_started) * 1000.0,
+                )
             (
                 self.prefix_indices,
                 self.last_node,

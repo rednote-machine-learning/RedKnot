@@ -1,0 +1,96 @@
+/root/miniconda3/lib/python3.11/site-packages/torch/cuda/__init__.py:63: FutureWarning: The pynvml package is deprecated. Please install nvidia-ml-py instead. If you did not install pynvml directly, please report this to the maintainers of the package that installed pynvml for you.
+  import pynvml  # type: ignore[import]
+WARNING:sglang.srt.layers.flashinfer_comm_fusion:flashinfer.comm unified allreduce_fusion API is not available, falling back to standard implementation
+[mla-off-capacity] tp=8 local_layers=[37, 37, 37, 37, 37, 37, 37, 37] bytes/token=[75822, 75822, 75822, 75822, 75822, 75822, 75822, 75822] projected=[19876282368, 19876282368, 19876282368, 19876282368, 19876282368, 19876282368, 19876282368, 19876282368]
+[pure-mla] data selection sha256=8c44abe1f0db045d6c1f0f35950fdca9e646fc92178c1a2e73c1ce0c688d2830 mode=offset
+[pure-mla] frozen official prompt sha256=4b353e160fdfd9bce408ed031ab1d7acee723fc6f246d8a899f3e09d2e45c1b6 max_total_tokens=262222
+[pure-mla] deferring GPU capacity check to the authenticated scheduler pre-CUDA release barrier
+[pure-mla] launching server: /mnt/tidal-alsh01/dataset/redone/RedKnot_Deepseekv4/server/start_server_redknot_mla.sh (port 31998)
+Traceback (most recent call last):
+  File "/root/miniconda3/lib/python3.11/site-packages/urllib3/connection.py", line 198, in _new_conn
+    sock = connection.create_connection(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.11/site-packages/urllib3/util/connection.py", line 85, in create_connection
+    raise err
+  File "/root/miniconda3/lib/python3.11/site-packages/urllib3/util/connection.py", line 73, in create_connection
+    sock.connect(sa)
+ConnectionRefusedError: [Errno 111] Connection refused
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/root/miniconda3/lib/python3.11/site-packages/urllib3/connectionpool.py", line 787, in urlopen
+    response = self._make_request(
+               ^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.11/site-packages/urllib3/connectionpool.py", line 493, in _make_request
+    conn.request(
+  File "/root/miniconda3/lib/python3.11/site-packages/urllib3/connection.py", line 445, in request
+    self.endheaders()
+  File "/root/miniconda3/lib/python3.11/http/client.py", line 1298, in endheaders
+    self._send_output(message_body, encode_chunked=encode_chunked)
+  File "/root/miniconda3/lib/python3.11/http/client.py", line 1058, in _send_output
+    self.send(msg)
+  File "/root/miniconda3/lib/python3.11/http/client.py", line 996, in send
+    self.connect()
+  File "/root/miniconda3/lib/python3.11/site-packages/urllib3/connection.py", line 276, in connect
+    self.sock = self._new_conn()
+                ^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.11/site-packages/urllib3/connection.py", line 213, in _new_conn
+    raise NewConnectionError(
+urllib3.exceptions.NewConnectionError: <urllib3.connection.HTTPConnection object at 0x7fc171cefdd0>: Failed to establish a new connection: [Errno 111] Connection refused
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/root/miniconda3/lib/python3.11/site-packages/requests/adapters.py", line 667, in send
+    resp = conn.urlopen(
+           ^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.11/site-packages/urllib3/connectionpool.py", line 841, in urlopen
+    retries = retries.increment(
+              ^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.11/site-packages/urllib3/util/retry.py", line 519, in increment
+    raise MaxRetryError(_pool, url, reason) from reason  # type: ignore[arg-type]
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+urllib3.exceptions.MaxRetryError: HTTPConnectionPool(host='127.0.0.1', port=31998): Max retries exceeded with url: /flush_cache (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x7fc171cefdd0>: Failed to establish a new connection: [Errno 111] Connection refused'))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/mnt/tidal-alsh01/dataset/redone/RedKnot_Deepseekv4/test/srt/redknot/benchmark_RedKnot_DeepSeekV4_Flash_RAG.py", line 5179, in _ih_wait_ready
+    response = _ih_local_request("POST", "/flush_cache", timeout=5)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/tidal-alsh01/dataset/redone/RedKnot_Deepseekv4/test/srt/redknot/benchmark_RedKnot_DeepSeekV4_Flash_RAG.py", line 2303, in _ih_local_request
+    return session.request(method, f"http://127.0.0.1:{IH_PORT}{path}", **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.11/site-packages/requests/sessions.py", line 589, in request
+    resp = self.send(prep, **send_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.11/site-packages/requests/sessions.py", line 703, in send
+    r = adapter.send(request, **kwargs)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/miniconda3/lib/python3.11/site-packages/requests/adapters.py", line 700, in send
+    raise ConnectionError(e, request=request)
+requests.exceptions.ConnectionError: HTTPConnectionPool(host='127.0.0.1', port=31998): Max retries exceeded with url: /flush_cache (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x7fc171cefdd0>: Failed to establish a new connection: [Errno 111] Connection refused'))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/mnt/tidal-alsh01/dataset/redone/RedKnot_Deepseekv4/test/srt/redknot/benchmark_dsv4_redknot_http.py", line 1083, in <module>
+    main()
+  File "/mnt/tidal-alsh01/dataset/redone/RedKnot_Deepseekv4/test/srt/redknot/benchmark_dsv4_redknot_http.py", line 1079, in main
+    runpy.run_path(str(DRIVER), run_name="__main__")
+  File "<frozen runpy>", line 291, in run_path
+  File "<frozen runpy>", line 98, in _run_module_code
+  File "<frozen runpy>", line 88, in _run_code
+  File "/mnt/tidal-alsh01/dataset/redone/RedKnot_Deepseekv4/test/srt/redknot/benchmark_RedKnot_DeepSeekV4_Flash_RAG.py", line 11437, in <module>
+    main()
+  File "/mnt/tidal-alsh01/dataset/redone/RedKnot_Deepseekv4/test/srt/redknot/benchmark_RedKnot_DeepSeekV4_Flash_RAG.py", line 11213, in main
+    if not _run_indexer_hot_benchmark():
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/tidal-alsh01/dataset/redone/RedKnot_Deepseekv4/test/srt/redknot/benchmark_RedKnot_DeepSeekV4_Flash_RAG.py", line 9248, in _run_indexer_hot_benchmark
+    _ih_wait_ready(proc)
+  File "/mnt/tidal-alsh01/dataset/redone/RedKnot_Deepseekv4/test/srt/redknot/benchmark_RedKnot_DeepSeekV4_Flash_RAG.py", line 5187, in _ih_wait_ready
+    time.sleep(5)
+  File "/mnt/tidal-alsh01/dataset/redone/RedKnot_Deepseekv4/test/srt/redknot/benchmark_RedKnot_DeepSeekV4_Flash_RAG.py", line 9238, in interrupt_owned_server
+    raise KeyboardInterrupt(
+KeyboardInterrupt: received signal 15; stopping owned RedKnot server

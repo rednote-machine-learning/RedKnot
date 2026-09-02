@@ -7,6 +7,7 @@ from typing import List, Literal, NamedTuple, Optional, Tuple
 import torch
 
 from sglang.jit_kernel.dsv4 import fused_k_norm_rope_flashmla, fused_store_cache
+from sglang.jit_kernel.dsv4.attn import triton_translate_loc
 from sglang.srt.constants import GPU_MEMORY_TYPE_KV_CACHE
 from sglang.srt.environ import envs
 from sglang.srt.layers.attention.dsa import index_buf_accessor
@@ -18,11 +19,12 @@ from sglang.srt.mem_cache.base_swa_memory_pool import BaseSWAKVPool
 from sglang.srt.mem_cache.deepseek_v4_compress_state import CompressStatePool
 from sglang.srt.mem_cache.memory_pool import KVCache
 from sglang.srt.server_args import get_global_server_args
-from sglang.srt.utils import ceil_div, is_hip
+from sglang.srt.utils import ceil_div, get_bool_env_var, is_hip
 
 logger = logging.getLogger(__name__)
 
 _is_hip = is_hip()
+_use_jit_swa_translation = get_bool_env_var("SGLANG_USE_JIT_SWA_TRANSLATION")
 
 ONLINE_C128 = not _is_hip and envs.SGLANG_OPT_USE_ONLINE_COMPRESS.get()
 
@@ -510,6 +512,8 @@ class DeepSeekV4TokenToKVPool(BaseSWAKVPool):
     def translate_loc_from_full_to_swa(self, kv_indices: torch.Tensor):
         assert self.full_to_swa_index_mapping is not None
 
+        if _use_jit_swa_translation:
+            return triton_translate_loc(self.full_to_swa_index_mapping, kv_indices)
         return self.full_to_swa_index_mapping[kv_indices].to(torch.int32)
 
     def get_contiguous_buf_infos(self) -> Tuple[List[int], List[int], List[int]]:
@@ -752,6 +756,11 @@ class DeepSeekV4TokenToKVPool(BaseSWAKVPool):
         self.wait_layer_transfer(layer_id)
         return self.swa_kv_pool.get_key_buffer(self._swa_local_layer_id(layer_id))
 
+    def get_swa_raw_key_buffer_radix(self, layer_id: int) -> torch.Tensor:
+        """Return the underlying uint8 packed SWA buffer for snapshot/restore."""
+        self.wait_layer_transfer(layer_id)
+        return self.swa_kv_pool.kv_buffer[self._swa_local_layer_id(layer_id)]
+
     def set_swa_key_buffer_radix_fused(
         self,
         layer_id: int,
@@ -777,13 +786,35 @@ class DeepSeekV4TokenToKVPool(BaseSWAKVPool):
         eps: float,
         freqs_cis: torch.Tensor,
         positions: torch.Tensor,
+        *,
+        cache_translation: bool = True,
     ) -> None:
-        if self._should_cache_swa:
+        kv_rows = int(kv.shape[0])
+        positions_rows = int(positions.shape[0])
+        raw_loc_rows = int(raw_loc.shape[0])
+        if positions_rows != kv_rows or raw_loc_rows != kv_rows:
+            raise ValueError(
+                "SWA fused KV writer row geometry mismatch before launch: "
+                f"kv={kv_rows}, positions={positions_rows}, "
+                f"raw_loc={raw_loc_rows}"
+            )
+        if self._should_cache_swa and cache_translation:
             if layer_id == self.start_layer or self.cached_loc is None:
                 self.cached_loc = self.translate_loc_from_full_to_swa(raw_loc)
             swa_loc = self.cached_loc
         else:
+            # A selected-row writer has a different row geometry from the
+            # request-wide translation shared by dense layers.  Translate its
+            # locations independently and leave cached_loc untouched so a
+            # dirty write cannot consume or poison the dense-layer cache.
             swa_loc = self.translate_loc_from_full_to_swa(raw_loc)
+        swa_loc_rows = int(swa_loc.shape[0])
+        if swa_loc_rows != kv_rows:
+            raise ValueError(
+                "SWA translated location row count mismatch before launch: "
+                f"kv={kv_rows}, swa_loc={swa_loc_rows}; "
+                "the shared SWA translation cache may be stale"
+            )
         fused_k_norm_rope_flashmla(
             kv=kv,
             kv_weight=kv_weight,
