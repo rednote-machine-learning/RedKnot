@@ -18,7 +18,11 @@
   </p>
 </div>
 
-> **Research release.** RedKnot is an SGLang-based research system for long-context inference. Its kernels, policy contracts and supported models are actively evolving. Reproduce the frozen benchmark manifests before using a reported result to compare systems or hardware.
+## RedKnot belongs to its contributors.
+
+RedKnot is built in the spirit of true open source. We openly share our latest technical explorations and progress with the community, and strive to build a space that is **open, inclusive, collaborative, and fair**.
+
+We welcome issues, bug reports, suggestions, and pull requests. RedKnot is built by its contributors, and meaningful contributions will earn a greater voice in the community.
 
 ## Performance at a glance
 
