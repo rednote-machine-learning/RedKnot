@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "path_base": "repository_root",
+  "runtime_scope": "experimental TP1 single-request V1 eager; model validation pending",
+  "extracted_core": {
+    "path": "vllm_redknot/core",
+    "status": "extracted_not_runtime_integrated",
+    "provenance": "docs/core_provenance.json"
+  },
+  "migrated_model_backends": {
+    "path": "vllm_redknot/model_backends",
+    "status": "migrated_not_runtime_integrated",
+    "runtime_integrated": false,
+    "mha_swa": {
+      "path": "vllm_redknot/model_backends/mha_reuse.py",
+      "symbols": ["plan_swa_reuse", "replay_swa_documents", "build_head_class_policy", "build_sparse_ffn_policy"],
+      "documentation": "docs/MHA_BACKEND_MIGRATION.md"
+    },
+    "qwen35": {
+      "paths": ["vllm_redknot/model_backends/qwen35_policy.py", "vllm_redknot/model_backends/qwen35_full_attention.py", "vllm_redknot/model_backends/qwen35_linear.py", "vllm_redknot/model_backends/qwen35_reuse_contract.py", "vllm_redknot/model_backends/qwen35_recurrent.py", "vllm_redknot/model_backends/sparse_moe_policy.py", "vllm_redknot/model_backends/sparse_moe.py"],
+      "documentation": "docs/MULTIMODEL_BACKEND.md"
+    },
+    "benchmarks": {
+      "paths": ["benchmarks/benchmark_RedKnot_Mistral_RAG.py", "benchmarks/benchmark_RedKnot_Llama3.3_RAG.py", "benchmarks/benchmark_RedKnot_Qwen3_RAG.py", "benchmarks/benchmark_RedKnot_Qwen35_397B_RAG.py"],
+      "documentation": "docs/MULTIMODEL_BENCHMARKS.md",
+      "default_action": "cpu_migration_plan"
+    }
+  },
+  "entries": [
+    {"id": "RK-PLUGIN", "path": "vllm_redknot/plugin.py", "symbol": "register", "role": "Explicit vLLM plugin registration", "status": "runtime_integrated"},
+    {"id": "RK-REQUEST", "path": "vllm_redknot/runtime.py", "symbol": "RequestPlan", "role": "Non-prefix token-span request protocol", "status": "runtime_integrated"},
+    {"id": "RK-CACHE", "path": "vllm_redknot/cache.py", "symbol": "CacheManager", "role": "CPU byte-budgeted LRU with eviction-safe leases", "status": "runtime_integrated"},
+    {"id": "RK-TRANSACTION", "path": "vllm_redknot/runtime.py", "symbol": "RedKnotRuntime", "role": "Content identity and atomic chunk transactions", "status": "runtime_integrated"},
+    {"id": "RK-MHA-RUNNER", "path": "vllm_redknot/runner.py", "symbol": "install_runner_hooks", "role": "MHA/GQA vLLM V1 request context", "status": "runtime_integrated"},
+    {"id": "RK-MHA-ATTENTION", "path": "vllm_redknot/vllm_backend.py", "symbol": "RedKnotImpl", "role": "Head-aware attention and persistent native KV pages", "status": "runtime_integrated"},
+    {"id": "RK-FLASH-RUNNER", "path": "vllm_redknot/dsv4_runner.py", "symbol": "install_dsv4_runner", "role": "Guarded native Flash V1 model-runner integration", "status": "runtime_integrated"},
+    {"id": "RK-FLASH-TRANSACTION", "path": "vllm_redknot/dsv4_runtime.py", "symbol": "DSV4Runtime", "role": "Flash z_off publication, leases and native fallback", "status": "runtime_integrated"},
+    {"id": "RK-FLASH-ATTENTION", "path": "vllm_redknot/dsv4_backend.py", "symbol": "install_dsv4_attention", "role": "Selected-query-head prefill and native projection hook", "status": "runtime_integrated"},
+    {"id": "RK-MLA-CAPTURE", "path": "vllm_redknot/dsv4_projection.py", "symbol": "capture_local_z", "role": "Offline local-head low-rank contribution", "status": "runtime_integrated"},
+    {"id": "RK-MLA-MERGE", "path": "vllm_redknot/dsv4_projection.py", "symbol": "merge_cached_z_and_project", "role": "Clean-row cached contribution plus one final wo_b", "status": "runtime_integrated"}
+  ]
+}

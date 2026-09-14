@@ -1,216 +1,226 @@
-<div align="center" id="redknottop">
-  <img src="RedKnot_Logo.png" alt="RedKnot logo" width="600" />
+# vLLM-RedKnot
 
-  <p><strong>Head-aware reuse and token-selective execution for long-context LLM serving.</strong></p>
+**RedKnot non-prefix chunk reuse for vLLM V1.** This plugin directory contains
+RedKnot algorithms, cache management, vLLM integration code, and evaluation tools.
+It does not vendor the native SGLang execution engine or copy vLLM's models,
+scheduler, GPU memory pools, or third-party kernel implementations. The
+`RedKnot-vLLM` branch contains this standalone project at the repository root,
+replacing the previous SGLang-based file tree on this branch. The SGLang version
+remains on `main` and in Git history; this migration does not modify `main`.
 
-  <p>
-    <a href="https://github.com/sgl-project/sglang"><img src="https://img.shields.io/badge/built%20on-SGLang-blue" alt="Built on SGLang" /></a>
-    <a href="./LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-green" alt="Apache-2.0 License" /></a>
-    <a href="#deepseek-v4-flash-release"><img src="https://img.shields.io/badge/DeepSeek--V4--Flash-TP8%20release-orange" alt="DeepSeek V4 Flash TP8 release" /></a>
-  </p>
+The RedKnot-specific implementation originates from `/workspace/RedKnot`. The
+original SGLang reproduction directory remains unchanged. The independent server
+delivery directory is `/workspace/vllm-RedKnot`, while the Python package name is
+`vllm_redknot`. On Linux, this differs from the legacy lowercase directory
+`/workspace/vllm-redknot`, which this migration does not overwrite. vLLM is an
+external dependency, not a vendored subdirectory.
 
-  <p>
-    <a href="#deepseek-v4-flash-release">Quick start</a> ·
-    <a href="#what-is-redknot">Technology</a> ·
-    <a href="#other-benchmark-entrypoints">Benchmarks</a> ·
-    <a href="#partners">Partners</a> ·
-    <a href="https://arxiv.org/abs/2606.06256">Paper</a>
-  </p>
-</div>
+## Code Organization and Migration Boundaries
 
-## RedKnot belongs to its contributors.
+This delivery prioritizes **code and experiment-asset migration**. It does not
+require every model to be downloaded, end-to-end inference to pass, or a speedup
+to be demonstrated. There are three distinct implementation states:
 
-RedKnot is built in the spirit of true open source. We openly share our latest technical explorations and progress with the community, and strive to build a space that is **open, inclusive, collaborative, and fair**.
-
-We welcome issues, bug reports, suggestions, and pull requests. RedKnot is built by its contributors, and meaningful contributions will earn a greater voice in the community.
-
-## Performance at a glance
-
-![Qualified long-context operating envelope](assets/redknot-performance-overview.svg)
-
-On qualified long-context profiles, RedKnot targets quality regression within
-**1 percentage point**, a **2–5× hot-state TTFT speedup**, and **70–90%
-arithmetic compute-ledger saving**. Blue denotes the Recomputed reference;
-yellow denotes the RedKnot operating envelope. The achieved point depends on
-the model, context length, GPU topology and frozen policy; per-suite result
-JSON is the source of truth.
-
-The compute ledger intentionally excludes memory traffic, kernel-launch cost,
-TP communication and all uncredited runtime components; it is therefore not a
-claim about total system energy or universal end-to-end throughput.
-
-## News
-
-- **2026-09 — Ascend NPU adaptation notes published.** The upstream SGLang Ascend baseline (Atlas 800I A2 / A3 containers, `docker/npu.Dockerfile`, `docs/platforms/ascend/`) has landed, and RedKnot's Ascend port status, known gaps and bring-up workflow are now documented in [`docs/ASCEND.md`](docs/ASCEND.md). The port is work in progress; Ascend numbers are preliminary until qualification profiles are co-published.
-- **2026-08 — DeepSeek V4 Flash TP8 release.** This repository now includes a packaged DeepSeek-V4-Flash + RedKnot path with one-command reproduction over frozen 64K, 128K, 256K and 440K LongBench-derived RAG suites.
-- **2026-07 — Lab-model adapters.** RedKnot released experimental adapters and RAG benchmarks for Mistral, Qwen3, Qwen3.5 MoE and Llama 3.3, covering native SWA, GQA/MHA head policies and sparse-FFN execution.
-- **2026-06 — Paper.** [*RedKnot: Efficient Long-Context LLM Serving with Head-Aware KV Reuse and SegPagedAttention*](https://arxiv.org/abs/2606.06256) is available on arXiv.
-
-## Future Work
-
-- **September–October 2026 — Hybrid-architecture models.** We plan to publish
-  adaptation results for the Qwen3.5-to-Qwen4 family and GLM-5.3. If there is
-  another model you would like RedKnot to support, please
-  [open an issue](https://github.com/rednote-machine-learning/RedKnot/issues).
-- **DeepSeek V4 series.** We will continue supporting the DeepSeek V4 family,
-  with DeepSeek V4 Pro adaptation coming soon.
-- **Ascend NPU port.** Huawei Cloud is driving the Ascend adaptation. Short
-  term we target functional parity with the upstream SGLang NPU baseline in
-  RedKnot's Recomputed reference path; medium term we will publish
-  Ascend-side qualification profiles for the frozen 64K / 128K / 256K / 440K
-  suites. Current status and known gaps are tracked in
-  [`docs/ASCEND.md`](docs/ASCEND.md).
-
-## What is RedKnot?
-
-RedKnot is a model-aware long-context execution framework built around three
-composable ideas rather than one model-specific cache shortcut:
-
-1. **Head decomposition and aggregation.** Attention heads are classified by
-   their long-context behavior. Reusable local heads are prepared offline;
-   global, retrieval or recovery heads remain online. Their projected
-   contributions are merged back into the model without changing the model's
-   external interface. The same abstraction maps to MLA, MHA, GQA and native
-   sliding-window attention, with model-specific projection and RoPE handling.
-2. **Sparse FFN and MoE execution.** Token-level importance controls which rows
-   enter expensive FFN work, while adaptive expert Top-K assigns more experts
-   only when the router distribution requires them. Dense boundary layers and
-   protected query rows preserve the critical path.
-3. **SegPagedAttention.** KV pages and visibility are organized per head and
-   segment, allowing global, local and retrieval heads to consume different
-   context scopes without forcing one uniform cache layout.
-
-Together, these mechanisms reduce redundant work at the head, token and expert
-levels. RedKnot keeps a full online Recomputed path as its reference; reported
-gains are therefore measured against the same checkpoint and input IDs rather
-than against a prefix-cache hit.
-
-## DeepSeek V4 Flash release
-
-The DeepSeek-V4-Flash release is the primary reproducible path in this repository. It runs on a TP8 server and ships all frozen inputs, head policy, sparse-MoE policy and execution manifests required for the packaged benchmark.
-
-### Verified high-efficiency configuration
-
-| Component | Frozen release setting |
-|---|---|
-| Model | `deepseek-ai/DeepSeek-V4-Flash-0731` |
-| Hardware used for the published run | 8× NVIDIA H200, 143,771 MiB per GPU, TP8; driver 570.148.08 |
-| Runtime | CPython 3.11.13, PyTorch 2.9.1 + CUDA 12.8, Triton 3.5.1 |
-| Kernels | FlashMLA `1.0.0+9241ae3`, SGL Kernel 0.3.20, FlashInfer 0.5.3 |
-| MLA policy | Layers 0–2 and 40–42 fully online; layers 3–39 use 8 online global heads and 56 reusable local heads, with online RoPE relocation and projection merge |
-| Token and expert sparsity | Checkpoint-island row selection plus plan-scoped adaptive expert Top-K; cumulative router mass 0.50, physical Top-K buckets 3/4/5/6 |
-| TTFT protocol | Hot state; 3 unmeasured paired warmups followed by 10 measured Recomputed/RedKnot pairs per case; streaming first output token, p50/p95 |
-
-| Suite | Prompt-token target | Frozen document geometry | Runtime static-memory fraction |
-|---|---:|---:|---:|
-| 64K | 65,536 | 4 × 16,384 tokens | 0.45 |
-| 128K | 131,072 | 4 × 32,768 tokens | 0.40 |
-| 256K | 262,144 | 8 × 32,768 tokens | 0.45 |
-| 440K | 450,560 | 8 × 56,320 tokens | 0.29 |
-
-Each frozen suite contains 15 cases: 10 short-answer cases and 5 supplemental
-30-token long-output cases. The Recomputed reference performs a complete
-online prefill with no RedKnot prefix reuse; RedKnot materializes the first
-document as the certified prefix and applies the published reuse, row-sparse
-and adaptive-Top-K policy to the remaining documents.
-
-All measurements and validation experiments in this repository were run on
-8× NVIDIA H200 or 8× NVIDIA B300 nodes in TP8. No L20X/L20Y measurements are
-reported. H200 uses the certified Hopper release configuration; B300 uses the
-separate SM103 hardware profile and rebuilds the hardware-specific FlashMLA,
-DeepGEMM and SGL kernels before running the same frozen suites.
-
-### Quick start
-
-```bash
-git clone git@github.com:rednote-machine-learning/RedKnot.git
-cd RedKnot/test/srt/redknot
-
-# Creates or validates the pinned environment, then runs all four suites.
-./run_deepseek_v4_flash_reproduction.sh
-```
-
-The wrapper uses the local DeepSeek-V4-Flash checkpoint by default. Set `REDKNOT_MODEL_PATH` or pass `--model-path` to select another checkpoint path. If the checkpoint is unavailable, the Python entrypoint can download the published model unless `--no-download-model` is set.
-
-For a new shell on a prepared machine:
-
-```bash
-cd test/srt/redknot
-./setup_deepseek_v4_flash_env.sh --check-only
-source ./environment-deepseek-v4-flash.env
-python benchmark_RedKnot_DeepSeekV4Flash.py
-```
-
-The default run is intentionally comprehensive and sequential: it needs the same eight GPUs for each suite and does not run two TP8 servers concurrently.
-
-The suite order, SHA256 digests, TTFT contract and full result layout are documented in the [DeepSeek V4 Flash release guide](test/srt/redknot/README_DEEPSEEK_V4_FLASH.md).
-
-## Other benchmark entrypoints
-
-Alongside the DeepSeek-V4-Flash release path, the repository contains
-model-specific RedKnot benchmark entrypoints for Mistral, Qwen and Llama:
-
-| Family | Entry point | Status |
-|---|---|---|
-| Mistral | `benchmark_RedKnot_Mistral_RAG.py` | Native-SWA reuse benchmark |
-| Qwen3 | `benchmark_RedKnot_Qwen3_RAG.py` | Head-aware RAG benchmark |
-| Qwen3.5 MoE | `benchmark_RedKnot_Qwen35_RAG.py` | MoE benchmark; requires the pinned Transformers 5 environment |
-| Llama 3.3 | `benchmark_RedKnot_Llama3.3_RAG.py` | Experimental; validate its model-specific result contract |
-
-Run them from the release directory after installing the required model weights:
-
-```bash
-cd test/srt/redknot
-
-# Mistral and Qwen3
-python benchmark_RedKnot_Mistral_RAG.py
-python benchmark_RedKnot_Qwen3_RAG.py
-
-# Qwen3.5 MoE: use the pinned Transformers 5 environment
-../../.venv_tf5/bin/python benchmark_RedKnot_Qwen35_RAG.py
-
-# Llama 3.3: experimental path
-python benchmark_RedKnot_Llama3.3_RAG.py
-```
-
-Each script owns its model-specific configuration, dataset and hardware
-requirements. Do not compare their numbers directly with the DeepSeek V4 Flash
-TP8 release unless their reported input, precision and measurement contract
-match.
-
-## Repository layout
+- **Integrated with vLLM:** `runtime.py`, `cache.py`, `runner.py`,
+  `vllm_backend.py`, and the top-level `dsv4_*.py` modules are invoked by the
+  explicitly enabled plugin.
+- **Extracted, integration pending:** `core/` contains engine-independent
+  algorithm assets extracted from RedKnot. Internal imports use the standalone
+  package namespace. These modules are not enabled simply by being present, nor
+  do they establish support for the corresponding GPU data paths, concurrent
+  scheduling, or models. See the [extraction guide](docs/CORE_EXTRACTION.md) and
+  [per-file provenance](docs/core_provenance.json).
+- **Model code and experiment protocols migrated:** `model_backends/` and the
+  four model benchmarks preserve RedKnot-specific policies, offline reuse
+  algorithms, data preparation, and source configurations. Explicit parameters
+  and callbacks define engine boundaries; SGLang and Transformers model executors
+  are not included. Benchmark execution is rejected where required native vLLM
+  integration is missing. A successful CPU preflight is not a successful model
+  experiment.
 
 ```text
-python/sglang/srt/layers/attention/redknot/   RedKnot runtime integration
-test/srt/redknot/                             Benchmarks, release launcher and docs
-test/srt/redknot/head_class/                  Frozen head-policy publication
-test/srt/redknot/sparse_ffn_params/           Sparse-MoE policy publication
-test/srt/redknot/datasets/                    LongBench inputs, suites and provenance
-test/srt/redknot/server/                      TP8 server launcher and policy checks
-docs/ASCEND.md                                RedKnot Ascend NPU adaptation notes
+vllm-RedKnot/
+├── vllm_redknot/
+│   ├── core/                 # RedKnot algorithms; extraction != runtime integration
+│   ├── model_backends/       # Model reuse/state/policy algorithms; native hooks pending
+│   ├── plugin.py             # vLLM general-plugin registration
+│   ├── config.py, compat.py  # Policy parsing, pinned interface fingerprints, guards
+│   ├── runtime.py, cache.py  # Request plans, content identity, leases, budgets, commits
+│   ├── runner.py            # MHA/GQA integration with the vLLM V1 runner
+│   ├── vllm_backend.py      # MHA/GQA attention and physical KV-page consistency
+│   ├── ops.py, mla.py       # RoPE/head operations and reference MLA decomposition
+│   ├── dsv4_runner.py       # Flash model-geometry and execution-mode checks
+│   ├── dsv4_runtime.py      # Flash chunk/z_off transactions and fallback
+│   ├── dsv4_backend.py      # Native FlashMLA attention/projection integration
+│   ├── dsv4_sparse.py       # Sparse MLA kernels selected by query head and row
+│   ├── dsv4_projection.py   # Local z_off capture and aggregation through one wo_b
+│   └── implementation_map.json  # Machine-readable implementation index
+├── benchmarks/              # Flash + four model entries, paired evaluation, preflight
+├── examples/                # Explicitly enabled model/head-classification policies
+├── tests/                   # Cache, contract, numerical, migration, and entrypoint tests
+└── docs/                    # Provenance, boundaries, usage, and validation records
 ```
 
-## Partners
+SGLang's `ForwardBatch`, `ServerArgs`, `ScheduleBatch`, native memory pools,
+radix cache, and model executors are not copied here. RedKnot behavior embedded
+in those files requires integration through vLLM's own interfaces, not copying
+entire native files or creating a `sglang` compatibility shim. See the
+[migration boundaries](docs/MIGRATION_BOUNDARY.md) and
+[integration design](docs/PORTING.md).
 
-<p align="center">
-  <a href="https://www.xiaohongshu.com"><img src="assets/partners/xiaohongshu.png" alt="Xiaohongshu" width="72" /></a>
-  &emsp;&emsp;
-  <a href="https://www.pku.edu.cn"><img src="assets/partners/peking-university.png" alt="Peking University" width="174" /></a>
-  &emsp;&emsp;
-  <a href="https://www.huawei.com"><img src="assets/partners/huawei.png" alt="Huawei" width="132" /></a>
-  &emsp;&emsp;
-  <a href="https://www.ubiquant.com"><img src="assets/partners/ubiquant.svg" alt="Ubiquant" width="205" /></a>
-  &emsp;&emsp;
-  <img src="assets/partners/quanjie.jpg" alt="Quanjie" width="126" />
-</p>
+## Mistral, Llama, Qwen3, and Qwen3.5 Implementation Map
 
-## Citation
+The four entrypoints retain their original filenames under `benchmarks/`.
+They are not aliases that launch the SGLang scripts. Data preparation and
+migration plans can be inspected without a GPU or model weights. Source model
+configurations, prompts, chunking, metrics, and provenance are documented in the
+[multi-model benchmark guide](docs/MULTIMODEL_BENCHMARKS.md).
 
-If you use RedKnot, please cite the paper:
-> Yang Liu, ZhaoKai Luo, HuaYi Jin, ZhiYong Wang, RuoZhou He, BoYu Wang, Guanjie Chen, and Junhao Hu. *RedKnot: Efficient Long-Context LLM Serving with Head-Aware KV Reuse and SegPagedAttention.* [arXiv:2606.06256](https://arxiv.org/abs/2606.06256).
+| Model | Benchmark entrypoint | Migrated RedKnot-specific implementation | Native vLLM integration still required |
+| --- | --- | --- | --- |
+| Mistral | [benchmark_RedKnot_Mistral_RAG.py](benchmarks/benchmark_RedKnot_Mistral_RAG.py) | Native-SWA document-boundary replay planning, offline K relocation, prefix replacement, and suffix reuse | Mistral/SWA physical pages and query/decode integration; not an alias for full-causal MHA |
+| Llama3.3 | [benchmark_RedKnot_Llama3.3_RAG.py](benchmarks/benchmark_RedKnot_Llama3.3_RAG.py) | Global/local head classification, sink/window policies, offline KV reuse, and Sparse FFN policy assets | Llama3 scaled RoPE, source quantization settings, per-head window/sink behavior, and Sparse FFN execution |
+| Qwen3 | [benchmark_RedKnot_Qwen3_RAG.py](benchmarks/benchmark_RedKnot_Qwen3_RAG.py) | Source head classes including `local_full`, window/retention settings, Sparse FFN configuration, and RAG protocol | Complete source-policy integration with native attention/MLP; generic Dense support does not implement the source configuration |
+| Qwen3.5-397B | [benchmark_RedKnot_Qwen35_397B_RAG.py](benchmarks/benchmark_RedKnot_Qwen35_397B_RAG.py) | Full/linear head policies, linear recurrence/window operations, offline KV/conv/recurrent-state contracts, and sparse MoE policies | vLLM hybrid-attention state pools, Q-gating, request-state restoration, and the MoE executor |
 
-## Acknowledgements & License
+Backend algorithms are described in the
+[MHA/SWA migration guide](docs/MHA_BACKEND_MIGRATION.md) and
+[Qwen3.5/sparse MoE migration guide](docs/MULTIMODEL_BACKEND.md).
 
-RedKnot is built on [SGLang](https://github.com/sgl-project/sglang) and benefits from the broader serving ecosystem, including [vLLM](https://github.com/vllm-project/vllm).
+The source Mistral benchmark uses SWA=4096 and 20% boundary recomputation for
+subsequent documents. Historical head/FFN profiles are retained separately and
+must not be presented as the same experiment. Historical gains described in
+source configurations are not measurements of this vLLM implementation.
 
-RedKnot is released under the [Apache License 2.0](LICENSE). Third-party components remain subject to their respective licenses and notices.
+The migrated Qwen3.5 state-restoration contract uses **one ordered document
+bundle** as its reuse unit. Independent chunks' final linear recurrent states
+cannot simply be concatenated. This does not implement arbitrary non-prefix
+hybrid-state reuse or establish feature equivalence with Flash MLA.
+
+Inspect the entrypoints without starting a model:
+
+```bash
+cd /workspace/vllm-RedKnot
+python benchmarks/benchmark_RedKnot_Mistral_RAG.py --help
+python benchmarks/benchmark_RedKnot_Llama3.3_RAG.py --help
+python benchmarks/benchmark_RedKnot_Qwen3_RAG.py --help
+python benchmarks/benchmark_RedKnot_Qwen35_397B_RAG.py --help
+```
+
+This migration step does not launch GPU experiments, require completed model
+downloads, or alter the GPU keeper monitor.
+
+## RedKnot Data Flow in vLLM
+
+```text
+SamplingParams.extra_args["redknot"]
+  → plugin + pinned source/model/execution-mode checks
+  → vLLM V1 runner / ForwardContext
+  → RedKnot request plans, complete-chunk caching, and leases
+  ├─ capture: preserve native outputs; collect all selected layers → atomic chunk commit
+  ├─ reuse: content/model/policy match → reuse clean local rows; compute global/boundary/query rows
+  └─ miss/unsupported: fall back to native computation before skipping work
+  → remaining native vLLM layers and decode
+```
+
+This is **non-prefix content reuse**: the same chunk may appear in the middle of
+a new request or at a different position. Matching uses actual tokens and
+model/policy identity, not merely a shared prefix. An independently captured
+chunk has not seen its new preceding context, so cross-context reuse is an
+approximation that requires explicit consent and validation against real outputs.
+
+### Flash MLA: Offline Local + Online Global/Dirty + Aggregation
+
+Offline capture applies native inverse RoPE and `wo_a` projection to local
+query-head attention, caching its low-rank contribution `z_off`. Online
+execution computes all global rows and the local boundary/new-query rows, then
+adds the corresponding `z_off` to clean rows. **Only one final `wo_b` is
+executed.** Cached z is not rotated again.
+
+Shared latent KV, SWA/C4/C128 state, the compressor, indexer, and FFN/MoE remain
+native online vLLM computations. The current masked `wo_a` still performs a
+full-width operation. Saved attention head-rows therefore cannot be equated
+with whole-model compute savings or used to claim a 2–5× TTFT speedup.
+
+## Core Implementation Markers
+
+Key entrypoints contain `REDKNOT:` source markers. These are navigation aids;
+they do not modify upstream code or bypass version checks. Paths in the JSON
+index are relative to this plugin's source root.
+
+| Marker ID | Implementation file and symbol | Responsibility |
+| --- | --- | --- |
+| `RK-PLUGIN` | [plugin.py](vllm_redknot/plugin.py) / `register` | Explicit vLLM registration; no runner/backend changes while disabled |
+| `RK-REQUEST` | [runtime.py](vllm_redknot/runtime.py) / `RequestPlan` | Non-prefix token spans and capture/reuse/recomputed protocol |
+| `RK-CACHE` | [cache.py](vllm_redknot/cache.py) / `CacheManager` | CPU payload byte budget, LRU, and protection against eviction while leased |
+| `RK-TRANSACTION` | [runtime.py](vllm_redknot/runtime.py) / `RedKnotRuntime` | Content addressing, all-layer commits, request-wide leases, and exception cleanup |
+| `RK-MHA-RUNNER` | [runner.py](vllm_redknot/runner.py) / `install_runner_hooks` | Request context entering native V1 execution |
+| `RK-MHA-ATTENTION` | [vllm_backend.py](vllm_redknot/vllm_backend.py) / `RedKnotImpl` | Head-aware attention and local K/V scatter into native physical pages |
+| `RK-FLASH-RUNNER` | [dsv4_runner.py](vllm_redknot/dsv4_runner.py) / `install_dsv4_runner` | Flash-specific native runner integration |
+| `RK-FLASH-TRANSACTION` | [dsv4_runtime.py](vllm_redknot/dsv4_runtime.py) / `DSV4Runtime` | z_off cache transactions and safe fallback on missing/incompatible data |
+| `RK-FLASH-ATTENTION` | [dsv4_backend.py](vllm_redknot/dsv4_backend.py) / `install_dsv4_attention` | Preserve native state updates; integrate sparse prefill and output projection |
+| `RK-MLA-CAPTURE` | [dsv4_projection.py](vllm_redknot/dsv4_projection.py) / `capture_local_z` | Capture offline local-head z_off contributions |
+| `RK-MLA-MERGE` | [dsv4_projection.py](vllm_redknot/dsv4_projection.py) / `merge_cached_z_and_project` | Aggregate clean cached rows, recompute dirty rows, and execute one wo_b |
+
+```bash
+cd /workspace/vllm-RedKnot
+rg -n 'REDKNOT: RK-' vllm_redknot
+/workspace/vllm/.venv/bin/python -B -m vllm_redknot code-map
+```
+
+`code-map` reports responsibilities, paths, and integration status without
+loading vLLM, Torch, or models. Its `migrated_model_backends` section lists the
+four-model assets separately with `runtime_integrated: false`; those paths are
+not automatically registered by the plugin.
+
+## Current Capabilities and Limitations
+
+| Scope | Code status | Validation status |
+| --- | --- | --- |
+| Qwen2/Qwen3/Llama static-RoPE MHA/GQA | Native backend/runner integration exists | Full GPU model validation pending |
+| Flash-0731 local/global MLA | Dedicated backend, head-selection kernels, and z_off aggregation exist | CPU and GPU micro-kernel checks passed; real-model validation pending |
+| Cache management | CPU budgets, LRU, leases, and atomic commits are integrated | Does not establish concurrent GPU requests or complete GPU-memory management |
+| Generic paired benchmark | Warm-state TTFT, reference F1, raw outputs, and measured reuse counts | No real Flash TTFT/F1/QPS results |
+| Original Flash release suites | vLLM-only entrypoint and migration preflight | Does not reproduce the four SGLang long-context suites by itself |
+| Advanced core policies/layouts | Independently extracted assets with traceable provenance | Unconnected assets must not be advertised as supported runtime features |
+| Source Mistral/Llama3.3/Qwen3/Qwen3.5 protocols | Named entrypoints, data/configuration assets, and backend algorithms migrated; some native hooks pending | CPU/static checks only for this migration; no model experiments |
+| Pro | Profile/scale-policy assets retained in core; dedicated runtime incomplete | No Pro serving or performance qualification |
+
+The native adapters remain limited to **TP/PP/DP=1, one request, V1 eager
+execution, and full prefill**, with APC, chunked prefill, and KV Connector
+disabled. Multi-request execution, TP8, Sparse FFN/MoE, and SegPaged vLLM data
+paths remain incomplete. Adding `core/` assets does not remove these limits.
+
+## Usage and Validation
+
+1. See [USAGE](docs/USAGE.md) for installation and the request protocol. Nothing
+   automatically installs/upgrades vLLM, Torch, or CUDA, downloads models, or
+   changes a shared inference environment. Run named benchmarks, configuration
+   assets, and documentation examples from this source tree; the wheel installs
+   only the plugin package.
+2. The Flash entrypoint is `benchmarks/benchmark_RedKnot_DeepSeekV4Flash.py`;
+   its one-command script is
+   `benchmarks/run_deepseek_v4_flash_reproduction.sh`. Start with `--help`
+   and CPU-only preflight. Frozen-suite token export, cache capacity, and
+   execution requirements are in the
+   [benchmark migration guide](docs/BENCHMARK_MIGRATION.md).
+3. Real inference requires a complete, independently verified checkpoint.
+   Downloading `.part` files are not loadable weights. CPU contract tests and
+   small-tensor GPU tests do not qualify the complete model.
+4. Warm-state TTFT excludes startup, offline capture, and compilation warmup.
+   Quality is evaluated against reference answers. Serial measurements do not
+   establish QPS or parallel speedup. Actual execution evidence is recorded in
+   [VALIDATION](docs/VALIDATION.md).
+
+## Provenance and Versions
+
+- RedKnot-specific algorithms originate from
+  `rednote-machine-learning/RedKnot`, pinned to revision
+  `55ee4e8401603f8d2612877e4053e18b37b1c1bd`.
+- The vLLM interface is pinned to revision
+  `e52be1a62d3879b1202f4f355d3c3472b560c6f2`.
+- Python >=3.12; Apache-2.0. Original copyright,
+  [LICENSE](LICENSE), and [NOTICE](NOTICE) are retained.
+- The source `/workspace/RedKnot` is not modified. Original SGLang H200/B300
+  results are not relabeled as results of this vLLM version. This is an
+  independent research implementation, not an official upstream release.

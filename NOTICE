@@ -1,0 +1,27 @@
+vllm-redknot
+
+This independent extension is informed by these Apache-2.0 licensed projects:
+
+RedKnot / SGLang
+https://github.com/rednote-machine-learning/RedKnot
+Reviewed revision: 55ee4e8401603f8d2612877e4053e18b37b1c1bd
+
+vLLM
+https://github.com/vllm-project/vllm
+Target revision: e52be1a62d3879b1202f4f355d3c3472b560c6f2
+
+Original implementation and research attribution remain with their authors.
+This extension is not an official release of either upstream project.
+
+The vllm_redknot/core package contains selectively extracted RedKnot-specific
+algorithm implementations, with internal namespace imports adapted. Per-file
+origins, source SHA-256 and runtime integration status are recorded in
+docs/core_provenance.json. Existing copyright and license notices are preserved.
+Native SGLang execution code is not vendored into this distribution.
+
+The model_backends package and multi-model benchmark assets additionally adapt
+RedKnot-specific Mistral SWA, MHA head/FFN policies and Qwen3.5 hybrid-state/MoE
+helpers from that same reviewed source revision. Per-file provenance and the
+explicit boundary between migrated algorithms and native vLLM hooks are recorded
+in docs/MHA_BACKEND_MIGRATION.md, docs/MULTIMODEL_BACKEND.md and
+docs/MULTIMODEL_BENCHMARKS.md. No original model executor is included.

@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "vllm-redknot"
+version = "0.2.2"
+description = "Opt-in non-prefix, head-aware RedKnot reuse for a pinned vLLM V1 runtime"
+requires-python = ">=3.12"
+license = "Apache-2.0"
+readme = "README.md"
+dependencies = []
+
+[project.scripts]
+vllm-redknot = "vllm_redknot.cli:main"
+
+[project.entry-points."vllm.general_plugins"]
+redknot = "vllm_redknot.plugin:register"
+
+[tool.setuptools.packages.find]
+include = ["vllm_redknot*"]
+
+[tool.setuptools.package-data]
+vllm_redknot = ["pinned_files.json", "implementation_map.json"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+extend-exclude = ["build", "dist", ".venv"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP"]
+
+# Preserve extracted-source hashes and algorithms; lint the new adapters normally.
+[tool.ruff.lint.per-file-ignores]
+"vllm_redknot/core/**" = ["UP006", "UP045", "UP035", "UP037", "UP042", "UP007", "UP015", "I001", "E501", "F401", "E741"]
+"vllm_redknot/core/mla_head_profiler.py" = ["F841"]
+"vllm_redknot/core/ops_flash.py" = ["F841"]
+# prev_row_pos is set whenever run_start_pos becomes non-None; covered by tests.
+"vllm_redknot/core/v4/segmented_compressor.py" = ["F821"]
+
+[tool.ruff.format]
+exclude = ["vllm_redknot/core/**"]

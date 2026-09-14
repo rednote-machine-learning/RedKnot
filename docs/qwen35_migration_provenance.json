@@ -1,0 +1,261 @@
+{
+  "schema": "redknot_multimodel_extraction_v1",
+  "source_repository": "https://github.com/rednote-machine-learning/RedKnot",
+  "source_revision": "55ee4e8401603f8d2612877e4053e18b37b1c1bd",
+  "source_snapshot_relative_to_project": "../work/redknot-transfer-20260913.jXjPdB/RedKnot",
+  "runtime_integrated": false,
+  "scope": "Qwen3.5 RedKnot-specific layer/head policy, injected full-attention operation, GDN recurrence/window helpers, hybrid ordered-bundle state restore, sparse-MoE policy/selector. No native model, engine runner, scheduler, kernel or global engine context copied.",
+  "files": [
+    {
+      "target_path": "vllm_redknot/model_backends/__init__.py",
+      "source_path": null,
+      "source_sha256": null,
+      "source_symbols": [],
+      "modification_types": [
+        "new_lightweight_package"
+      ],
+      "runtime_integrated": false,
+      "target_sha256": "98dc269d8c4dd46218a6d1a2e13179b302836bae54307750fc858386033da956"
+    },
+    {
+      "target_path": "vllm_redknot/model_backends/qwen35_policy.py",
+      "source_path": "python/sglang/srt/layers/attention/redknot/driver_qwen35.py",
+      "source_sha256": "2e200138ad0c9abb09689c11eeeda53d2760158791c62e995620bacffa067e03",
+      "source_symbols": [
+        {
+          "name": "full_attention_layer_indices",
+          "line_start": 47,
+          "line_end": 56
+        },
+        {
+          "name": "linear_attention_layer_indices",
+          "line_start": 59,
+          "line_end": 63
+        },
+        {
+          "name": "build_full_attention_head_config",
+          "line_start": 66,
+          "line_end": 132
+        }
+      ],
+      "modification_types": [
+        "symbol_extraction",
+        "lazy_HeadClassConfig_import",
+        "provenance_marker",
+        "mechanical_modern_type_annotations_and_formatting"
+      ],
+      "runtime_integrated": false,
+      "target_sha256": "105f91b8648b77473f4ab4d60e3937f4bb7b5afc85ba1c851c2ef4df6589e7cb"
+    },
+    {
+      "target_path": "vllm_redknot/model_backends/sparse_moe_policy.py",
+      "source_path": "python/sglang/srt/models/redknot_sparse_moe.py",
+      "source_sha256": "fbcee8a10b33a43dccb8cbb6b33c6921bb00a5c983d119f1dd749fb754e77db2",
+      "source_symbols": [
+        {
+          "name": "RedKnotSparseMoEPolicy",
+          "line_start": 45,
+          "line_end": 99
+        },
+        {
+          "name": "RedKnotTokenPolicyContext",
+          "line_start": 102,
+          "line_end": 158
+        }
+      ],
+      "modification_types": [
+        "symbol_extraction",
+        "explicit_config_mapping_or_attributes",
+        "request_context_injection",
+        "type_only_torch_import",
+        "provenance_marker",
+        "mechanical_modern_type_annotations_and_formatting"
+      ],
+      "runtime_integrated": false,
+      "target_sha256": "936debf68392a966f374af5132d1a5dc79aa912c6c20acf752d8b53730fbc2d6"
+    },
+    {
+      "target_path": "vllm_redknot/model_backends/qwen35_linear.py",
+      "source_path": "python/sglang/srt/layers/attention/redknot/driver_qwen35.py",
+      "source_sha256": "2e200138ad0c9abb09689c11eeeda53d2760158791c62e995620bacffa067e03",
+      "source_symbols": [
+        {
+          "name": "_linear_local_recurrence",
+          "line_start": 703,
+          "line_end": 741
+        },
+        {
+          "name": "_linear_local_token_window",
+          "line_start": 1391,
+          "line_end": 1444
+        }
+      ],
+      "modification_types": [
+        "symbol_extraction",
+        "provenance_marker",
+        "mechanical_modern_type_annotations_and_formatting"
+      ],
+      "runtime_integrated": false,
+      "target_sha256": "820cbec960f6c4777212cb0c15e24e2142683c676d7c32282a70e6250c58d090"
+    },
+    {
+      "target_path": "vllm_redknot/model_backends/qwen35_full_attention.py",
+      "source_path": "python/sglang/srt/layers/attention/redknot/driver_qwen35.py",
+      "source_sha256": "2e200138ad0c9abb09689c11eeeda53d2760158791c62e995620bacffa067e03",
+      "source_symbols": [
+        {
+          "name": "_qwen35_full_attn_headclass",
+          "line_start": 135,
+          "line_end": 224
+        }
+      ],
+      "modification_types": [
+        "symbol_extraction",
+        "explicit_RoPE_and_attention_callable_injection",
+        "remove_transformers_driver_imports",
+        "provenance_marker",
+        "mechanical_modern_type_annotations_and_formatting"
+      ],
+      "runtime_integrated": false,
+      "target_sha256": "60896072b6be5f40552170c78c2d8acf64e911d687dd044d2a5127e52cc32a7e"
+    },
+    {
+      "target_path": "vllm_redknot/model_backends/sparse_moe.py",
+      "source_path": "python/sglang/srt/models/redknot_sparse_moe.py",
+      "source_sha256": "fbcee8a10b33a43dccb8cbb6b33c6921bb00a5c983d119f1dd749fb754e77db2",
+      "source_symbols": [
+        {
+          "name": "validate_mask_alignment",
+          "line_start": 192,
+          "line_end": 219
+        },
+        {
+          "name": "resolve_routed_keep_mask",
+          "line_start": 222,
+          "line_end": 279
+        },
+        {
+          "name": "_per_request_mean_ratio_mask",
+          "line_start": 285,
+          "line_end": 323
+        },
+        {
+          "name": "_protect_recent_per_request",
+          "line_start": 326,
+          "line_end": 353
+        },
+        {
+          "name": "_enforce_min_keep_per_request",
+          "line_start": 356,
+          "line_end": 401
+        },
+        {
+          "name": "RedKnotSelectionResult",
+          "line_start": 404,
+          "line_end": 409
+        },
+        {
+          "name": "build_routed_keep_mask",
+          "line_start": 412,
+          "line_end": 472
+        },
+        {
+          "name": "token_scores_from_hidden",
+          "line_start": 475,
+          "line_end": 483
+        }
+      ],
+      "modification_types": [
+        "symbol_extraction",
+        "explicit_request_context_and_prefill_injection",
+        "fail_closed_layout_generation_guard",
+        "selector_math_unchanged",
+        "provenance_marker",
+        "mechanical_modern_type_annotations_and_formatting"
+      ],
+      "runtime_integrated": false,
+      "target_sha256": "e0221c5aeef4915e099c293b345a22d6a1c734ac0b0eb405738d6cfa64ffbf20"
+    },
+    {
+      "target_path": "vllm_redknot/model_backends/qwen35_reuse_contract.py",
+      "source_path": "python/sglang/srt/layers/attention/redknot/qwen35_offline_reuse.py",
+      "source_sha256": "f867072bc3820dbc04ece2f5e389ae8ef71cc4e345f31573675cda50df7dc38e",
+      "source_symbols": [
+        {
+          "name": "prepare_qwen35_offline_reuse",
+          "line_start": 111,
+          "line_end": 276
+        },
+        {
+          "name": "_normalise_segment_ids",
+          "line_start": 64,
+          "line_end": 69
+        }
+      ],
+      "modification_types": [
+        "explicit_runtime_config_and_CPU_batch_metadata",
+        "slot_and_context_fail_closed_preflight",
+        "no_tensor_or_engine_dependency",
+        "mechanical_modern_type_annotations_and_formatting"
+      ],
+      "runtime_integrated": false,
+      "target_sha256": "c4a8f509470e828b51b4cbffc26ac54543250fcd09b7025b09b6f38c2c550fd4"
+    },
+    {
+      "target_path": "vllm_redknot/model_backends/qwen35_recurrent.py",
+      "source_path": "python/sglang/srt/layers/attention/redknot/qwen35_offline_reuse.py",
+      "source_sha256": "f867072bc3820dbc04ece2f5e389ae8ef71cc4e345f31573675cda50df7dc38e",
+      "source_symbols": [
+        {
+          "name": "capture_qwen35_recurrent_state",
+          "line_start": 37,
+          "line_end": 61
+        },
+        {
+          "name": "_restore_recurrent_state",
+          "line_start": 83,
+          "line_end": 108
+        },
+        {
+          "name": "prepare_qwen35_offline_reuse",
+          "line_start": 111,
+          "line_end": 276
+        },
+        {
+          "name": "apply_qwen35_position_offsets",
+          "line_start": 279,
+          "line_end": 317
+        }
+      ],
+      "modification_types": [
+        "explicit_recurrent_buffers_and_resolved_slots",
+        "explicit_cache_lookup_no_global_cache",
+        "batch_wide_shape_preflight_before_copy",
+        "invalidate_receipts_on_copy_failure",
+        "explicit_RoPE_offset_inputs",
+        "mechanical_modern_type_annotations_and_formatting"
+      ],
+      "runtime_integrated": false,
+      "target_sha256": "cdde2efe573ecb04d7969faf988eb721533df9b1af36f2eb085a77fceec1653a"
+    }
+  ],
+  "remaining_boundaries": [
+    {
+      "source_path": "python/sglang/srt/layers/attention/redknot/driver_qwen35.py",
+      "reason": "Transformers DynamicCache model runners, complete model forward monkeypatch installers, text generation loops and experimental segmented/offline orchestration are not copied. Their native vLLM orchestration needs explicit model/cache lifecycle hooks."
+    },
+    {
+      "source_path": "python/sglang/srt/models/qwen2_moe.py",
+      "reason": "Native expert/router execution and collectives are not copied. Sparse selector returns a mask; native vLLM compact/router/expert/scatter integration remains pending."
+    },
+    {
+      "source_path": "python/sglang/srt/models/qwen3_5.py",
+      "reason": "Native Qwen model and GDN kernels are not copied. Cache slot layout, Q-gating projection view, RoPE and recurrent-buffer bindings remain pending."
+    },
+    {
+      "source_path": "python/sglang/srt/models/redknot_sparse_moe.py",
+      "reason": "Global engine ForwardBatch attribute attachment helpers are replaced by caller-owned explicit RedKnotTokenPolicyContext; no SGLang shim."
+    }
+  ],
+  "validation_scope": "CPU control contracts, optional CPU Torch tensor tests and source/destination SHA/import guards. No complete model, GPU, TTFT, accuracy, TP or QPS validation."
+}

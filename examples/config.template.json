@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "enabled": true,
+  "model_revision": "REPLACE_WITH_VERIFIED_CHECKPOINT_REVISION",
+  "supported_vllm_commit": "e52be1a62d3879b1202f4f355d3c3472b560c6f2",
+  "allow_approximate": false,
+  "boundary_tokens": 128,
+  "max_cache_bytes": 2147483648,
+  "rope_theta": 10000,
+  "rotary_dim": null,
+  "local_heads": {"1": [0]}
+}

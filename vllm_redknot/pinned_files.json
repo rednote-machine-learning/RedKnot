@@ -1,0 +1,41 @@
+{
+  "commit": "e52be1a62d3879b1202f4f355d3c3472b560c6f2",
+  "files": {
+    "v1/attention/backends/flash_attn.py": "6acd7851f931406e1481bf2afb1aeabee005d9f811830c4deaa71bb2667d7db7",
+    "v1/attention/backend.py": "37cfca0e089ba15d2f38f6fb5b75bac07c40772107e1fc2092cb9b01abc37c86",
+    "v1/attention/backends/registry.py": "d4b2b5136965e05133365dc21be9555b94724def9a92db24d8d00dc5b2720c36",
+    "v1/worker/gpu_model_runner.py": "87c29d08c0bbf66993d8b984811e7325e35e6436242a773feb55ec88f16b2c51",
+    "forward_context.py": "985adacc9e7ed2a7695819ac2e2ad9cb264a7d886806d3091ad75bfda7392242",
+    "model_executor/layers/attention/attention.py": "bc897e452f3aea603e353ca42a365d3be8836e9485d78cbf8cc4677baca2fb42",
+    "model_executor/models/qwen3.py": "6ade9b12f4c7a4d670fe2e4dd778049bbe0a94fe2ba61a149d9706587a280e28",
+    "model_executor/models/qwen2.py": "eb2f0eeb13c57a28bbc06bc64afff18cd8865f89fbe9ff2a3cf3a896f037cfe9",
+    "model_executor/models/llama.py": "1654ee1ea3a030772dac4e4953843996bbc24c835aa63137e4e7e5c7ecf31a2c",
+    "model_executor/layers/rotary_embedding/__init__.py": "a950c75cef4c452ae9804f130114582592f8c64047791e978b77f87d9eb130e0",
+    "model_executor/layers/rotary_embedding/base.py": "c81804498f08f072356a26b41967f211475df2694dabf5da9f488c074d1fdef5"
+  },
+  "family_files": {
+    "deepseek_v4_flash": {
+      "v1/attention/backend.py": "37cfca0e089ba15d2f38f6fb5b75bac07c40772107e1fc2092cb9b01abc37c86",
+      "v1/attention/backends/registry.py": "d4b2b5136965e05133365dc21be9555b94724def9a92db24d8d00dc5b2720c36",
+      "v1/worker/gpu_model_runner.py": "87c29d08c0bbf66993d8b984811e7325e35e6436242a773feb55ec88f16b2c51",
+      "forward_context.py": "985adacc9e7ed2a7695819ac2e2ad9cb264a7d886806d3091ad75bfda7392242",
+      "models/deepseek_v4/attention.py": "dcbf82f581bcb90d245dbd43b865580b806c0cff40b3c828e66338f659a54c78",
+      "models/deepseek_v4/nvidia/flashmla.py": "28f636943e330702ce1d02ad1a6a242237bbce2503ee55f167274afa7d1ca0fe",
+      "models/deepseek_v4/nvidia/ops/o_proj.py": "542dcb9ca265a6e788b7f061a2e33a2e74ab6f704b089d23ba4034317409406a",
+      "models/deepseek_v4/common/ops/fused_inv_rope_fp8_quant.py": "df0c4437c71265a05c87dd3c82955aa883aa4e89d88979a993037acaef7a17ba",
+      "models/deepseek_v4/common/rope.py": "7309161299c9e7c4941deead254c93932ba0c27eddacebef25921a1ed489acff",
+      "models/deepseek_v4/compressor.py": "832f3064e9779ebd5f587f71ef06ec509cb4e7bd8777bb89e0dc742b1fe43444",
+      "models/deepseek_v4/sparse_mla.py": "476472b86212ac58c0f3868b55ea377053c2a2b115f242b59551946e76c266db",
+      "models/deepseek_v4/nvidia/model.py": "21f615c26d95c77cb65b8b7b40bee01a9674a4a5c35e3727ca693f72a1237829",
+      "v1/attention/backends/mla/sparse_swa.py": "a356f5e30ab215f2ca5812720a46d47d92bf18a87666a090a1056e0031539d22",
+      "v1/attention/ops/flashmla.py": "8a40d6e120e3ab25a95fcfeb32b0b5b4c1ea02b984633866628536dcd26ed2e8",
+      "third_party/flashmla/flash_mla_interface.py": "84601897d0f3a748ef6a8046ed28285586c8db672ac08b71178e52574a3c57e5"
+    }
+  },
+  "external_sources": {
+    "flashmla": {
+      "commit": "6bc49418c5ead572ff0339191ddf3b155749e183",
+      "interface_hash_provenance": "Actual built /workspace/vllm/vllm/third_party/flashmla/flash_mla_interface.py, read-only SHA256 verification on 2026-09-13; CUDA binary provenance is not covered by this Python source check."
+    }
+  }
+}
