@@ -41,7 +41,7 @@ claim about total system energy or universal end-to-end throughput.
 
 ## News
 
-- **2026-09 — Ascend NPU adaptation notes published.** The upstream SGLang Ascend baseline (Atlas 800I A2 / A3 containers, `docker/npu.Dockerfile`, `docs/platforms/ascend/`) has landed, and RedKnot's Ascend port status, known gaps and bring-up workflow are now documented in [`docs/ASCEND.md`](docs/ASCEND.md). The port is work in progress; Ascend numbers are preliminary until qualification profiles are co-published.
+- **2026-09 — RedKnot-vLLM core code migration completed.** The standalone vLLM plugin and migrated benchmark entry points are now available on the [RedKnot-vLLM branch](https://github.com/rednote-machine-learning/RedKnot/tree/RedKnot-vLLM). Model-specific runtime integration and end-to-end validation are ongoing. Ascend NPU adaptation is also in progress; see the [adaptation guide](docs/ASCEND.md) for the current status and remaining work.
 - **2026-08 — DeepSeek V4 Flash TP8 release.** This repository now includes a packaged DeepSeek-V4-Flash + RedKnot path with one-command reproduction over frozen 64K, 128K, 256K and 440K LongBench-derived RAG suites.
 - **2026-07 — Lab-model adapters.** RedKnot released experimental adapters and RAG benchmarks for Mistral, Qwen3, Qwen3.5 MoE and Llama 3.3, covering native SWA, GQA/MHA head policies and sparse-FFN execution.
 - **2026-06 — Paper.** [*RedKnot: Efficient Long-Context LLM Serving with Head-Aware KV Reuse and SegPagedAttention*](https://arxiv.org/abs/2606.06256) is available on arXiv.
