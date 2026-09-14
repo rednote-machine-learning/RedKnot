@@ -1,0 +1,734 @@
+{
+  "schema": "redknot_portable_extraction_v1",
+  "source_repository": "https://github.com/rednote-machine-learning/RedKnot",
+  "source_revision": "55ee4e8401603f8d2612877e4053e18b37b1c1bd",
+  "source_snapshot_relative_to_project": "../work/redknot-transfer-20260913.jXjPdB/RedKnot",
+  "source_license": "Apache-2.0; existing source notices are preserved",
+  "extraction_date": "2026-09-14",
+  "scope": "Only RedKnot-specific implementation modules under the RedKnot attention directory. No source is deleted. No native SGLang package, model, scheduler, allocator, JIT implementation, or sgl_kernel is copied.",
+  "runtime_semantics": "Extraction does not register or activate these modules in vLLM. All runtime_integrated flags refer to the extracted target module, not the separate existing native vLLM adapters.",
+  "validation_scope": "Static dependency closure, SHA256 provenance, CPU controller contracts and lightweight import tests. Not end-to-end model, GPU-kernel, TP8, quality, performance, or full algorithm certification.",
+  "files": [
+    {
+      "source_path": "python/sglang/srt/layers/attention/redknot/__init__.py",
+      "source_sha256": "cdfda972e4be6ec1c133f2341212a28e71ff248c02849b2d47c0c1dca4f2ee55",
+      "target_path": "vllm_redknot/core/__init__.py",
+      "modification_types": [
+        "replace_eager_initializer_with_documentation_only"
+      ],
+      "runtime_integrated": false,
+      "status": "lightweight_package_initializer",
+      "target_sha256": "ab014e96488b4c6e425b6e5e5a3bb2826aede3c959d7a0e170069c822e564ff3"
+    },
+    {
+      "source_path": "python/sglang/srt/layers/attention/redknot/deepseek_v4_mla.py",
+      "source_sha256": "0679481deda07abe0213a463e408be5ea2247bfd27c4da69ba3ddb96d16984ba",
+      "source_bytes": 20069,
+      "target_path": "vllm_redknot/core/deepseek_v4_mla.py",
+      "modification_types": [
+        "provenance_comment",
+        "internal_import_namespace_only"
+      ],
+      "runtime_integrated": false,
+      "status": "portable_code_extracted_runtime_wiring_pending",
+      "target_sha256": "59ec1b3a54b1a8092bfdb842b1c0ae380c70ae6a43a85872b79eac704c4dfb3c"
+    },
+    {
+      "source_path": "python/sglang/srt/layers/attention/redknot/dsv4_composite_commit.py",
+      "source_sha256": "672560796b9d3a4bc75e678e2913bde96056cf11cbd16a356b35cccecf1ea2aa",
+      "source_bytes": 135400,
+      "target_path": "vllm_redknot/core/dsv4_composite_commit.py",
+      "modification_types": [
+        "provenance_comment"
+      ],
+      "runtime_integrated": false,
+      "status": "portable_code_extracted_runtime_wiring_pending",
+      "target_sha256": "d1d038760370f4d5d5e5ade22e4ee53a38dcf732798ee8f74c8d29599285ac6b"
+    },
+    {
+      "source_path": "python/sglang/srt/layers/attention/redknot/dsv4_context_identity.py",
+      "source_sha256": "645110b10f445ddaa7607e3bfdd00e24607ee2ec4182b635507e722ead1f2dc3",
+      "source_bytes": 32861,
+      "target_path": "vllm_redknot/core/dsv4_context_identity.py",
+      "modification_types": [
+        "provenance_comment"
+      ],
+      "runtime_integrated": false,
+      "status": "portable_code_extracted_runtime_wiring_pending",
+      "target_sha256": "5d64520a4016c7c55f69526cf191a4f4e20e5456df6a690c3ec726b0d57f638f"
+    },
+    {
+      "source_path": "python/sglang/srt/layers/attention/redknot/dsv4_fused_z_merge.py",
+      "source_sha256": "64498a95997cd284d8067537378bb67992b96840d57502b168e8301c0a27e903",
+      "source_bytes": 81812,
+      "target_path": "vllm_redknot/core/dsv4_fused_z_merge.py",
+      "modification_types": [
+        "provenance_comment"
+      ],
+      "runtime_integrated": false,
+      "status": "portable_code_extracted_runtime_wiring_pending",
+      "target_sha256": "6518750ebcf365da975d2296dedc1f3ef1232deb8fb07f2ea0a36a084655e9df"
+    },
+    {
+      "source_path": "python/sglang/srt/layers/attention/redknot/dsv4_mla_offload.py",
+      "source_sha256": "b2a612b2cb19c80ef3875ce4a51defd9500eadf2619acd502c1a842c37103f3b",
+      "source_bytes": 160143,
+      "target_path": "vllm_redknot/core/dsv4_mla_offload.py",
+      "modification_types": [
+        "provenance_comment",
+        "internal_import_namespace_only"
+      ],
+      "runtime_integrated": false,
+      "status": "portable_code_extracted_runtime_wiring_pending",
+      "target_sha256": "dd9c78405dde48458188dbffa8d512e292c5f07eb77bdac228a90ef39c6e6795"
+    },
+    {
+      "source_path": "python/sglang/srt/layers/attention/redknot/dsv4_reuse_batch.py",
+      "source_sha256": "11728b73bbea094ca6a68146c6618da2c9e05be6489bbc45b01be1df92e3fa5d",
+      "source_bytes": 48600,
+      "target_path": "vllm_redknot/core/dsv4_reuse_batch.py",
+      "modification_types": [
+        "provenance_comment"
+      ],
+      "runtime_integrated": false,
+      "status": "portable_code_extracted_runtime_wiring_pending",
+      "target_sha256": "838e221a7019605a51936a89f708d7512f0defe8fa9693b20912bb19daee6607"
+    },
+    {
+      "source_path": "python/sglang/srt/layers/attention/redknot/dsv4_shared_latent_cache.py",
+      "source_sha256": "8733c5916527f261a603707e5cb8968baecb30400902fa45ecff05c1f1634c3f",
+      "source_bytes": 60665,
+      "target_path": "vllm_redknot/core/dsv4_shared_latent_cache.py",
+      "modification_types": [
+        "provenance_comment"
+      ],
+      "runtime_integrated": false,
+      "status": "portable_code_extracted_runtime_wiring_pending",
+      "target_sha256": "3fa2669851fed1a211649b54a6a4b97db218230de14e44ef10aff1cca9975c5e"
+    },
+    {
+      "source_path": "python/sglang/srt/layers/attention/redknot/dsv4_shared_latent_gpu.py",
+      "source_sha256": "3c60ff79d5d9361e36908e66e22c111c2ec41e331cf7b3b87e21cb4757b3a9db",
+      "source_bytes": 140499,
+      "target_path": "vllm_redknot/core/dsv4_shared_latent_gpu.py",
+      "modification_types": [
+        "provenance_comment"
+      ],
+      "runtime_integrated": false,
+      "status": "portable_code_extracted_runtime_wiring_pending",
+      "target_sha256": "eb0fe649398419431061cd638b220ffc7c2727026fc16d8fcb83acc6101bcbad"
+    },
+    {
+      "source_path": "python/sglang/srt/layers/attention/redknot/dsv4_shared_snapshot_runtime.py",
+      "source_sha256": "bd5ae670b88cc69e48b62cfea72f63e69ba4027f0bd442663920d9ab833cae4c",
+      "source_bytes": 49588,
+      "target_path": "vllm_redknot/core/dsv4_shared_snapshot_runtime.py",
+      "modification_types": [
+        "provenance_comment"
+      ],
+      "runtime_integrated": false,
+      "status": "portable_code_extracted_runtime_wiring_pending",
+      "target_sha256": "41b16f9e3c26389e828523fb7f1b02ec25b4ac496d8c7d9592b2f411f0afc31e"
+    },
+    {
+      "source_path": "python/sglang/srt/layers/attention/redknot/dsv4_sparse_q_runtime.py",
+      "source_sha256": "07b2165772aea8815984b358a38a40ff0636a3a6bcc2f58d877e91bdc73f0b89",
+      "source_bytes": 24494,
+      "target_path": "vllm_redknot/core/dsv4_sparse_q_runtime.py",
+      "modification_types": [
+        "provenance_comment"
+      ],
+      "runtime_integrated": false,
+      "status": "portable_code_extracted_runtime_wiring_pending",
+      "target_sha256": "3271ca0d415a263a0f267c3711aa8abca6e763f283ac9dbcc04c975827171725"
+    },
+    {
+      "source_path": "python/sglang/srt/layers/attention/redknot/dsv4_sparse_q.py",
+      "source_sha256": "5fb5be15631d5befa2567115ff2613c463bb877f0291327fa02c494a73bac68e",
+      "source_bytes": 31290,
+      "target_path": "vllm_redknot/core/dsv4_sparse_q.py",
+      "modification_types": [
+        "provenance_comment"
+      ],
+      "runtime_integrated": false,
+      "status": "portable_code_extracted_runtime_wiring_pending",
+      "target_sha256": "a92eeba70a5d7facba141fa57eb48766cb8a7d51fc2cde3618bf383319b83091"
+    },
+    {
+      "source_path": "python/sglang/srt/layers/attention/redknot/dsv4_timing.py",
+      "source_sha256": "98d2ab6f41ac954eddb38e3f93e940e865b883045f5c00d73f3f99de76155b46",
+      "source_bytes": 8337,
+      "target_path": "vllm_redknot/core/dsv4_timing.py",
+      "modification_types": [
+        "provenance_comment"
+      ],
+      "runtime_integrated": false,
+      "status": "portable_code_extracted_runtime_wiring_pending",
+      "target_sha256": "eead0a8d1d00529595d0a5e00610df4c7796f1d1080ec5be8757eb1b0f33fe53"
+    },
+    {
+      "source_path": "python/sglang/srt/layers/attention/redknot/eval_harness.py",
+      "source_sha256": "b4b0c7b63e2ab061f1a837172b766ce064c06a801a69844edcd381d811a88069",
+      "source_bytes": 8460,
+      "target_path": "vllm_redknot/core/eval_harness.py",
+      "modification_types": [
+        "provenance_comment"
+      ],
+      "runtime_integrated": false,
+      "status": "portable_code_extracted_runtime_wiring_pending",
+      "target_sha256": "575783f03e86ac3b127505c6614693647423967dc217a53a4d016cebbba6d2a0"
+    },
+    {
+      "source_path": "python/sglang/srt/layers/attention/redknot/glm52_latent.py",
+      "source_sha256": "ee12b7742ecc799ef230b72f65d42024c99187116cb7935cd9bc60e61b96940b",
+      "source_bytes": 9114,
+      "target_path": "vllm_redknot/core/glm52_latent.py",
+      "modification_types": [
+        "provenance_comment"
+      ],
+      "runtime_integrated": false,
+      "status": "portable_code_extracted_runtime_wiring_pending",
+      "target_sha256": "7d5e4ec9b38c3b1d3e5a853488db47ba150a1c75408926b1c9f35af32dee1ae8"
+    },
+    {
+      "source_path": "python/sglang/srt/layers/attention/redknot/head_config.py",
+      "source_sha256": "5400c701dd37ae9e0d8b11489c278f5e9ebde055fe603a2993454ed4e77cc1c9",
+      "source_bytes": 13674,
+      "target_path": "vllm_redknot/core/head_config.py",
+      "modification_types": [
+        "provenance_comment"
+      ],
+      "runtime_integrated": false,
+      "status": "portable_code_extracted_runtime_wiring_pending",
+      "target_sha256": "2a98975658fc8dbf45e6ac0a25fee26f19ceb0b91bf49478f731ae6815747e6d"
+    },
+    {
+      "source_path": "python/sglang/srt/layers/attention/redknot/head_profiler.py",
+      "source_sha256": "dc23b6a824036ff25250bef524c3693e09ac3949493f6a50ffe454511726e2a2",
+      "source_bytes": 14614,
+      "target_path": "vllm_redknot/core/head_profiler.py",
+      "modification_types": [
+        "provenance_comment",
+        "internal_import_namespace_only"
+      ],
+      "runtime_integrated": false,
+      "status": "portable_code_extracted_runtime_wiring_pending",
+      "target_sha256": "9ef618886df71eb7284913d6560dddf688e1606e3660dbb6ae67acb16ab7e22b"
+    },
+    {
+      "source_path": "python/sglang/srt/layers/attention/redknot/mask_plan.py",
+      "source_sha256": "a3f9d6dff85a95e1a03c41346ed918e14d2d93767afbdb24e40dbfd17b276dd8",
+      "source_bytes": 4779,
+      "target_path": "vllm_redknot/core/mask_plan.py",
+      "modification_types": [
+        "provenance_comment",
+        "internal_import_namespace_only"
+      ],
+      "runtime_integrated": false,
+      "status": "portable_code_extracted_runtime_wiring_pending",
+      "target_sha256": "80dd510c55f930dc259c7c3b7c49aed8d8e614e5b76ee20ba710c2e424a8cd9f"
+    },
+    {
+      "source_path": "python/sglang/srt/layers/attention/redknot/mla_head_drift_analyze.py",
+      "source_sha256": "b5cc75357387b820f92e3a7834a6e000386eca8a56cdc4d156ac414c4deeadf3",
+      "source_bytes": 67801,
+      "target_path": "vllm_redknot/core/mla_head_drift_analyze.py",
+      "modification_types": [
+        "provenance_comment",
+        "internal_import_namespace_only"
+      ],
+      "runtime_integrated": false,
+      "status": "portable_code_extracted_runtime_wiring_pending",
+      "target_sha256": "11094a364c3af9ba43e4c3d4aeea48002faa68c39ea0e465afc7c80338e40354"
+    },
+    {
+      "source_path": "python/sglang/srt/layers/attention/redknot/mla_head_drift_profiler.py",
+      "source_sha256": "b255c29e023adbfda90a37f5ebec98f8bc98643e000036006ccf7118558ace09",
+      "source_bytes": 59134,
+      "target_path": "vllm_redknot/core/mla_head_drift_profiler.py",
+      "modification_types": [
+        "provenance_comment"
+      ],
+      "runtime_integrated": false,
+      "status": "portable_code_extracted_runtime_wiring_pending",
+      "target_sha256": "08f708e37f40c57b77ede23e82860cfb4c6efddc19a88926cd6574ef6346fc9e"
+    },
+    {
+      "source_path": "python/sglang/srt/layers/attention/redknot/mla_head_drift_runtime.py",
+      "source_sha256": "223978cef94a8c55c9623555e392f6cfcbe63b0dc8422ad941c7711d13903cdd",
+      "source_bytes": 25930,
+      "target_path": "vllm_redknot/core/mla_head_drift_runtime.py",
+      "modification_types": [
+        "provenance_comment",
+        "internal_import_namespace_only"
+      ],
+      "runtime_integrated": false,
+      "status": "portable_code_extracted_runtime_wiring_pending",
+      "target_sha256": "9f430c674a3d6e6fe45b28de91209cab5a5027328d0b96bfd31d61163769332d"
+    },
+    {
+      "source_path": "python/sglang/srt/layers/attention/redknot/mla_head_profiler.py",
+      "source_sha256": "e60e1c692d4805fb839da4edad764cd67a0a109942196a54a2a7692e9e3b4bf5",
+      "source_bytes": 34648,
+      "target_path": "vllm_redknot/core/mla_head_profiler.py",
+      "modification_types": [
+        "provenance_comment",
+        "internal_import_namespace_only"
+      ],
+      "runtime_integrated": false,
+      "status": "portable_code_extracted_runtime_wiring_pending",
+      "target_sha256": "320b2097c765c49306fb9a5a3a2394c8e2254d50152eb35521c5889af5093414"
+    },
+    {
+      "source_path": "python/sglang/srt/layers/attention/redknot/native_segment_page_kernels.py",
+      "source_sha256": "71ca2b0d20933d0811fab1d39b30d22285deacb8e803c737324929ce4ab1e853",
+      "source_bytes": 7994,
+      "target_path": "vllm_redknot/core/native_segment_page_kernels.py",
+      "modification_types": [
+        "provenance_comment",
+        "internal_import_namespace_only"
+      ],
+      "runtime_integrated": false,
+      "status": "portable_code_extracted_runtime_wiring_pending",
+      "target_sha256": "a1529f5c78c87019e09f9f13005f3ef267a045cec77a08d2005668c2aea24b10"
+    },
+    {
+      "source_path": "python/sglang/srt/layers/attention/redknot/native_segment_pages.py",
+      "source_sha256": "04525ba0c1c6511fa3d28e87eb254f2c88317a807095809888659ee60e53e759",
+      "source_bytes": 8920,
+      "target_path": "vllm_redknot/core/native_segment_pages.py",
+      "modification_types": [
+        "provenance_comment"
+      ],
+      "runtime_integrated": false,
+      "status": "portable_code_extracted_runtime_wiring_pending",
+      "target_sha256": "6b9983f33b9a046c17b68bae110d9a93062f7d260300cb1304afae02a10ad0d6"
+    },
+    {
+      "source_path": "python/sglang/srt/layers/attention/redknot/offline_cache.py",
+      "source_sha256": "70e4a83bb9ffd938e5fd1f7debfadf6ed2a529f469d90ecbaad1e98a4e6fa711",
+      "source_bytes": 15317,
+      "target_path": "vllm_redknot/core/offline_cache.py",
+      "modification_types": [
+        "provenance_comment"
+      ],
+      "runtime_integrated": false,
+      "status": "portable_code_extracted_runtime_wiring_pending",
+      "target_sha256": "593957b269faf3d71fe794908ede5e7bbaddec9d0983b9d783ee9533c5141b64"
+    },
+    {
+      "source_path": "python/sglang/srt/layers/attention/redknot/ops_flash.py",
+      "source_sha256": "2d35a6a6add8b66aabb7ba3e9a57d42c1eb7b22a79ad33820c8c10486942bad7",
+      "source_bytes": 18544,
+      "target_path": "vllm_redknot/core/ops_flash.py",
+      "modification_types": [
+        "provenance_comment",
+        "internal_import_namespace_only"
+      ],
+      "runtime_integrated": false,
+      "status": "portable_code_extracted_runtime_wiring_pending",
+      "target_sha256": "8c4b45884d10407cca3a63772a63b14596313903f270d773ac3f3f731bf92190"
+    },
+    {
+      "source_path": "python/sglang/srt/layers/attention/redknot/per_head_storage.py",
+      "source_sha256": "c55cde52dc52b97dd6b9ecf1ec443a157263c208d98e742704cdfb55719b0d77",
+      "source_bytes": 16179,
+      "target_path": "vllm_redknot/core/per_head_storage.py",
+      "modification_types": [
+        "provenance_comment"
+      ],
+      "runtime_integrated": false,
+      "status": "portable_code_extracted_runtime_wiring_pending",
+      "target_sha256": "b76201b213808a0269ba57a3b049f972ae17d0f944d53f08c6b8aed81db0903f"
+    },
+    {
+      "source_path": "python/sglang/srt/layers/attention/redknot/pro0813/__init__.py",
+      "source_sha256": "a762b7630e0e3521d96ab82972b4684e0fff9d8e15d995c00b9bc3233f7a0cf7",
+      "target_path": "vllm_redknot/core/pro0813/__init__.py",
+      "modification_types": [
+        "replace_eager_initializer_with_documentation_only"
+      ],
+      "runtime_integrated": false,
+      "status": "lightweight_package_initializer",
+      "target_sha256": "b58b4ebff5d6557c063162644bc17d397a35ec0e2c906a00ecaa00c3e57e20b1"
+    },
+    {
+      "source_path": "python/sglang/srt/layers/attention/redknot/pro0813/profile.py",
+      "source_sha256": "24759eafc0ae3b173e7dc97852df90fe471018d0ef7c9b495123b875f3142e8d",
+      "source_bytes": 10326,
+      "target_path": "vllm_redknot/core/pro0813/profile.py",
+      "modification_types": [
+        "provenance_comment"
+      ],
+      "runtime_integrated": false,
+      "status": "portable_code_extracted_runtime_wiring_pending",
+      "target_sha256": "ade8f8aa0d5a8e6c0cb444a864c5e7633b3e937987a54849156d6c40682e3371"
+    },
+    {
+      "source_path": "python/sglang/srt/layers/attention/redknot/pro0813/scale_policy.py",
+      "source_sha256": "ca909ef5d660b08ffe5bb098b98bcd71cfaf505b141bb5b2c8eba9b66a296180",
+      "source_bytes": 19638,
+      "target_path": "vllm_redknot/core/pro0813/scale_policy.py",
+      "modification_types": [
+        "provenance_comment"
+      ],
+      "runtime_integrated": false,
+      "status": "portable_code_extracted_runtime_wiring_pending",
+      "target_sha256": "a6cbfcab00fc08a5cbe5b6c8cf40fd834710b52a179b4774f839b9e8cd3b4ff3"
+    },
+    {
+      "source_path": "python/sglang/srt/layers/attention/redknot/rope_helper.py",
+      "source_sha256": "98dcfb7aafcac5c30a8820c9cbe558f9ee3d20e56ace04c52fb60ca3a87e41fa",
+      "source_bytes": 6520,
+      "target_path": "vllm_redknot/core/rope_helper.py",
+      "modification_types": [
+        "provenance_comment"
+      ],
+      "runtime_integrated": false,
+      "status": "portable_code_extracted_runtime_wiring_pending",
+      "target_sha256": "7ab445b5540ce70fa14ff8bb5525cf590bb8d86309640bf25746f6b33fe497bb"
+    },
+    {
+      "source_path": "python/sglang/srt/layers/attention/redknot/scheduler.py",
+      "source_sha256": "12a387fc48ad3f25341a979390a4b01712fcaf0c299b2add6c98bae1d6f5df0c",
+      "source_bytes": 9159,
+      "target_path": "vllm_redknot/core/scheduler.py",
+      "modification_types": [
+        "provenance_comment",
+        "internal_import_namespace_only"
+      ],
+      "runtime_integrated": false,
+      "status": "portable_code_extracted_runtime_wiring_pending",
+      "target_sha256": "53bfb0eb71b03517ddc5f529a41942b35b15392d5123f665b38c5b77804dbaa4"
+    },
+    {
+      "source_path": "python/sglang/srt/layers/attention/redknot/segpaged_v2/__init__.py",
+      "source_sha256": "948dd670c04167d1fe9951508b0b3c308f557ccd3f30ec43c4baa8d79a7e7490",
+      "target_path": "vllm_redknot/core/segpaged_v2/__init__.py",
+      "modification_types": [
+        "replace_eager_initializer_with_documentation_only"
+      ],
+      "runtime_integrated": false,
+      "status": "lightweight_package_initializer",
+      "target_sha256": "7a0369d33ab54f505e4ce9d25648154c753e21f02319e7f3e9bacf888b28e344"
+    },
+    {
+      "source_path": "python/sglang/srt/layers/attention/redknot/segpaged_v2/page_table.py",
+      "source_sha256": "c902dd53d5b82560ca211a7a8b74bb53d5202c33fb51e55d9b02b3001eda0e40",
+      "source_bytes": 8558,
+      "target_path": "vllm_redknot/core/segpaged_v2/page_table.py",
+      "modification_types": [
+        "provenance_comment"
+      ],
+      "runtime_integrated": false,
+      "status": "portable_code_extracted_runtime_wiring_pending",
+      "target_sha256": "e133bed55bc5c8b9f8bcef6fead6d8e81ca04dcc0a63a7208ccf403a9587d688"
+    },
+    {
+      "source_path": "python/sglang/srt/layers/attention/redknot/segpaged_v2/storage.py",
+      "source_sha256": "10069f667a223a17c6777ee574c5831e93755c02107c8bab7e5f568cd8c71d7a",
+      "source_bytes": 5495,
+      "target_path": "vllm_redknot/core/segpaged_v2/storage.py",
+      "modification_types": [
+        "provenance_comment"
+      ],
+      "runtime_integrated": false,
+      "status": "portable_code_extracted_runtime_wiring_pending",
+      "target_sha256": "fce7985ec1e7cf30a916ba9c7150a5087c655f21b65f73515f31db6358487b52"
+    },
+    {
+      "source_path": "python/sglang/srt/layers/attention/redknot/segpaged_v2/visible_plan.py",
+      "source_sha256": "a3b433ed7cf21752541595f6c05ba403ad3818037dd346ca47c4626aea2d8aff",
+      "source_bytes": 5429,
+      "target_path": "vllm_redknot/core/segpaged_v2/visible_plan.py",
+      "modification_types": [
+        "provenance_comment"
+      ],
+      "runtime_integrated": false,
+      "status": "portable_code_extracted_runtime_wiring_pending",
+      "target_sha256": "9edaaa7bcd07426e0355148c3badd4ee5873823b47aad72d869844040ff18066"
+    },
+    {
+      "source_path": "python/sglang/srt/layers/attention/redknot/sparse_ffn.py",
+      "source_sha256": "4114bb81514e71d2b4e4877b3fbaab27d4313478c94c63883cc016ce87da3da5",
+      "source_bytes": 24896,
+      "target_path": "vllm_redknot/core/sparse_ffn.py",
+      "modification_types": [
+        "provenance_comment"
+      ],
+      "runtime_integrated": false,
+      "status": "portable_code_extracted_runtime_wiring_pending",
+      "target_sha256": "c91d0faca4ec01280845e1d747315377a89cbf58d2d24e5fcc84dad2e69cfb6c"
+    },
+    {
+      "source_path": "python/sglang/srt/layers/attention/redknot/v4/__init__.py",
+      "source_sha256": "929636240b07e7acae9c2182f4da4b5d3bf2b8d199d1ff16a6b17ecba81be9e3",
+      "target_path": "vllm_redknot/core/v4/__init__.py",
+      "modification_types": [
+        "replace_eager_initializer_with_documentation_only"
+      ],
+      "runtime_integrated": false,
+      "status": "lightweight_package_initializer",
+      "target_sha256": "f7d8dcd6aa4b660918d7f5412870c76237e7e205b401a7f7ddd027aa188da4f3"
+    },
+    {
+      "source_path": "python/sglang/srt/layers/attention/redknot/v4/boundary_replay.py",
+      "source_sha256": "d976467ce10a77cc51a4b95628369a715b9349d7bed77a9b736f41b0673a1f01",
+      "source_bytes": 3069,
+      "target_path": "vllm_redknot/core/v4/boundary_replay.py",
+      "modification_types": [
+        "provenance_comment"
+      ],
+      "runtime_integrated": false,
+      "status": "portable_code_extracted_runtime_wiring_pending",
+      "target_sha256": "da462585d51b8c608b9720c370d686887eca0c652e30e5735c974fcedc40f960"
+    },
+    {
+      "source_path": "python/sglang/srt/layers/attention/redknot/v4/compatibility.py",
+      "source_sha256": "b836e61a358340a289fa9b5288f390e6e02cb34382bbc6c81a0b5c02c52b0b5f",
+      "source_bytes": 2851,
+      "target_path": "vllm_redknot/core/v4/compatibility.py",
+      "modification_types": [
+        "provenance_comment",
+        "internal_import_namespace_only"
+      ],
+      "runtime_integrated": false,
+      "status": "portable_code_extracted_runtime_wiring_pending",
+      "target_sha256": "2ce0de51ccd7360dfad4c90b1a94a9845438b787a0df2fc91c976dcc0b4387ac"
+    },
+    {
+      "source_path": "python/sglang/srt/layers/attention/redknot/v4/config.py",
+      "source_sha256": "d0fc09f2c231a27155344fd1d44bd51ff491008e198196760a8452e65375130b",
+      "source_bytes": 3872,
+      "target_path": "vllm_redknot/core/v4/config.py",
+      "modification_types": [
+        "provenance_comment",
+        "internal_import_namespace_only"
+      ],
+      "runtime_integrated": false,
+      "status": "portable_code_extracted_runtime_wiring_pending",
+      "target_sha256": "cd04ddbef4e50b8bdd438661be6caeeacfbf80dc451cd2d22a776412642c27b6"
+    },
+    {
+      "source_path": "python/sglang/srt/layers/attention/redknot/v4/merged_prefill.py",
+      "source_sha256": "a41093193bf1e501d18d37e6531a8f55b8495c5bc65e30df9294ff6317d22835",
+      "source_bytes": 22310,
+      "target_path": "vllm_redknot/core/v4/merged_prefill.py",
+      "modification_types": [
+        "provenance_comment"
+      ],
+      "runtime_integrated": false,
+      "status": "portable_code_extracted_runtime_wiring_pending",
+      "target_sha256": "da457e94bcdfc616eada71fb6c1786db56b79b4a7df2ff35fadd2fd45fb2cfc8"
+    },
+    {
+      "source_path": "python/sglang/srt/layers/attention/redknot/v4/request_selector.py",
+      "source_sha256": "b9e22ec8b619d3d0f0e94172540bf7cccb56a22d6b17cbedce439c4ce9d0e287",
+      "source_bytes": 37149,
+      "target_path": "vllm_redknot/core/v4/request_selector.py",
+      "modification_types": [
+        "provenance_comment"
+      ],
+      "runtime_integrated": false,
+      "status": "portable_code_extracted_runtime_wiring_pending",
+      "target_sha256": "552f147f55acf56183ad7a263ad7479aed387e04dfb54973c91c29359388eeba"
+    },
+    {
+      "source_path": "python/sglang/srt/layers/attention/redknot/v4/reuse_planner.py",
+      "source_sha256": "6c7df49bbd4788796f13133b1709010bfc9ab380d610582b367985c6e2bb81fa",
+      "source_bytes": 33020,
+      "target_path": "vllm_redknot/core/v4/reuse_planner.py",
+      "modification_types": [
+        "provenance_comment",
+        "internal_import_namespace_only"
+      ],
+      "runtime_integrated": false,
+      "status": "portable_code_extracted_runtime_wiring_pending",
+      "target_sha256": "f1cb53310d7107e0ff5f026a44c373d96e8c9c11cbffa8f5ed7da4ce8619296d"
+    },
+    {
+      "source_path": "python/sglang/srt/layers/attention/redknot/v4/segmented_compressor.py",
+      "source_sha256": "183f8d56d2628f00d819eb5ce7e71d50ac878f6d6f6d859e89e6498ea7038acb",
+      "source_bytes": 14297,
+      "target_path": "vllm_redknot/core/v4/segmented_compressor.py",
+      "modification_types": [
+        "provenance_comment",
+        "internal_import_namespace_only"
+      ],
+      "runtime_integrated": false,
+      "status": "portable_code_extracted_runtime_wiring_pending",
+      "target_sha256": "7ab50ad684229a1a0ca4558fd08307340bd95ce3fa418a7a54a78349d2d12aec"
+    },
+    {
+      "source_path": "python/sglang/srt/layers/attention/redknot/v4/state_composer.py",
+      "source_sha256": "deb78e0f0809068f0cc05789e76f9f04a6939aba42eae5ef1427fcfbee76ad9b",
+      "source_bytes": 2225,
+      "target_path": "vllm_redknot/core/v4/state_composer.py",
+      "modification_types": [
+        "provenance_comment",
+        "internal_import_namespace_only"
+      ],
+      "runtime_integrated": false,
+      "status": "portable_code_extracted_runtime_wiring_pending",
+      "target_sha256": "34956ed00c806b21491543d401d80b83844adf361753e9cc1a4014ca4ac695ca"
+    },
+    {
+      "source_path": "python/sglang/srt/layers/attention/redknot/v4/types.py",
+      "source_sha256": "6a4cd650f60692d2d2d2fac9ad65f572405758ae2439f6dec7b9e634b916a1ee",
+      "source_bytes": 2448,
+      "target_path": "vllm_redknot/core/v4/types.py",
+      "modification_types": [
+        "provenance_comment"
+      ],
+      "runtime_integrated": false,
+      "status": "portable_code_extracted_runtime_wiring_pending",
+      "target_sha256": "fddbf7082c23ec1b3cbec3903b519ee94004ee885a57df27a6833988ecf9fefb"
+    }
+  ],
+  "excluded": [
+    {
+      "source_path": "python/sglang/srt/layers/attention/redknot/driver.py",
+      "source_sha256": "bddabc3a9e9809634a1ef1085e08719bf7e515bc1c4e161c1f9901856812cf74",
+      "target_path": null,
+      "runtime_integrated": false,
+      "status": "source_retained_not_extracted",
+      "reason": "Transformers model driver, not the native vLLM model executor; use existing runner.py and vllm_backend.py."
+    },
+    {
+      "source_path": "python/sglang/srt/layers/attention/redknot/driver_batched.py",
+      "source_sha256": "b257dd96d3712a34df2fbcb566f39802d17c9974f12d1c59faf6a3fc137ce817",
+      "target_path": null,
+      "runtime_integrated": false,
+      "status": "source_retained_not_extracted",
+      "reason": "Transformers batching driver imports sgl_kernel; native vLLM batching integration remains pending."
+    },
+    {
+      "source_path": "python/sglang/srt/layers/attention/redknot/driver_qwen35.py",
+      "source_sha256": "2e200138ad0c9abb09689c11eeeda53d2760158791c62e995620bacffa067e03",
+      "target_path": null,
+      "runtime_integrated": false,
+      "status": "source_retained_not_extracted",
+      "reason": "Depends on the Transformers/SGLang-specific batched driver; native vLLM Qwen3.5 model hooks remain pending."
+    },
+    {
+      "source_path": "python/sglang/srt/layers/attention/redknot/dsv4_offline_reuse.py",
+      "source_sha256": "0dd6aaa42486840513c7cb666a85d5edbc38faaf41fdc5d55efb307d562b36fb",
+      "target_path": null,
+      "runtime_integrated": false,
+      "status": "source_retained_not_extracted",
+      "reason": "Transitive dependency on the native SGLang RoPE/JIT implementation; existing dsv4_backend.py owns the vLLM-specific path."
+    },
+    {
+      "source_path": "python/sglang/srt/layers/attention/redknot/dsv4_offline_reuse_v2.py",
+      "source_sha256": "6bbb1bfcf78e6d7983f260a1940a019a281ad44495268e23146f9428939d089d",
+      "target_path": null,
+      "runtime_integrated": false,
+      "status": "source_retained_not_extracted",
+      "reason": "Uses native SGLang JIT, DSA indexer and Triton kernels; native vLLM shared-latent restore remains pending."
+    },
+    {
+      "source_path": "python/sglang/srt/layers/attention/redknot/dsv4_reuse_backend_runtime.py",
+      "source_sha256": "61c31cbddcd7d4485e1f0f2a3fcda0d0e27726b337dae12f972efa9a5a9d530b",
+      "target_path": null,
+      "runtime_integrated": false,
+      "status": "source_retained_not_extracted",
+      "reason": "Imports SGLang redknot_mla_backend integration; the existing dsv4_runner.py/dsv4_backend.py are the native vLLM entry."
+    },
+    {
+      "source_path": "python/sglang/srt/layers/attention/redknot/dsv4_rope_reloc.py",
+      "source_sha256": "5ec8b7ce88e9be8893dc4d391f831a73fdddb7330faf9f99ba19acc9b24b2e1c",
+      "target_path": null,
+      "runtime_integrated": false,
+      "status": "source_retained_not_extracted",
+      "reason": "Uses native SGLang deepseek_v4_rope and JIT attention; native vLLM adapter retains its own RoPE access."
+    },
+    {
+      "source_path": "python/sglang/srt/layers/attention/redknot/dsv4_shared_latent_batch_kernels.py",
+      "source_sha256": "b739aee7f12d414eaeffc0cf88acc1ce6e24443850eb5f0b4cc80a18edb64ed2",
+      "target_path": null,
+      "runtime_integrated": false,
+      "status": "source_retained_not_extracted",
+      "reason": "Imports SGLang-specific shared-latent glue and package initializer; vLLM cache layout integration remains pending."
+    },
+    {
+      "source_path": "python/sglang/srt/layers/attention/redknot/dsv4_shared_latent_sglang.py",
+      "source_sha256": "b7baeb0d00ea581bf513a2ddc63c7b9762acedcde6515bf37ce4b9b2ce6973c4",
+      "target_path": null,
+      "runtime_integrated": false,
+      "status": "source_retained_not_extracted",
+      "reason": "SGLang cache/compressor/RoPE glue; source retained, vLLM shared-latent wiring remains pending."
+    },
+    {
+      "source_path": "python/sglang/srt/layers/attention/redknot/dsv4_shared_snapshot_sglang.py",
+      "source_sha256": "7f1a65d9461ba8f9441938bcc992d44560c501ae429d5aa07d5ba2c93c2c28db",
+      "target_path": null,
+      "runtime_integrated": false,
+      "status": "source_retained_not_extracted",
+      "reason": "Engine-specific snapshot glue; portable snapshot transaction runtime is extracted separately."
+    },
+    {
+      "source_path": "python/sglang/srt/layers/attention/redknot/ops_flash3.py",
+      "source_sha256": "2eb0503a8b2047dc9bf74e7123fe7e2adb151136558017397cb4359b680c48a4",
+      "target_path": null,
+      "runtime_integrated": false,
+      "status": "source_retained_not_extracted",
+      "reason": "Calls sgl_kernel.flash_attn; native vLLM attention backend already owns attention execution."
+    },
+    {
+      "source_path": "python/sglang/srt/layers/attention/redknot/ops_flash3_parallel.py",
+      "source_sha256": "ee309e6f81c4389a56afcc97e157951f4bd8e31f48f9f7b583d500a95246f7df",
+      "target_path": null,
+      "runtime_integrated": false,
+      "status": "source_retained_not_extracted",
+      "reason": "Calls sgl_kernel.flash_attn; native vLLM attention backend already owns attention execution."
+    },
+    {
+      "source_path": "python/sglang/srt/layers/attention/redknot/pd_transfer.py",
+      "source_sha256": "9df3156b8158a8f12e8ea7142a646f851f3b1f71147003096cf03b30a76cfc92",
+      "target_path": null,
+      "runtime_integrated": false,
+      "status": "source_retained_not_extracted",
+      "reason": "Depends on the SGLang-kernel-backed SegPaged implementation; native vLLM transfer integration remains pending."
+    },
+    {
+      "source_path": "python/sglang/srt/layers/attention/redknot/prefill.py",
+      "source_sha256": "ef79b077157dc2c9e239ba21e3cda8d94387f8241047194b0c8579f97559d3b8",
+      "target_path": null,
+      "runtime_integrated": false,
+      "status": "source_retained_not_extracted",
+      "reason": "Uses Transformers model loading/offline execution, not the native vLLM executor."
+    },
+    {
+      "source_path": "python/sglang/srt/layers/attention/redknot/probe_dsv4_shared_latent_batch_kernels.py",
+      "source_sha256": "0709b57962c1466d2b134ed9b3a6107645ce46f26257816e2630fdd1eeec5019",
+      "target_path": null,
+      "runtime_integrated": false,
+      "status": "source_retained_not_extracted",
+      "reason": "Probe for omitted SGLang-specific GPU integration; no migration or GPU validation claim."
+    },
+    {
+      "source_path": "python/sglang/srt/layers/attention/redknot/qwen35_offline_reuse.py",
+      "source_sha256": "f867072bc3820dbc04ece2f5e389ae8ef71cc4e345f31573675cda50df7dc38e",
+      "target_path": null,
+      "runtime_integrated": false,
+      "status": "source_retained_not_extracted",
+      "reason": "Imports SGLang dp_attention and server_args; native vLLM hybrid-cache hooks remain pending."
+    },
+    {
+      "source_path": "python/sglang/srt/layers/attention/redknot/segpaged.py",
+      "source_sha256": "8f526dcfacaccc2a5be6cb931c9dad762d4b94696df502946b3d5fff1018cc7a",
+      "target_path": null,
+      "runtime_integrated": false,
+      "status": "source_retained_not_extracted",
+      "reason": "Calls sgl_kernel.flash_attn; portable segpaged_v2 storage/layout only is extracted."
+    },
+    {
+      "source_path": "python/sglang/srt/layers/attention/redknot/segpaged_v2/attention.py",
+      "source_sha256": "f76db6575693802836bff58560ef029232d09ab5fbbd5567525c584fa5571af2",
+      "target_path": null,
+      "runtime_integrated": false,
+      "status": "source_retained_not_extracted",
+      "reason": "Calls sgl_kernel.flash_attn; native vLLM attention execution is not replaced."
+    }
+  ]
+}

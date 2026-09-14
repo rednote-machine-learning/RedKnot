@@ -1,0 +1,1692 @@
+{
+  "schema_version": 1,
+  "source_repository": "https://github.com/rednote-machine-learning/RedKnot",
+  "source_commit": "55ee4e8401603f8d2612877e4053e18b37b1c1bd",
+  "source_license": "Apache-2.0 (RedKnot metadata; upstream dataset terms still apply)",
+  "model_revision": "7872f01b1d1fe23eabc4c98b48bffcef5a386062",
+  "hash_encoding": "uint32_little_endian",
+  "source_execution": {
+    "baseline_label": "Recomputed",
+    "baseline_semantics": "same DeepSeek-V4-Flash model with full online recomputation and no RedKnot reuse",
+    "quality_repeats_per_case": 1,
+    "ttft_measured_pairs_per_case": 10,
+    "ttft_protocol": "hot_state_client_stream_first_output_token_p50_p95",
+    "ttft_warmup_pairs_per_case": 3
+  },
+  "source_selection_policy": {
+    "cases_per_length": 15,
+    "long_output_cases": 5,
+    "long_output_eligible_for_accuracy_aggregate": false,
+    "long_output_tokens": 30,
+    "short_output_cases": 10
+  },
+  "cases": [
+    {
+      "case_id": "short_00_hotpotqa_row0",
+      "length": "64K",
+      "dataset": "hotpotqa",
+      "question": "Which case was brought to court first Miller v. California or Gates v. Collier ?",
+      "answers": [
+        "Miller v. California"
+      ],
+      "answer_style": "shortest_exact_span_v1",
+      "eligible_for_accuracy_aggregate": true,
+      "target_output_tokens": 0,
+      "full_input_ids_sha256": "sha256:c45b729fdc130d3c5faabd86ac90611783a450e901189a17b8e4ff5591224607",
+      "id": "64K:short_00_hotpotqa_row0",
+      "num_chunks": 4,
+      "chunk_tokens": 16384,
+      "total_tokens": 65585,
+      "query_tokens": 49,
+      "offline_chunk_hashes": [
+        "sha256:6af5eee3d11005398807bc2f387ea3e921c0dbe1d3dc5467f03bdb61ef3004c7",
+        "sha256:7f61e8fa22c0c2123e05a0ec0c304868522bde9b395bafb70ee4f885408c67c6",
+        "sha256:c4b59a9c352d3513a3fe814aac2dbb3d52804c2773442538f6a9526956f036c3",
+        "sha256:006804dfabb39b4fca4800781ebd2da45136976d9a0742e56dbbd8349404bb61"
+      ],
+      "query_hash": "sha256:a90e4a454d98f820c3eb62975d46c528fd554f2c9380d00b110c77fc001ce18d"
+    },
+    {
+      "case_id": "short_01_hotpotqa_row1",
+      "length": "64K",
+      "dataset": "hotpotqa",
+      "question": "The actor that plays Phileas Fogg in \"Around the World in 80 Days\", co-starred with Gary Cooper in a 1939 Goldwyn Productions film based on a novel by what author?",
+      "answers": [
+        "Charles L. Clifford"
+      ],
+      "answer_style": "shortest_exact_span_v1",
+      "eligible_for_accuracy_aggregate": true,
+      "target_output_tokens": 0,
+      "full_input_ids_sha256": "sha256:d0679f1387162b4a44b5a9cd278bf3bad1f665ccb37f3efae2e64665201d8480",
+      "id": "64K:short_01_hotpotqa_row1",
+      "num_chunks": 4,
+      "chunk_tokens": 16384,
+      "total_tokens": 65611,
+      "query_tokens": 75,
+      "offline_chunk_hashes": [
+        "sha256:25da815b126bce7e17466fc047f162222a32a5b6086a5450ea1d44645d5ad346",
+        "sha256:48135852086bc9d5a21a3d6280bd1b47ece823e88d8aaf3bfe351a9c7945aafe",
+        "sha256:d5ce891070bdadfe26a6a1f20928d0da34d4099185ef5a7308c22aa85a5b6977",
+        "sha256:716ebcaebbb9743369f9e7199fcf7eda2fccbbf669e5bf61adb8d224b9f2ab47"
+      ],
+      "query_hash": "sha256:092fab1f95ea4b363f30d4ce1f0252f384b996d0027e43b137a33e6b2018aaa8"
+    },
+    {
+      "case_id": "short_02_hotpotqa_row2",
+      "length": "64K",
+      "dataset": "hotpotqa",
+      "question": "Prior to playing for Michigan State, Keith Nichol played football for a school located in what city?",
+      "answers": [
+        "Norman"
+      ],
+      "answer_style": "shortest_exact_span_v1",
+      "eligible_for_accuracy_aggregate": true,
+      "target_output_tokens": 0,
+      "full_input_ids_sha256": "sha256:d80372d94309cc611157ca8c508bf9539f63b41c87a1caa7b5f66f4394f9fbbd",
+      "id": "64K:short_02_hotpotqa_row2",
+      "num_chunks": 4,
+      "chunk_tokens": 16384,
+      "total_tokens": 65588,
+      "query_tokens": 52,
+      "offline_chunk_hashes": [
+        "sha256:cdb9820d7017f24c641dca551da33211264ac18ba0a0df2147ae2f0315fe9b5a",
+        "sha256:5e28e8c386f8778a7aeb1f126980514312b68041204ff22387ad545ea9c2b05d",
+        "sha256:65f84dcfadf9e580b5213bf2f4c5406091be09400ad15c6bbf5543274d50f5eb",
+        "sha256:a173cd575192e88ef6ff3a34e1ee94f2c56ba2972e10f0048c4b11d1b2e13196"
+      ],
+      "query_hash": "sha256:033701d5efdf601ea38c0e7c046c1c64a3c67a2402db4f5a4f287db699305c6a"
+    },
+    {
+      "case_id": "short_03_2wikimqa_row0",
+      "length": "64K",
+      "dataset": "2wikimqa",
+      "question": "Where was the wife of Francis I Rákóczi born?",
+      "answers": [
+        "Ozalj"
+      ],
+      "answer_style": "shortest_exact_span_v1",
+      "eligible_for_accuracy_aggregate": true,
+      "target_output_tokens": 0,
+      "full_input_ids_sha256": "sha256:f5d4def37e102e0d7b4ded483ce0bae58d7d5ad6868fa201b941549036656343",
+      "id": "64K:short_03_2wikimqa_row0",
+      "num_chunks": 4,
+      "chunk_tokens": 16384,
+      "total_tokens": 65583,
+      "query_tokens": 47,
+      "offline_chunk_hashes": [
+        "sha256:33239c1d1b4d2a48574fa69dbf4318228284a48e27b7ea1094e56347d43ca3bc",
+        "sha256:25cb14e108a4ae7ff1340ed6802f77b062c3f3a4c70c4f096199fed27eb01cf0",
+        "sha256:e1a3095977d980381e52459789081eff3c39d543ae860466248fd974b80b1977",
+        "sha256:eb6ddaef50c1172282485fc5e3a238e817e29621617013d4504cb3f23d3e80d3"
+      ],
+      "query_hash": "sha256:416e8176127479c01dd59edbcb365ef108600c818c8d3b6f97624c9e0cd885fb"
+    },
+    {
+      "case_id": "short_04_2wikimqa_row1",
+      "length": "64K",
+      "dataset": "2wikimqa",
+      "question": "Who is Sobe (Sister Of Saint Anne)'s grandchild?",
+      "answers": [
+        "John the Baptist"
+      ],
+      "answer_style": "shortest_exact_span_v1",
+      "eligible_for_accuracy_aggregate": true,
+      "target_output_tokens": 0,
+      "full_input_ids_sha256": "sha256:91bedaf67d7e77e1f498e42a58a37b6ebd65c8ff963af0d82b2443e47d363de3",
+      "id": "64K:short_04_2wikimqa_row1",
+      "num_chunks": 4,
+      "chunk_tokens": 16384,
+      "total_tokens": 65584,
+      "query_tokens": 48,
+      "offline_chunk_hashes": [
+        "sha256:424f74951d4997aa3a944089bbacc62cf05cf37bb6d9cb1a1448e0e2434855d4",
+        "sha256:17fa47c806393a7fff56a4706df3cecd94bd6b1f5fab48c9ce4d607d0d36ff4d",
+        "sha256:2b155eff19f844dece4a1b53c76a6cbf985acc4b1d8fd42916f16cd2fc570474",
+        "sha256:8763992cab68b6bc53b87e17e896740fb5511b1b3f421dfd7da46ea41cb649b0"
+      ],
+      "query_hash": "sha256:d052a98bddfffb07831028c7b49ac73c4ea258271eccb49b0fa8c689da614d22"
+    },
+    {
+      "case_id": "short_05_2wikimqa_row5",
+      "length": "64K",
+      "dataset": "2wikimqa",
+      "question": "Who is Edward Watson, Viscount Sondes's paternal grandfather?",
+      "answers": [
+        "Edward Watson"
+      ],
+      "answer_style": "shortest_exact_span_v1",
+      "eligible_for_accuracy_aggregate": true,
+      "target_output_tokens": 0,
+      "full_input_ids_sha256": "sha256:a7f239a858c4e1dccb4323905a116844479edd211603ed1d426b0b340e23011c",
+      "id": "64K:short_05_2wikimqa_row5",
+      "num_chunks": 4,
+      "chunk_tokens": 16384,
+      "total_tokens": 65582,
+      "query_tokens": 46,
+      "offline_chunk_hashes": [
+        "sha256:42b30fb9cbc873df77bf1da943dc33ac90a63ad2b0b34b35275bab9aa29d7abe",
+        "sha256:361ec12678ed16020ebce7ee9e5a0ab8c1e482a3da9dc8b55c62cac08d8af22b",
+        "sha256:ce97e56cbb429811cd02b38decf839b4356ed1ee54071c3d37c01da8f6d968be",
+        "sha256:729e141fca938db17e47acc6da1605450dc797ab177cf43210e4daa49856a753"
+      ],
+      "query_hash": "sha256:937bf42cad5954bd63d910a2dc849d25769cfb960d72b6fa744ee6b7a1cf3017"
+    },
+    {
+      "case_id": "short_06_musique_row0",
+      "length": "64K",
+      "dataset": "musique",
+      "question": "Who plays the wife of the producer of Here Comes the Boom in Grown Ups?",
+      "answers": [
+        "Maria Bello"
+      ],
+      "answer_style": "shortest_exact_span_v1",
+      "eligible_for_accuracy_aggregate": true,
+      "target_output_tokens": 0,
+      "full_input_ids_sha256": "sha256:9a195df65df604e3593c3092eca7ac522c4376c4bcf3572fafb920306c5f931c",
+      "id": "64K:short_06_musique_row0",
+      "num_chunks": 4,
+      "chunk_tokens": 16384,
+      "total_tokens": 65586,
+      "query_tokens": 50,
+      "offline_chunk_hashes": [
+        "sha256:064ae7b112e9203479b001d1ed71e04870e8cc0fb8a69334e78adbad2f0effc9",
+        "sha256:56ba92f28afe29984785db91ae0634e9ec217a40f68c7b46215d75e0560e88cc",
+        "sha256:fc45b6fc296036d7a75805fc0d48c12b54b856ab456dd4d47747e5be2e2b4090",
+        "sha256:1efe131456f4923c05f7267119e279d8d8ec165e2c9252db85a4855f350bbd07"
+      ],
+      "query_hash": "sha256:72cd07d211432f48813ea9d7f4ea6650c95113e2c0aa8f99387a2080be052b5f"
+    },
+    {
+      "case_id": "short_07_musique_row2",
+      "length": "64K",
+      "dataset": "musique",
+      "question": "In which borough was Callum McManaman born?",
+      "answers": [
+        "Knowsley",
+        "Metropolitan Borough of Knowsley"
+      ],
+      "answer_style": "shortest_exact_span_v1",
+      "eligible_for_accuracy_aggregate": true,
+      "target_output_tokens": 0,
+      "full_input_ids_sha256": "sha256:757128cfde21c04b61b542df526648553250e0cef970ec45eb9ec7d92a6fd255",
+      "id": "64K:short_07_musique_row2",
+      "num_chunks": 4,
+      "chunk_tokens": 16384,
+      "total_tokens": 65580,
+      "query_tokens": 44,
+      "offline_chunk_hashes": [
+        "sha256:12235cb4029225868353dd523b5012800227e60d1fcae8a6a99023c50e3a98ac",
+        "sha256:0a2661349db94627fb1d2d418da2ebb8305e5ac377cb940b476aee4fe12aac37",
+        "sha256:7a12e8baf0a5e93e358cc6427977190417d2605f12f850ca4c5a074097270d99",
+        "sha256:6c252cc2609aca3388b8a99c52bd4e7826cc603b1ed8823cfc49a83d734d76ef"
+      ],
+      "query_hash": "sha256:34868279b30c1aff64c7bc224e76f065f2ca4a007b47a5dbcc576de3b74198b9"
+    },
+    {
+      "case_id": "short_08_multifieldqa_en_row1",
+      "length": "64K",
+      "dataset": "multifieldqa_en",
+      "question": "Is the ISR necessary for transgene reactivation?",
+      "answers": [
+        "No, it is not necessary."
+      ],
+      "answer_style": "shortest_exact_span_v1",
+      "eligible_for_accuracy_aggregate": true,
+      "target_output_tokens": 0,
+      "full_input_ids_sha256": "sha256:830ea89f8705d6190007d06cc7d7dfb40a05206e7c8281daac7fb660fa50bb6b",
+      "id": "64K:short_08_multifieldqa_en_row1",
+      "num_chunks": 4,
+      "chunk_tokens": 16384,
+      "total_tokens": 65579,
+      "query_tokens": 43,
+      "offline_chunk_hashes": [
+        "sha256:11d18c03a436eba91e3bcf5cb9f237301242fd3c306e347fccd15a3015a75db1",
+        "sha256:0d46471b500fa273504ed9396841ee63eddf5af75f4c819e7b115a75d9757451",
+        "sha256:6548ddf56b0edca63138a6a8875a0426150b1395dec2ce792581938125b3586f",
+        "sha256:77e6b61032689962b82222f5b7c4632a127b2b0cfe25d17ea07773b28ccc5a74"
+      ],
+      "query_hash": "sha256:8e1588d8abe13138df6202e89e7ba35567de17f98c30dd3686ed70e773620a72"
+    },
+    {
+      "case_id": "short_09_multifieldqa_en_row4",
+      "length": "64K",
+      "dataset": "multifieldqa_en",
+      "question": "Why is it important for the sides of the fuselage to be sloped (tumbled home)?",
+      "answers": [
+        "The sides of the fuselage are sloped to create a conical section when the fuselage is formed."
+      ],
+      "answer_style": "shortest_exact_span_v1",
+      "eligible_for_accuracy_aggregate": true,
+      "target_output_tokens": 0,
+      "full_input_ids_sha256": "sha256:2b0b1884d83c6021769e59318110d867e5fc4e258bde6b1d6a047e6f3f80d825",
+      "id": "64K:short_09_multifieldqa_en_row4",
+      "num_chunks": 4,
+      "chunk_tokens": 16384,
+      "total_tokens": 65585,
+      "query_tokens": 49,
+      "offline_chunk_hashes": [
+        "sha256:95842f99b9eb0d194ee74764169e6486bd5b4a380522b3af19df3035fa5f5530",
+        "sha256:01f81e6abf032f09d940dc218ad73865d6193d774b5eefe3cbd6641e7420ad2c",
+        "sha256:77516f37cba8066f23928a327d4dba546b9f936b4be740e7153dafa70b0ce4ea",
+        "sha256:13ad6bcd28baf3454811042f88a2423b678b3e257e720656f7075de1a36f0ff2"
+      ],
+      "query_hash": "sha256:30febaf2097937713da10948c538678d75860dc5a284064643e4f05919b4b66d"
+    },
+    {
+      "case_id": "long_10_hotpotqa_row3",
+      "length": "64K",
+      "dataset": "hotpotqa",
+      "question": "Gary L. Bennett was a part of the space missions that have a primary destination of what celestial body?",
+      "answers": [
+        "Sun"
+      ],
+      "answer_style": "direct_answer_plus_document_evidence_v1",
+      "eligible_for_accuracy_aggregate": false,
+      "target_output_tokens": 30,
+      "full_input_ids_sha256": "sha256:fa2e393db84bca4dbe26927097c9a97716c1f8b0bff5e5753edc7e156e3d712b",
+      "id": "64K:long_10_hotpotqa_row3",
+      "num_chunks": 4,
+      "chunk_tokens": 16384,
+      "total_tokens": 65631,
+      "query_tokens": 95,
+      "offline_chunk_hashes": [
+        "sha256:8f6f1a1bf5d239b3b0f4adc7c37a1656635178b5d2304bceed933be07c257769",
+        "sha256:9d7f8d6c1187990b841fbaaae271d58e3ff514a495c4009347e437a5720ba1ea",
+        "sha256:929f1ddbac06662fcc2e79c3883b7dfc64287e6c1288cb4b7e81f367b13da8ea",
+        "sha256:a5303e8fcd0ba9efeac817cbc33fde3597e421ee121c7c3bec552fedf9fddaf7"
+      ],
+      "query_hash": "sha256:e47356c838bb45ee0f278b9760c280a545003e4d367046f1b0899af01217c039"
+    },
+    {
+      "case_id": "long_11_2wikimqa_row0",
+      "length": "64K",
+      "dataset": "2wikimqa",
+      "question": "Where was the wife of Francis I Rákóczi born?",
+      "answers": [
+        "Ozalj"
+      ],
+      "answer_style": "direct_answer_plus_document_evidence_v1",
+      "eligible_for_accuracy_aggregate": false,
+      "target_output_tokens": 30,
+      "full_input_ids_sha256": "sha256:9a701cb15d0133e056f0b14f514752b0ee11304b9c0e940cdad265940fead944",
+      "id": "64K:long_11_2wikimqa_row0",
+      "num_chunks": 4,
+      "chunk_tokens": 16384,
+      "total_tokens": 65624,
+      "query_tokens": 88,
+      "offline_chunk_hashes": [
+        "sha256:33239c1d1b4d2a48574fa69dbf4318228284a48e27b7ea1094e56347d43ca3bc",
+        "sha256:25cb14e108a4ae7ff1340ed6802f77b062c3f3a4c70c4f096199fed27eb01cf0",
+        "sha256:e1a3095977d980381e52459789081eff3c39d543ae860466248fd974b80b1977",
+        "sha256:eb6ddaef50c1172282485fc5e3a238e817e29621617013d4504cb3f23d3e80d3"
+      ],
+      "query_hash": "sha256:7a84f5848b0d644d51fa018a866171dbd7d1150b5d8b0f104189d227e360c38c"
+    },
+    {
+      "case_id": "long_12_musique_row3",
+      "length": "64K",
+      "dataset": "musique",
+      "question": "Who is the child of the Italian navigator who sailed for England and explored the eastern coast of the continent Francisco Bojado's birthplace is located?",
+      "answers": [
+        "Sebastian Cabot"
+      ],
+      "answer_style": "direct_answer_plus_document_evidence_v1",
+      "eligible_for_accuracy_aggregate": false,
+      "target_output_tokens": 30,
+      "full_input_ids_sha256": "sha256:9de215fff0d7f5fbbb5e75e93d080b80c63786744861f386c5ca87bfb31664a1",
+      "id": "64K:long_12_musique_row3",
+      "num_chunks": 4,
+      "chunk_tokens": 16384,
+      "total_tokens": 65640,
+      "query_tokens": 104,
+      "offline_chunk_hashes": [
+        "sha256:910f4b2ebb8f4df0147ea51fd522c29b7b2a350084655f1ba5b3778e652ac759",
+        "sha256:05c40d4fffc1e7e7efa3c70686a1606219912c2e2d8dd5909918f4b917e03e81",
+        "sha256:4520df4a7ac3dc4106f81faa434ae78afb686e7da5b6b9affe354d6c618a22ea",
+        "sha256:f6f0fbb4afbf605a10caa42868456cf3de5e8487a0b2c883f567b701e813ccec"
+      ],
+      "query_hash": "sha256:c09077506b7a907187d4ac1a2a2b93cddf0f34ee14c3c124d004b3b1299eba1e"
+    },
+    {
+      "case_id": "long_13_musique_row0",
+      "length": "64K",
+      "dataset": "musique",
+      "question": "Who plays the wife of the producer of Here Comes the Boom in Grown Ups?",
+      "answers": [
+        "Maria Bello"
+      ],
+      "answer_style": "direct_answer_plus_document_evidence_v1",
+      "eligible_for_accuracy_aggregate": false,
+      "target_output_tokens": 30,
+      "full_input_ids_sha256": "sha256:317acab0e492d56bf438639c716633aa03f1eaee5e929bf93425f601a1871175",
+      "id": "64K:long_13_musique_row0",
+      "num_chunks": 4,
+      "chunk_tokens": 16384,
+      "total_tokens": 65627,
+      "query_tokens": 91,
+      "offline_chunk_hashes": [
+        "sha256:064ae7b112e9203479b001d1ed71e04870e8cc0fb8a69334e78adbad2f0effc9",
+        "sha256:56ba92f28afe29984785db91ae0634e9ec217a40f68c7b46215d75e0560e88cc",
+        "sha256:fc45b6fc296036d7a75805fc0d48c12b54b856ab456dd4d47747e5be2e2b4090",
+        "sha256:1efe131456f4923c05f7267119e279d8d8ec165e2c9252db85a4855f350bbd07"
+      ],
+      "query_hash": "sha256:ff0988c36f76f5d9ee6cc01a062158d8a92d99462106deae6460bb35a754d36a"
+    },
+    {
+      "case_id": "long_14_multifieldqa_en_row5",
+      "length": "64K",
+      "dataset": "multifieldqa_en",
+      "question": "What is the effect of the proximity of superconductivity on the Kondo effect?",
+      "answers": [
+        "It tends to suppress the Kondo effect."
+      ],
+      "answer_style": "direct_answer_plus_document_evidence_v1",
+      "eligible_for_accuracy_aggregate": false,
+      "target_output_tokens": 30,
+      "full_input_ids_sha256": "sha256:8295dbc213fd0b050c182d0f014a3ace761d69c0eced95046b108a0cdd9f5587",
+      "id": "64K:long_14_multifieldqa_en_row5",
+      "num_chunks": 4,
+      "chunk_tokens": 16384,
+      "total_tokens": 65625,
+      "query_tokens": 89,
+      "offline_chunk_hashes": [
+        "sha256:6cec580f155b70e8c60ed679043a1f2bd27d55835866d09006a88ebd200bfe24",
+        "sha256:1a9f883634da807474484588cb9fbed163211050b6e56ccd1b488f84f878fe7a",
+        "sha256:570d3ac40997a1e44ebb96151b68e4bb9a95f9bef806757917b44750668e3885",
+        "sha256:fb5dfe8f7e0504ade43d5997a7edd17e8b79ff5fdca7b01fa5b7ae7a88e30b10"
+      ],
+      "query_hash": "sha256:b3842a42bd4eb8a566480f573c2513c4696a04e7db2dd91d94ab4481d483171f"
+    },
+    {
+      "case_id": "short_00_hotpotqa_row0",
+      "length": "128K",
+      "dataset": "hotpotqa",
+      "question": "Which case was brought to court first Miller v. California or Gates v. Collier ?",
+      "answers": [
+        "Miller v. California"
+      ],
+      "answer_style": "shortest_exact_span_v1",
+      "eligible_for_accuracy_aggregate": true,
+      "target_output_tokens": 0,
+      "full_input_ids_sha256": "sha256:c64ed8a4580a699b61972e68caab6dcb682fe7c0eaffd635ed27a4b47d714427",
+      "id": "128K:short_00_hotpotqa_row0",
+      "num_chunks": 4,
+      "chunk_tokens": 32768,
+      "total_tokens": 131121,
+      "query_tokens": 49,
+      "offline_chunk_hashes": [
+        "sha256:39aba43af7b42ec17d002e0a6728b4b5b2a63c960c1a75793e3fdb462f05bcdb",
+        "sha256:ece881a8d92bda4e9ff29157f681a9e4e09e060f1d4152163852e81ff2e48af9",
+        "sha256:fad0b452cf2d425f397608da01cd9e77bbcbeb95c61b7a43e78c9359357ae27a",
+        "sha256:8523016dc1437d4026eddee6478bf780db0bea74c233ac8f5241dad502e1135c"
+      ],
+      "query_hash": "sha256:14a125da8ca52f55a8721f92c24b78ec463780d44e2f9137c240c1c84dd5c6b2"
+    },
+    {
+      "case_id": "short_01_hotpotqa_row2",
+      "length": "128K",
+      "dataset": "hotpotqa",
+      "question": "Prior to playing for Michigan State, Keith Nichol played football for a school located in what city?",
+      "answers": [
+        "Norman"
+      ],
+      "answer_style": "shortest_exact_span_v1",
+      "eligible_for_accuracy_aggregate": true,
+      "target_output_tokens": 0,
+      "full_input_ids_sha256": "sha256:9dcb41786bd75924f415c2c9708126caa3e88238977eb5b27ced4801dfd28e13",
+      "id": "128K:short_01_hotpotqa_row2",
+      "num_chunks": 4,
+      "chunk_tokens": 32768,
+      "total_tokens": 131124,
+      "query_tokens": 52,
+      "offline_chunk_hashes": [
+        "sha256:b356498900e8268eb25594725cfe1c561c9d1cc6a2fb8c32e25b5ecace95ad48",
+        "sha256:71ae5a561e7d5263de5b85dd0824b40afdf7637c0d540111c7269f36507632fe",
+        "sha256:29e6f854add213f25923d55ae42bc33fb3d3ec7fb569ce3687260e871526f5ce",
+        "sha256:acb9da154a2269e4ebf2ad503f65442d66af13bc883613e3595b3be6a02b816e"
+      ],
+      "query_hash": "sha256:3a8f77a0e1f5bc818d071a10a29ecd82b865c5a18e978d049421d5215db5fc04"
+    },
+    {
+      "case_id": "short_02_hotpotqa_row3",
+      "length": "128K",
+      "dataset": "hotpotqa",
+      "question": "Gary L. Bennett was a part of the space missions that have a primary destination of what celestial body?",
+      "answers": [
+        "Sun"
+      ],
+      "answer_style": "shortest_exact_span_v1",
+      "eligible_for_accuracy_aggregate": true,
+      "target_output_tokens": 0,
+      "full_input_ids_sha256": "sha256:43d44af7a74b2f0fd4fb1e7aa9983a26ada7af1da31f2509c2935b95bc99efac",
+      "id": "128K:short_02_hotpotqa_row3",
+      "num_chunks": 4,
+      "chunk_tokens": 32768,
+      "total_tokens": 131125,
+      "query_tokens": 53,
+      "offline_chunk_hashes": [
+        "sha256:b61ca3af72d0f01a9a495972b16d4f459e213ee36f96a1598a6294b552146ddd",
+        "sha256:dcd911c39fd452d90f57007acead8c1a43d8824bae7428784f6db1acb680f4b2",
+        "sha256:2269b997b08593edd7170f3b0a92eed7bf3ad305da85c8d1520f2d3ce3a0e77f",
+        "sha256:be4fb760db9d9f69783ba08230985a94547ed920df3f15bb61db1cfba690ad13"
+      ],
+      "query_hash": "sha256:ac2c41ad86b6f98673bfc84d10f3739f6afb720b93713e9d2dac0ac472d3d6e4"
+    },
+    {
+      "case_id": "short_03_2wikimqa_row0",
+      "length": "128K",
+      "dataset": "2wikimqa",
+      "question": "Where was the wife of Francis I Rákóczi born?",
+      "answers": [
+        "Ozalj"
+      ],
+      "answer_style": "shortest_exact_span_v1",
+      "eligible_for_accuracy_aggregate": true,
+      "target_output_tokens": 0,
+      "full_input_ids_sha256": "sha256:10ea6a7b26bcf91b344ed6386dceb28517855f3f85b4f676fafd776ed05f1412",
+      "id": "128K:short_03_2wikimqa_row0",
+      "num_chunks": 4,
+      "chunk_tokens": 32768,
+      "total_tokens": 131119,
+      "query_tokens": 47,
+      "offline_chunk_hashes": [
+        "sha256:2b16ec42df8c42d48eadc57758ac446e06463e74ed66eb32e35c78af03eb8b10",
+        "sha256:8d197558ca85a7b546ffd41e300156f84a716e8da479ead4f787ffbeb9c0ecd1",
+        "sha256:00cc2fe8a6e13be2fc8864fb397c03aef9d20f5628fe237c55a859b71bd78dc9",
+        "sha256:0ff4c239701a7dcbeff9a0e464b83ea89ae36891c81aa33c459289108f5a166e"
+      ],
+      "query_hash": "sha256:595607088e461730894cbcf5cf59aff3d4572f0e7c0313afe59002d6e29f7424"
+    },
+    {
+      "case_id": "short_04_2wikimqa_row5",
+      "length": "128K",
+      "dataset": "2wikimqa",
+      "question": "Who is Edward Watson, Viscount Sondes's paternal grandfather?",
+      "answers": [
+        "Edward Watson"
+      ],
+      "answer_style": "shortest_exact_span_v1",
+      "eligible_for_accuracy_aggregate": true,
+      "target_output_tokens": 0,
+      "full_input_ids_sha256": "sha256:cc5c97c99cb262c5c27251ab4a11c7f6b1cdf324cbda09db6e4bcfbf72703730",
+      "id": "128K:short_04_2wikimqa_row5",
+      "num_chunks": 4,
+      "chunk_tokens": 32768,
+      "total_tokens": 131119,
+      "query_tokens": 47,
+      "offline_chunk_hashes": [
+        "sha256:a35e9176a0edff5092e4a51d6656e10a11a8463c7ed47827db843a26add10043",
+        "sha256:5c8bbd6b3afe1b468ca6ef15480042328fda4ed840de5131e6bdd51e69b34992",
+        "sha256:7583ae6aec4a4d447b4ee72fb7d5ede28d9e8219bd72eddea96070764f9183ea",
+        "sha256:da18a0ef9b69687c3752a8bfa97d693a908ba343fc9ca98fffbc111ad7e01495"
+      ],
+      "query_hash": "sha256:760ea70d3ca8da66cf2ef67fc713ac073893a2fed83af687350c5484ec88d78f"
+    },
+    {
+      "case_id": "short_05_2wikimqa_row8",
+      "length": "128K",
+      "dataset": "2wikimqa",
+      "question": "Where did Helena Carroll's father study?",
+      "answers": [
+        "St Patrick's College"
+      ],
+      "answer_style": "shortest_exact_span_v1",
+      "eligible_for_accuracy_aggregate": true,
+      "target_output_tokens": 0,
+      "full_input_ids_sha256": "sha256:5a7fe1145ac162fa73e69dbb84807a43cc0c4a1d0684880bcad0ed50cb3cb666",
+      "id": "128K:short_05_2wikimqa_row8",
+      "num_chunks": 4,
+      "chunk_tokens": 32768,
+      "total_tokens": 131113,
+      "query_tokens": 41,
+      "offline_chunk_hashes": [
+        "sha256:11f5d959599e54029a09c5e0e838daa33d2887d8b06d9bbb630c4551eb5523ee",
+        "sha256:73101b58fc9aa0ea3928de40b09d8d01d263076583e4c1a355d6eae887cace47",
+        "sha256:a118c7f3f1dd1c39c0ce810be30849253e5ea76474f8f6fab5687c53340d553e",
+        "sha256:9d316b13839fd2e3b330e94d0ac3eaaa163a5f34b46ad8f842c582f648c0694d"
+      ],
+      "query_hash": "sha256:2fff25fbae40aa3b2efe0ea6e55ab7828fb0ec1b7c19dcc8774b7958a8c159e1"
+    },
+    {
+      "case_id": "short_06_musique_row0",
+      "length": "128K",
+      "dataset": "musique",
+      "question": "Who plays the wife of the producer of Here Comes the Boom in Grown Ups?",
+      "answers": [
+        "Maria Bello"
+      ],
+      "answer_style": "shortest_exact_span_v1",
+      "eligible_for_accuracy_aggregate": true,
+      "target_output_tokens": 0,
+      "full_input_ids_sha256": "sha256:cca014749f6592217e6ea2034a492310327a636979aed142a848fb1e75c4e7f4",
+      "id": "128K:short_06_musique_row0",
+      "num_chunks": 4,
+      "chunk_tokens": 32768,
+      "total_tokens": 131122,
+      "query_tokens": 50,
+      "offline_chunk_hashes": [
+        "sha256:1de645c29db89a05ed65bb13cb2b9596c09802e7a424538d2e26bbd65074ae28",
+        "sha256:28997ad3d101f54333a8044a8d86741cf77f62fa4fea9548401f9229ad6f59e3",
+        "sha256:8bab78f276ee78fc525d77c06551cf8029c06f16c23a71cf5bb8f762a44de718",
+        "sha256:aa56e9c8690923ee9ed4d1743693cee4e6308a64e2807dc44461163c0187ac4a"
+      ],
+      "query_hash": "sha256:8adb14d26ddce009843dbd69abf675be3027a8ad64355540cd6154189f04898f"
+    },
+    {
+      "case_id": "short_07_musique_row2",
+      "length": "128K",
+      "dataset": "musique",
+      "question": "In which borough was Callum McManaman born?",
+      "answers": [
+        "Knowsley",
+        "Metropolitan Borough of Knowsley"
+      ],
+      "answer_style": "shortest_exact_span_v1",
+      "eligible_for_accuracy_aggregate": true,
+      "target_output_tokens": 0,
+      "full_input_ids_sha256": "sha256:37e405beb4ae5dbe594ee4b5088bc0f84042c93072128e4bd27f71d1dd9786f7",
+      "id": "128K:short_07_musique_row2",
+      "num_chunks": 4,
+      "chunk_tokens": 32768,
+      "total_tokens": 131115,
+      "query_tokens": 43,
+      "offline_chunk_hashes": [
+        "sha256:2404ad2771b7f1c466c46d2609f0d7a6928a277c1de9016e037ab2c48128691a",
+        "sha256:39e1c364f27b9a614aefea00c307e57f26c5cd31667c22d6e257dbd440281f48",
+        "sha256:29db6073ca5a7e60c6bdf988600693a65414c57632373cb1111db7551167938d",
+        "sha256:39a0a1bf693193d9788e99c1a0415f71f417dd9bfc2a7e9b9f6170bfd669a190"
+      ],
+      "query_hash": "sha256:dc86ad529c9b8c3a576a4007cbbb29f39e2d2c0d5d38b3beb6c5ebfe4276debf"
+    },
+    {
+      "case_id": "short_08_multifieldqa_en_row1",
+      "length": "128K",
+      "dataset": "multifieldqa_en",
+      "question": "Is the ISR necessary for transgene reactivation?",
+      "answers": [
+        "No, it is not necessary."
+      ],
+      "answer_style": "shortest_exact_span_v1",
+      "eligible_for_accuracy_aggregate": true,
+      "target_output_tokens": 0,
+      "full_input_ids_sha256": "sha256:c2ca4eec720ec881e7ea467168c0d6eaae5e24d7e2eea9edae1cd23da7f9575e",
+      "id": "128K:short_08_multifieldqa_en_row1",
+      "num_chunks": 4,
+      "chunk_tokens": 32768,
+      "total_tokens": 131113,
+      "query_tokens": 41,
+      "offline_chunk_hashes": [
+        "sha256:fe628d797cb586dc3bf95d87ad515c7326110a967b3b340db0d8dcd24d5e2bbc",
+        "sha256:1e0f5ceb300b7a066295be021b51b8f6447c80e1eef3853109d809b49b028138",
+        "sha256:c12ae663c825198331214b35848bd41368a8b1436a028b93e74d2443e845e8e6",
+        "sha256:9638513560eeadf957ef89a624078d8fcd9af13a97d25a4c3a6652630ec52865"
+      ],
+      "query_hash": "sha256:3dfdf0c6ff3426f4d0f23bc56d92e40709b150de4827b2de578f97a4dcf6c17c"
+    },
+    {
+      "case_id": "short_09_multifieldqa_en_row4",
+      "length": "128K",
+      "dataset": "multifieldqa_en",
+      "question": "Why is it important for the sides of the fuselage to be sloped (tumbled home)?",
+      "answers": [
+        "The sides of the fuselage are sloped to create a conical section when the fuselage is formed."
+      ],
+      "answer_style": "shortest_exact_span_v1",
+      "eligible_for_accuracy_aggregate": true,
+      "target_output_tokens": 0,
+      "full_input_ids_sha256": "sha256:a3082f51cc4827aeeb25d1d7f11e08beab7d3b0f94b92132d187e2f143aa5b5b",
+      "id": "128K:short_09_multifieldqa_en_row4",
+      "num_chunks": 4,
+      "chunk_tokens": 32768,
+      "total_tokens": 131121,
+      "query_tokens": 49,
+      "offline_chunk_hashes": [
+        "sha256:c9f8f8736ca110c7ec302b3b7fe56fdb73ed40254b953c32bec894111e1b5304",
+        "sha256:0e4892f236145ddce81927639387c30a4ee50b1aeeb80bcc1ce9e96e8980591f",
+        "sha256:feb5db1cd5bd9236ad7efccc750ec017a16e0e755603affd36107b84cbd27f69",
+        "sha256:de160792c88d3e568cf0ff96c5516ff2e4ac0719d42107740aa3644c975665c6"
+      ],
+      "query_hash": "sha256:dc0bfaae5264c653466ce51330c53cc9d3f0a86104a6564d2af39ffb604cab25"
+    },
+    {
+      "case_id": "long_10_hotpotqa_row4",
+      "length": "128K",
+      "dataset": "hotpotqa",
+      "question": "Was Atom Egoyans biggest commercial success on stage or on film?",
+      "answers": [
+        "erotic thriller film"
+      ],
+      "answer_style": "direct_answer_plus_document_evidence_v1",
+      "eligible_for_accuracy_aggregate": false,
+      "target_output_tokens": 30,
+      "full_input_ids_sha256": "sha256:f03e02372f6f6986886399574b405ea2dbc0164abd27aa00ea1ef577a82e146a",
+      "id": "128K:long_10_hotpotqa_row4",
+      "num_chunks": 4,
+      "chunk_tokens": 32768,
+      "total_tokens": 131160,
+      "query_tokens": 88,
+      "offline_chunk_hashes": [
+        "sha256:6534a63060774564127636d2433abc0c49b17e7f7e331c2543594684282e0bdc",
+        "sha256:c984425f0be74e0f30c422055584c8ad32085de63d9e02c9a80b22bb59fe14be",
+        "sha256:e4c342e5a472a80f8c308bdc3a4797a2b966f014db72dc73c1f54cbab7a910bc",
+        "sha256:0f8a4770fa861910f2bbf4adb0f0c62eddd7e42cd2d0e2467576e80e8d324ee4"
+      ],
+      "query_hash": "sha256:9c02a8aff8cce8435906bc2ca8b175a1c2551649d109771228a86f871e9c5857"
+    },
+    {
+      "case_id": "long_11_2wikimqa_row12",
+      "length": "128K",
+      "dataset": "2wikimqa",
+      "question": "Who is Renaud Ii, Count Of Soissons's uncle?",
+      "answers": [
+        "Guy II, Count of Soissons"
+      ],
+      "answer_style": "direct_answer_plus_document_evidence_v1",
+      "eligible_for_accuracy_aggregate": false,
+      "target_output_tokens": 30,
+      "full_input_ids_sha256": "sha256:7bb659db303d5319c52b47f5b6d381dfb21aaeeff2a4fa099b6b9a7a37ffd322",
+      "id": "128K:long_11_2wikimqa_row12",
+      "num_chunks": 4,
+      "chunk_tokens": 32768,
+      "total_tokens": 131160,
+      "query_tokens": 88,
+      "offline_chunk_hashes": [
+        "sha256:c3da8961ca10585a5c8554bde63b4196af1e6a56b943f65a8d8ab8ccbf105a5c",
+        "sha256:1bdff320e1992e8d2c563358700b3c2f63523e3901f7396a2117adde5e63d5b2",
+        "sha256:62f724e0b9f173a169c291188bc7f304823487c688b6177981446080be20324e",
+        "sha256:a9d62344e6c688d9efa4bb10ffacb99d2a10417613f67a99deab2c505f32a446"
+      ],
+      "query_hash": "sha256:17bac05c6310a3b66a9f078fadb2388bce7cda327bd9a3302bca20264a3ba721"
+    },
+    {
+      "case_id": "long_12_musique_row3",
+      "length": "128K",
+      "dataset": "musique",
+      "question": "Who is the child of the Italian navigator who sailed for England and explored the eastern coast of the continent Francisco Bojado's birthplace is located?",
+      "answers": [
+        "Sebastian Cabot"
+      ],
+      "answer_style": "direct_answer_plus_document_evidence_v1",
+      "eligible_for_accuracy_aggregate": false,
+      "target_output_tokens": 30,
+      "full_input_ids_sha256": "sha256:89c9c6661896ce55833871a7a0d60f894105d589bbe6111c5e4df00637c29021",
+      "id": "128K:long_12_musique_row3",
+      "num_chunks": 4,
+      "chunk_tokens": 32768,
+      "total_tokens": 131176,
+      "query_tokens": 104,
+      "offline_chunk_hashes": [
+        "sha256:df2646d33b3a7180cdcff801f5dfe09a6e84dea1720943ef4f5f09535a69f384",
+        "sha256:eb8c969f792b47cdd18b9bd183ba9b761f02b6d7cdbbff9ec2d15149b6412342",
+        "sha256:8c95c04dfb43d8aabd0cb2163e4eff4606f132f35c60fc7ded1f9b09bc51a257",
+        "sha256:4f2bece614c4a4936f38e8d5adaea2b1e16d0d6f07e937056601f9c5a313d066"
+      ],
+      "query_hash": "sha256:953b2d4d175f466785ad4e691609842ff320bf9b071e5aaa4e1782bf8ddbcc07"
+    },
+    {
+      "case_id": "long_13_multifieldqa_en_row5",
+      "length": "128K",
+      "dataset": "multifieldqa_en",
+      "question": "What is the effect of the proximity of superconductivity on the Kondo effect?",
+      "answers": [
+        "It tends to suppress the Kondo effect."
+      ],
+      "answer_style": "direct_answer_plus_document_evidence_v1",
+      "eligible_for_accuracy_aggregate": false,
+      "target_output_tokens": 30,
+      "full_input_ids_sha256": "sha256:85586c4131459a59531a19ff43b425b73bd0f117d492a523bc1cf415851aca43",
+      "id": "128K:long_13_multifieldqa_en_row5",
+      "num_chunks": 4,
+      "chunk_tokens": 32768,
+      "total_tokens": 131159,
+      "query_tokens": 87,
+      "offline_chunk_hashes": [
+        "sha256:9ec9dd7995677c41817154b66e82833b380fff1115bb44c27dc79aa82317a00e",
+        "sha256:c12ae663c825198331214b35848bd41368a8b1436a028b93e74d2443e845e8e6",
+        "sha256:9638513560eeadf957ef89a624078d8fcd9af13a97d25a4c3a6652630ec52865",
+        "sha256:610cd70a94508b0dfd0a9f28810ef1cd996acfee7e70d6ee1d14834e4fb4785c"
+      ],
+      "query_hash": "sha256:e69f32c8a4a6a0afb703a50fe93b796f611395aef2f5d7be484b1e8484efa57a"
+    },
+    {
+      "case_id": "long_14_2wikimqa_row0",
+      "length": "128K",
+      "dataset": "2wikimqa",
+      "question": "Where was the wife of Francis I Rákóczi born?",
+      "answers": [
+        "Ozalj"
+      ],
+      "answer_style": "direct_answer_plus_document_evidence_v1",
+      "eligible_for_accuracy_aggregate": false,
+      "target_output_tokens": 30,
+      "full_input_ids_sha256": "sha256:846b723ffb4f830b9c20e0d29205d06580d85829c01f7e092fab4f5b84dee344",
+      "id": "128K:long_14_2wikimqa_row0",
+      "num_chunks": 4,
+      "chunk_tokens": 32768,
+      "total_tokens": 131160,
+      "query_tokens": 88,
+      "offline_chunk_hashes": [
+        "sha256:2b16ec42df8c42d48eadc57758ac446e06463e74ed66eb32e35c78af03eb8b10",
+        "sha256:8d197558ca85a7b546ffd41e300156f84a716e8da479ead4f787ffbeb9c0ecd1",
+        "sha256:00cc2fe8a6e13be2fc8864fb397c03aef9d20f5628fe237c55a859b71bd78dc9",
+        "sha256:0ff4c239701a7dcbeff9a0e464b83ea89ae36891c81aa33c459289108f5a166e"
+      ],
+      "query_hash": "sha256:a399d13dda5febaf1356c9b82ca4441798b1b15700b8d966f786d48788138575"
+    },
+    {
+      "case_id": "short_hotpotqa_10-row0",
+      "length": "256K",
+      "dataset": "hotpotqa",
+      "question": "Which case was brought to court first Miller v. California or Gates v. Collier ?",
+      "answers": [
+        "Miller v. California"
+      ],
+      "answer_style": "shortest_exact_span_v1",
+      "eligible_for_accuracy_aggregate": true,
+      "target_output_tokens": 0,
+      "full_input_ids_sha256": "sha256:3c654d614ebdaadaa3862860f3bd331c881ba6fa46524137982a299ecaf8af3f",
+      "id": "256K:short_hotpotqa_10-row0",
+      "num_chunks": 8,
+      "chunk_tokens": 32768,
+      "total_tokens": 262197,
+      "query_tokens": 53,
+      "offline_chunk_hashes": [
+        "sha256:39aba43af7b42ec17d002e0a6728b4b5b2a63c960c1a75793e3fdb462f05bcdb",
+        "sha256:ece881a8d92bda4e9ff29157f681a9e4e09e060f1d4152163852e81ff2e48af9",
+        "sha256:fad0b452cf2d425f397608da01cd9e77bbcbeb95c61b7a43e78c9359357ae27a",
+        "sha256:8523016dc1437d4026eddee6478bf780db0bea74c233ac8f5241dad502e1135c",
+        "sha256:06323b16d1f414977c9c3f467138227a9b9b2bb36366aaadfcd9f9db6e31c8f9",
+        "sha256:e6f3adeb541f924ea44d2fb8f8c5b30d23e38ba21eca9c8e1f8cd3ef3758a3b5",
+        "sha256:ef4530f73aaeaff3b4f174fa4d683683eb8a597f545a7d8175d99c54ef0938cf",
+        "sha256:721fde42f68ae08246834d2cd77a6a45b4fb432f96985333df1a0db718038f0f"
+      ],
+      "query_hash": "sha256:bc7db0ededdbc6375a5deabe4be7abd64626de5513d3346f12949fd13a697070"
+    },
+    {
+      "case_id": "short_hotpotqa_10-row3",
+      "length": "256K",
+      "dataset": "hotpotqa",
+      "question": "Gary L. Bennett was a part of the space missions that have a primary destination of what celestial body?",
+      "answers": [
+        "Sun"
+      ],
+      "answer_style": "shortest_exact_span_v1",
+      "eligible_for_accuracy_aggregate": true,
+      "target_output_tokens": 0,
+      "full_input_ids_sha256": "sha256:f38dbdb9996694b1391155bd05a93a485d5dbedd1ad063188461c4a830c11d4f",
+      "id": "256K:short_hotpotqa_10-row3",
+      "num_chunks": 8,
+      "chunk_tokens": 32768,
+      "total_tokens": 262201,
+      "query_tokens": 57,
+      "offline_chunk_hashes": [
+        "sha256:39aba43af7b42ec17d002e0a6728b4b5b2a63c960c1a75793e3fdb462f05bcdb",
+        "sha256:ece881a8d92bda4e9ff29157f681a9e4e09e060f1d4152163852e81ff2e48af9",
+        "sha256:fad0b452cf2d425f397608da01cd9e77bbcbeb95c61b7a43e78c9359357ae27a",
+        "sha256:8523016dc1437d4026eddee6478bf780db0bea74c233ac8f5241dad502e1135c",
+        "sha256:06323b16d1f414977c9c3f467138227a9b9b2bb36366aaadfcd9f9db6e31c8f9",
+        "sha256:e6f3adeb541f924ea44d2fb8f8c5b30d23e38ba21eca9c8e1f8cd3ef3758a3b5",
+        "sha256:ef4530f73aaeaff3b4f174fa4d683683eb8a597f545a7d8175d99c54ef0938cf",
+        "sha256:721fde42f68ae08246834d2cd77a6a45b4fb432f96985333df1a0db718038f0f"
+      ],
+      "query_hash": "sha256:59b9aeac584d4689318e48bb9f17e2b313c2f24b044c09dc8b02306833031f58"
+    },
+    {
+      "case_id": "short_hotpotqa_10-row6",
+      "length": "256K",
+      "dataset": "hotpotqa",
+      "question": "Thirukkalacherry is a village in which Indian town?",
+      "answers": [
+        "Tharangambadi"
+      ],
+      "answer_style": "shortest_exact_span_v1",
+      "eligible_for_accuracy_aggregate": true,
+      "target_output_tokens": 0,
+      "full_input_ids_sha256": "sha256:19b459cb6402f5d9ffdd9851ce3968be19772523a3d3bb25a3ca2906f60d6c40",
+      "id": "256K:short_hotpotqa_10-row6",
+      "num_chunks": 8,
+      "chunk_tokens": 32768,
+      "total_tokens": 262193,
+      "query_tokens": 49,
+      "offline_chunk_hashes": [
+        "sha256:39aba43af7b42ec17d002e0a6728b4b5b2a63c960c1a75793e3fdb462f05bcdb",
+        "sha256:ece881a8d92bda4e9ff29157f681a9e4e09e060f1d4152163852e81ff2e48af9",
+        "sha256:fad0b452cf2d425f397608da01cd9e77bbcbeb95c61b7a43e78c9359357ae27a",
+        "sha256:8523016dc1437d4026eddee6478bf780db0bea74c233ac8f5241dad502e1135c",
+        "sha256:06323b16d1f414977c9c3f467138227a9b9b2bb36366aaadfcd9f9db6e31c8f9",
+        "sha256:e6f3adeb541f924ea44d2fb8f8c5b30d23e38ba21eca9c8e1f8cd3ef3758a3b5",
+        "sha256:ef4530f73aaeaff3b4f174fa4d683683eb8a597f545a7d8175d99c54ef0938cf",
+        "sha256:721fde42f68ae08246834d2cd77a6a45b4fb432f96985333df1a0db718038f0f"
+      ],
+      "query_hash": "sha256:a05c7d66e52f207ac3dd1da6f20eeb9afaaa4a56e3e72ec7a539949c03cde34d"
+    },
+    {
+      "case_id": "short_hotpotqa_10-row10",
+      "length": "256K",
+      "dataset": "hotpotqa",
+      "question": "When was the American singer, songwriter, record producer, dancer and actress born who's second studio album is Chapter II?",
+      "answers": [
+        "October 13, 1980"
+      ],
+      "answer_style": "shortest_exact_span_v1",
+      "eligible_for_accuracy_aggregate": true,
+      "target_output_tokens": 0,
+      "full_input_ids_sha256": "sha256:253b463bf6384c4c6d43b2986dbcc4a9e6ab7f91cade5b413233d62bd4fa6360",
+      "id": "256K:short_hotpotqa_10-row10",
+      "num_chunks": 8,
+      "chunk_tokens": 32768,
+      "total_tokens": 262204,
+      "query_tokens": 60,
+      "offline_chunk_hashes": [
+        "sha256:39aba43af7b42ec17d002e0a6728b4b5b2a63c960c1a75793e3fdb462f05bcdb",
+        "sha256:ece881a8d92bda4e9ff29157f681a9e4e09e060f1d4152163852e81ff2e48af9",
+        "sha256:fad0b452cf2d425f397608da01cd9e77bbcbeb95c61b7a43e78c9359357ae27a",
+        "sha256:8523016dc1437d4026eddee6478bf780db0bea74c233ac8f5241dad502e1135c",
+        "sha256:06323b16d1f414977c9c3f467138227a9b9b2bb36366aaadfcd9f9db6e31c8f9",
+        "sha256:e6f3adeb541f924ea44d2fb8f8c5b30d23e38ba21eca9c8e1f8cd3ef3758a3b5",
+        "sha256:ef4530f73aaeaff3b4f174fa4d683683eb8a597f545a7d8175d99c54ef0938cf",
+        "sha256:721fde42f68ae08246834d2cd77a6a45b4fb432f96985333df1a0db718038f0f"
+      ],
+      "query_hash": "sha256:0da52d0cc7480aeb49623d45267ba2056cff87ab9957ab02d2bb782e987199f6"
+    },
+    {
+      "case_id": "short_hotpotqa_10-row13",
+      "length": "256K",
+      "dataset": "hotpotqa",
+      "question": "Finally includes the song that peaked at what on the US Hot 100",
+      "answers": [
+        "number five"
+      ],
+      "answer_style": "shortest_exact_span_v1",
+      "eligible_for_accuracy_aggregate": true,
+      "target_output_tokens": 0,
+      "full_input_ids_sha256": "sha256:284d304d5d045f4222572c256f68560cefb30c2214678b54eec79bead10a2903",
+      "id": "256K:short_hotpotqa_10-row13",
+      "num_chunks": 8,
+      "chunk_tokens": 32768,
+      "total_tokens": 262195,
+      "query_tokens": 51,
+      "offline_chunk_hashes": [
+        "sha256:39aba43af7b42ec17d002e0a6728b4b5b2a63c960c1a75793e3fdb462f05bcdb",
+        "sha256:ece881a8d92bda4e9ff29157f681a9e4e09e060f1d4152163852e81ff2e48af9",
+        "sha256:fad0b452cf2d425f397608da01cd9e77bbcbeb95c61b7a43e78c9359357ae27a",
+        "sha256:8523016dc1437d4026eddee6478bf780db0bea74c233ac8f5241dad502e1135c",
+        "sha256:06323b16d1f414977c9c3f467138227a9b9b2bb36366aaadfcd9f9db6e31c8f9",
+        "sha256:e6f3adeb541f924ea44d2fb8f8c5b30d23e38ba21eca9c8e1f8cd3ef3758a3b5",
+        "sha256:ef4530f73aaeaff3b4f174fa4d683683eb8a597f545a7d8175d99c54ef0938cf",
+        "sha256:721fde42f68ae08246834d2cd77a6a45b4fb432f96985333df1a0db718038f0f"
+      ],
+      "query_hash": "sha256:ee71b757af3b9f2a37468700d7a8e4194fb3ee6d3987b617dcef71c8f9f0b027"
+    },
+    {
+      "case_id": "short_hotpotqa_10-row16",
+      "length": "256K",
+      "dataset": "hotpotqa",
+      "question": "Which retired Argentine footballer who played as a forward was a main player for Valencia CF?",
+      "answers": [
+        "Claudio Javier López"
+      ],
+      "answer_style": "shortest_exact_span_v1",
+      "eligible_for_accuracy_aggregate": true,
+      "target_output_tokens": 0,
+      "full_input_ids_sha256": "sha256:26c216e6d2b4291455a64ca2a7579c15125a67bb9429e6548ce4bc74239e0323",
+      "id": "256K:short_hotpotqa_10-row16",
+      "num_chunks": 8,
+      "chunk_tokens": 32768,
+      "total_tokens": 262197,
+      "query_tokens": 53,
+      "offline_chunk_hashes": [
+        "sha256:39aba43af7b42ec17d002e0a6728b4b5b2a63c960c1a75793e3fdb462f05bcdb",
+        "sha256:ece881a8d92bda4e9ff29157f681a9e4e09e060f1d4152163852e81ff2e48af9",
+        "sha256:fad0b452cf2d425f397608da01cd9e77bbcbeb95c61b7a43e78c9359357ae27a",
+        "sha256:8523016dc1437d4026eddee6478bf780db0bea74c233ac8f5241dad502e1135c",
+        "sha256:06323b16d1f414977c9c3f467138227a9b9b2bb36366aaadfcd9f9db6e31c8f9",
+        "sha256:e6f3adeb541f924ea44d2fb8f8c5b30d23e38ba21eca9c8e1f8cd3ef3758a3b5",
+        "sha256:ef4530f73aaeaff3b4f174fa4d683683eb8a597f545a7d8175d99c54ef0938cf",
+        "sha256:721fde42f68ae08246834d2cd77a6a45b4fb432f96985333df1a0db718038f0f"
+      ],
+      "query_hash": "sha256:e3e71dc700f0ba719cd302a49704927bf27082242011914b1c7f29af7e9357cc"
+    },
+    {
+      "case_id": "short_hotpotqa_10-row19",
+      "length": "256K",
+      "dataset": "hotpotqa",
+      "question": "Name a member of a British-American supergroup who recored a version of Nobody's child in 1990",
+      "answers": [
+        "Bob Dylan"
+      ],
+      "answer_style": "shortest_exact_span_v1",
+      "eligible_for_accuracy_aggregate": true,
+      "target_output_tokens": 0,
+      "full_input_ids_sha256": "sha256:898e8e93bac1b192a6d1dc5b0194be55ed571f8271c3db21a06920a124d03906",
+      "id": "256K:short_hotpotqa_10-row19",
+      "num_chunks": 8,
+      "chunk_tokens": 32768,
+      "total_tokens": 262203,
+      "query_tokens": 59,
+      "offline_chunk_hashes": [
+        "sha256:39aba43af7b42ec17d002e0a6728b4b5b2a63c960c1a75793e3fdb462f05bcdb",
+        "sha256:ece881a8d92bda4e9ff29157f681a9e4e09e060f1d4152163852e81ff2e48af9",
+        "sha256:fad0b452cf2d425f397608da01cd9e77bbcbeb95c61b7a43e78c9359357ae27a",
+        "sha256:8523016dc1437d4026eddee6478bf780db0bea74c233ac8f5241dad502e1135c",
+        "sha256:06323b16d1f414977c9c3f467138227a9b9b2bb36366aaadfcd9f9db6e31c8f9",
+        "sha256:e6f3adeb541f924ea44d2fb8f8c5b30d23e38ba21eca9c8e1f8cd3ef3758a3b5",
+        "sha256:ef4530f73aaeaff3b4f174fa4d683683eb8a597f545a7d8175d99c54ef0938cf",
+        "sha256:721fde42f68ae08246834d2cd77a6a45b4fb432f96985333df1a0db718038f0f"
+      ],
+      "query_hash": "sha256:c8dab303cf8eb73fea9379379d9551a64a446ea9e48637fcfc02094d77913bbd"
+    },
+    {
+      "case_id": "short_hotpotqa_10-row22",
+      "length": "256K",
+      "dataset": "hotpotqa",
+      "question": "Oak Beach, New York and Great South Bay are both situated between what same island?",
+      "answers": [
+        "Long Island"
+      ],
+      "answer_style": "shortest_exact_span_v1",
+      "eligible_for_accuracy_aggregate": true,
+      "target_output_tokens": 0,
+      "full_input_ids_sha256": "sha256:aef61ebc396787dac22f78c4386116aa2dee21546296d3b0a658bfc1a3dcad41",
+      "id": "256K:short_hotpotqa_10-row22",
+      "num_chunks": 8,
+      "chunk_tokens": 32768,
+      "total_tokens": 262197,
+      "query_tokens": 53,
+      "offline_chunk_hashes": [
+        "sha256:39aba43af7b42ec17d002e0a6728b4b5b2a63c960c1a75793e3fdb462f05bcdb",
+        "sha256:ece881a8d92bda4e9ff29157f681a9e4e09e060f1d4152163852e81ff2e48af9",
+        "sha256:fad0b452cf2d425f397608da01cd9e77bbcbeb95c61b7a43e78c9359357ae27a",
+        "sha256:8523016dc1437d4026eddee6478bf780db0bea74c233ac8f5241dad502e1135c",
+        "sha256:06323b16d1f414977c9c3f467138227a9b9b2bb36366aaadfcd9f9db6e31c8f9",
+        "sha256:e6f3adeb541f924ea44d2fb8f8c5b30d23e38ba21eca9c8e1f8cd3ef3758a3b5",
+        "sha256:ef4530f73aaeaff3b4f174fa4d683683eb8a597f545a7d8175d99c54ef0938cf",
+        "sha256:721fde42f68ae08246834d2cd77a6a45b4fb432f96985333df1a0db718038f0f"
+      ],
+      "query_hash": "sha256:6bfe1ab0114d0dcc793ccb7868a88c661aa2d4da6d10c8e6011809133817d2dc"
+    },
+    {
+      "case_id": "short_hotpotqa_10-row1",
+      "length": "256K",
+      "dataset": "hotpotqa",
+      "question": "The actor that plays Phileas Fogg in \"Around the World in 80 Days\", co-starred with Gary Cooper in a 1939 Goldwyn Productions film based on a novel by what author?",
+      "answers": [
+        "Charles L. Clifford"
+      ],
+      "answer_style": "shortest_exact_span_v1",
+      "eligible_for_accuracy_aggregate": true,
+      "target_output_tokens": 0,
+      "full_input_ids_sha256": "sha256:09ef2a6cc8e0ab7f056359a0edbeeb3492975a4966ae81b7e54678eecd45aac8",
+      "id": "256K:short_hotpotqa_10-row1",
+      "num_chunks": 8,
+      "chunk_tokens": 32768,
+      "total_tokens": 262222,
+      "query_tokens": 78,
+      "offline_chunk_hashes": [
+        "sha256:39aba43af7b42ec17d002e0a6728b4b5b2a63c960c1a75793e3fdb462f05bcdb",
+        "sha256:ece881a8d92bda4e9ff29157f681a9e4e09e060f1d4152163852e81ff2e48af9",
+        "sha256:fad0b452cf2d425f397608da01cd9e77bbcbeb95c61b7a43e78c9359357ae27a",
+        "sha256:8523016dc1437d4026eddee6478bf780db0bea74c233ac8f5241dad502e1135c",
+        "sha256:06323b16d1f414977c9c3f467138227a9b9b2bb36366aaadfcd9f9db6e31c8f9",
+        "sha256:e6f3adeb541f924ea44d2fb8f8c5b30d23e38ba21eca9c8e1f8cd3ef3758a3b5",
+        "sha256:ef4530f73aaeaff3b4f174fa4d683683eb8a597f545a7d8175d99c54ef0938cf",
+        "sha256:721fde42f68ae08246834d2cd77a6a45b4fb432f96985333df1a0db718038f0f"
+      ],
+      "query_hash": "sha256:2b83b6b3eef1dabf265e730331cdb83e847591a4c4a7a3dea02aea6a2f988a1b"
+    },
+    {
+      "case_id": "short_hotpotqa_10-row4",
+      "length": "256K",
+      "dataset": "hotpotqa",
+      "question": "Was Atom Egoyans biggest commercial success on stage or on film?",
+      "answers": [
+        "erotic thriller film"
+      ],
+      "answer_style": "shortest_exact_span_v1",
+      "eligible_for_accuracy_aggregate": true,
+      "target_output_tokens": 0,
+      "full_input_ids_sha256": "sha256:1344e8bde717ff7e9f9ee810c90353c464b2f9a78215311fea1236944e48a488",
+      "id": "256K:short_hotpotqa_10-row4",
+      "num_chunks": 8,
+      "chunk_tokens": 32768,
+      "total_tokens": 262194,
+      "query_tokens": 50,
+      "offline_chunk_hashes": [
+        "sha256:39aba43af7b42ec17d002e0a6728b4b5b2a63c960c1a75793e3fdb462f05bcdb",
+        "sha256:ece881a8d92bda4e9ff29157f681a9e4e09e060f1d4152163852e81ff2e48af9",
+        "sha256:fad0b452cf2d425f397608da01cd9e77bbcbeb95c61b7a43e78c9359357ae27a",
+        "sha256:8523016dc1437d4026eddee6478bf780db0bea74c233ac8f5241dad502e1135c",
+        "sha256:06323b16d1f414977c9c3f467138227a9b9b2bb36366aaadfcd9f9db6e31c8f9",
+        "sha256:e6f3adeb541f924ea44d2fb8f8c5b30d23e38ba21eca9c8e1f8cd3ef3758a3b5",
+        "sha256:ef4530f73aaeaff3b4f174fa4d683683eb8a597f545a7d8175d99c54ef0938cf",
+        "sha256:721fde42f68ae08246834d2cd77a6a45b4fb432f96985333df1a0db718038f0f"
+      ],
+      "query_hash": "sha256:b330582672e35f9810cc9289a6ab48f265c505449766a185ee5d17a2c9c47a9b"
+    },
+    {
+      "case_id": "long_hotpotqa_2-row6",
+      "length": "256K",
+      "dataset": "hotpotqa",
+      "question": "Thirukkalacherry is a village in which Indian town?",
+      "answers": [
+        "Tharangambadi"
+      ],
+      "answer_style": "direct_answer_plus_document_evidence_v1",
+      "eligible_for_accuracy_aggregate": false,
+      "target_output_tokens": 30,
+      "full_input_ids_sha256": "sha256:d94b1c8501c9960b6f489897bbcc52b137405684ccb78a244aa19c6a21c1e93c",
+      "id": "256K:long_hotpotqa_2-row6",
+      "num_chunks": 8,
+      "chunk_tokens": 32768,
+      "total_tokens": 262234,
+      "query_tokens": 90,
+      "offline_chunk_hashes": [
+        "sha256:39aba43af7b42ec17d002e0a6728b4b5b2a63c960c1a75793e3fdb462f05bcdb",
+        "sha256:ece881a8d92bda4e9ff29157f681a9e4e09e060f1d4152163852e81ff2e48af9",
+        "sha256:fad0b452cf2d425f397608da01cd9e77bbcbeb95c61b7a43e78c9359357ae27a",
+        "sha256:8523016dc1437d4026eddee6478bf780db0bea74c233ac8f5241dad502e1135c",
+        "sha256:06323b16d1f414977c9c3f467138227a9b9b2bb36366aaadfcd9f9db6e31c8f9",
+        "sha256:e6f3adeb541f924ea44d2fb8f8c5b30d23e38ba21eca9c8e1f8cd3ef3758a3b5",
+        "sha256:ef4530f73aaeaff3b4f174fa4d683683eb8a597f545a7d8175d99c54ef0938cf",
+        "sha256:721fde42f68ae08246834d2cd77a6a45b4fb432f96985333df1a0db718038f0f"
+      ],
+      "query_hash": "sha256:0a2201b63f8dfd89e8dd9788cace074a0438833c6089a507189b10bd366e9bce"
+    },
+    {
+      "case_id": "long_hotpotqa_2-row0",
+      "length": "256K",
+      "dataset": "hotpotqa",
+      "question": "Which case was brought to court first Miller v. California or Gates v. Collier ?",
+      "answers": [
+        "Miller v. California"
+      ],
+      "answer_style": "direct_answer_plus_document_evidence_v1",
+      "eligible_for_accuracy_aggregate": false,
+      "target_output_tokens": 30,
+      "full_input_ids_sha256": "sha256:c4fa88bfd107c525a41b9192ffa399c7f0941a1a7b0735648f7382c70ec29987",
+      "id": "256K:long_hotpotqa_2-row0",
+      "num_chunks": 8,
+      "chunk_tokens": 32768,
+      "total_tokens": 262238,
+      "query_tokens": 94,
+      "offline_chunk_hashes": [
+        "sha256:39aba43af7b42ec17d002e0a6728b4b5b2a63c960c1a75793e3fdb462f05bcdb",
+        "sha256:ece881a8d92bda4e9ff29157f681a9e4e09e060f1d4152163852e81ff2e48af9",
+        "sha256:fad0b452cf2d425f397608da01cd9e77bbcbeb95c61b7a43e78c9359357ae27a",
+        "sha256:8523016dc1437d4026eddee6478bf780db0bea74c233ac8f5241dad502e1135c",
+        "sha256:06323b16d1f414977c9c3f467138227a9b9b2bb36366aaadfcd9f9db6e31c8f9",
+        "sha256:e6f3adeb541f924ea44d2fb8f8c5b30d23e38ba21eca9c8e1f8cd3ef3758a3b5",
+        "sha256:ef4530f73aaeaff3b4f174fa4d683683eb8a597f545a7d8175d99c54ef0938cf",
+        "sha256:721fde42f68ae08246834d2cd77a6a45b4fb432f96985333df1a0db718038f0f"
+      ],
+      "query_hash": "sha256:1c77162bbec712817285e479a1383145d9804368d385fdf91ff074051ea199d7"
+    },
+    {
+      "case_id": "long_musique_2-row0",
+      "length": "256K",
+      "dataset": "musique",
+      "question": "Who plays the wife of the producer of Here Comes the Boom in Grown Ups?",
+      "answers": [
+        "Maria Bello"
+      ],
+      "answer_style": "direct_answer_plus_document_evidence_v1",
+      "eligible_for_accuracy_aggregate": false,
+      "target_output_tokens": 30,
+      "full_input_ids_sha256": "sha256:de19743023daa56459926c798e7e2e8fc0e82b8dacb12f36fce0bfaa6bf18f19",
+      "id": "256K:long_musique_2-row0",
+      "num_chunks": 8,
+      "chunk_tokens": 32768,
+      "total_tokens": 262238,
+      "query_tokens": 94,
+      "offline_chunk_hashes": [
+        "sha256:1de645c29db89a05ed65bb13cb2b9596c09802e7a424538d2e26bbd65074ae28",
+        "sha256:28997ad3d101f54333a8044a8d86741cf77f62fa4fea9548401f9229ad6f59e3",
+        "sha256:8bab78f276ee78fc525d77c06551cf8029c06f16c23a71cf5bb8f762a44de718",
+        "sha256:aa56e9c8690923ee9ed4d1743693cee4e6308a64e2807dc44461163c0187ac4a",
+        "sha256:8530ae57bb39127aa4aa3ed2857a2361c785c49925256d0e6d2cfc3708f52c09",
+        "sha256:64c2c63c8554a3372dae45770939e1836ba5b9472e2f0d5642745f307e4a117f",
+        "sha256:6edc5262549bc2e90e823e75d17f192e30ca2310f30ef3fe763f4c110593bdba",
+        "sha256:4ea4ae7331e50159d2f7d26c648b675845568a6525b9ed699c940fd918f0ef50"
+      ],
+      "query_hash": "sha256:36d2c6e498b881b719b101c6d7eef464103528cbbcfd0025dc05a1e133794dbb"
+    },
+    {
+      "case_id": "long_musique_2-row3",
+      "length": "256K",
+      "dataset": "musique",
+      "question": "Who is the child of the Italian navigator who sailed for England and explored the eastern coast of the continent Francisco Bojado's birthplace is located?",
+      "answers": [
+        "Sebastian Cabot"
+      ],
+      "answer_style": "direct_answer_plus_document_evidence_v1",
+      "eligible_for_accuracy_aggregate": false,
+      "target_output_tokens": 30,
+      "full_input_ids_sha256": "sha256:b337bb3e64f6a7d65ef209565dd6d577fc9f9dd3b4911503d62771cca5614168",
+      "id": "256K:long_musique_2-row3",
+      "num_chunks": 8,
+      "chunk_tokens": 32768,
+      "total_tokens": 262251,
+      "query_tokens": 107,
+      "offline_chunk_hashes": [
+        "sha256:1de645c29db89a05ed65bb13cb2b9596c09802e7a424538d2e26bbd65074ae28",
+        "sha256:28997ad3d101f54333a8044a8d86741cf77f62fa4fea9548401f9229ad6f59e3",
+        "sha256:8bab78f276ee78fc525d77c06551cf8029c06f16c23a71cf5bb8f762a44de718",
+        "sha256:aa56e9c8690923ee9ed4d1743693cee4e6308a64e2807dc44461163c0187ac4a",
+        "sha256:8530ae57bb39127aa4aa3ed2857a2361c785c49925256d0e6d2cfc3708f52c09",
+        "sha256:64c2c63c8554a3372dae45770939e1836ba5b9472e2f0d5642745f307e4a117f",
+        "sha256:6edc5262549bc2e90e823e75d17f192e30ca2310f30ef3fe763f4c110593bdba",
+        "sha256:4ea4ae7331e50159d2f7d26c648b675845568a6525b9ed699c940fd918f0ef50"
+      ],
+      "query_hash": "sha256:c498c783f8ed2e5e91d4961830b9b4419dd5bc56c37e31b1eb345ef517844460"
+    },
+    {
+      "case_id": "long_multifieldqa_en_1-row0",
+      "length": "256K",
+      "dataset": "multifieldqa_en",
+      "question": "What is the name of the most active fan club?",
+      "answers": [
+        "South West Ultras fan club."
+      ],
+      "answer_style": "direct_answer_plus_document_evidence_v1",
+      "eligible_for_accuracy_aggregate": false,
+      "target_output_tokens": 30,
+      "full_input_ids_sha256": "sha256:1056e54e1f63168aab5ba9c7f21d21dba1be9aa32fdc1a48fa139ac457bafc0a",
+      "id": "256K:long_multifieldqa_en_1-row0",
+      "num_chunks": 8,
+      "chunk_tokens": 32768,
+      "total_tokens": 262225,
+      "query_tokens": 81,
+      "offline_chunk_hashes": [
+        "sha256:be65a67e0c192d9147b1bf24086a877270d5266a8cb2b05e8f8d3b86322a3f5e",
+        "sha256:5dfe6acb65375c36a731b8552f5f5f3e84d8953beaf6f34c6c0cd9d21630afd7",
+        "sha256:c12ae663c825198331214b35848bd41368a8b1436a028b93e74d2443e845e8e6",
+        "sha256:9638513560eeadf957ef89a624078d8fcd9af13a97d25a4c3a6652630ec52865",
+        "sha256:610cd70a94508b0dfd0a9f28810ef1cd996acfee7e70d6ee1d14834e4fb4785c",
+        "sha256:7476a076ed0d51bf7705075f7e35552391a366bc46373223bbd8ddeaca20db91",
+        "sha256:20803e4a00d939e2eca3c05d52506b0cf2862dfcb0989178d12b8282b3d6eb8a",
+        "sha256:acde1ef5ea56a0295b914c24397ec72350b9cdc2ad0c88f717e901dbd0464d52"
+      ],
+      "query_hash": "sha256:ca96259d95f9a153cf483864df51cb39e9d067aa5224105cf9ed094463f42b85"
+    },
+    {
+      "case_id": "short_hotpotqa_10-row0",
+      "length": "440K",
+      "dataset": "hotpotqa",
+      "question": "Which case was brought to court first Miller v. California or Gates v. Collier ?",
+      "answers": [
+        "Miller v. California"
+      ],
+      "answer_style": "shortest_exact_span_v1",
+      "eligible_for_accuracy_aggregate": true,
+      "target_output_tokens": 0,
+      "full_input_ids_sha256": "sha256:8374b65e9475ecb1d3f11ddf1d1f986249a55678167e4774a5ba3cc1a9033347",
+      "id": "440K:short_hotpotqa_10-row0",
+      "num_chunks": 8,
+      "chunk_tokens": 56320,
+      "total_tokens": 450613,
+      "query_tokens": 53,
+      "offline_chunk_hashes": [
+        "sha256:40298a6538fdf606e50f8923df218046c46238be7f8835bb2b2c3713b4ae3e4f",
+        "sha256:7d0619ac875fbb87bb5aa971e44278ac2e660260246b6fae92071201a7103a20",
+        "sha256:5fe6df8afb7ac334db7b4e2f8205bf38f9308e6905f51c14fbd69f64fef4a4ea",
+        "sha256:cc4e0e4cb629a687da5e84eb2890a128eea6e78e9e92225f82fbdb492dfa652a",
+        "sha256:da15c95d344084e3a7f9b13171af072cf8cbf332969991a6b1520b6f33dffb20",
+        "sha256:2106c81aef18d423115f974b6eaab7a706fe239c6d430060fe78a50b5afe90ee",
+        "sha256:14141c95ea842262adf6e4e429d24c2ae5ca04e81e54b160574f3ff5fb926b61",
+        "sha256:9c50031d376ffabb19a635c7edf5398259b2397d4ce64389dca61b94841fe71e"
+      ],
+      "query_hash": "sha256:2c19bacf96d9117e297a35ed57f375ec779b5053bb16f5c46607587e94ad210b"
+    },
+    {
+      "case_id": "short_hotpotqa_10-row4",
+      "length": "440K",
+      "dataset": "hotpotqa",
+      "question": "Was Atom Egoyans biggest commercial success on stage or on film?",
+      "answers": [
+        "erotic thriller film"
+      ],
+      "answer_style": "shortest_exact_span_v1",
+      "eligible_for_accuracy_aggregate": true,
+      "target_output_tokens": 0,
+      "full_input_ids_sha256": "sha256:89a2e2e74a9159833db67c4f3d0080f079002c6d3e832f9e6c06c6d9ca0004ea",
+      "id": "440K:short_hotpotqa_10-row4",
+      "num_chunks": 8,
+      "chunk_tokens": 56320,
+      "total_tokens": 450610,
+      "query_tokens": 50,
+      "offline_chunk_hashes": [
+        "sha256:40298a6538fdf606e50f8923df218046c46238be7f8835bb2b2c3713b4ae3e4f",
+        "sha256:7d0619ac875fbb87bb5aa971e44278ac2e660260246b6fae92071201a7103a20",
+        "sha256:5fe6df8afb7ac334db7b4e2f8205bf38f9308e6905f51c14fbd69f64fef4a4ea",
+        "sha256:cc4e0e4cb629a687da5e84eb2890a128eea6e78e9e92225f82fbdb492dfa652a",
+        "sha256:da15c95d344084e3a7f9b13171af072cf8cbf332969991a6b1520b6f33dffb20",
+        "sha256:2106c81aef18d423115f974b6eaab7a706fe239c6d430060fe78a50b5afe90ee",
+        "sha256:14141c95ea842262adf6e4e429d24c2ae5ca04e81e54b160574f3ff5fb926b61",
+        "sha256:9c50031d376ffabb19a635c7edf5398259b2397d4ce64389dca61b94841fe71e"
+      ],
+      "query_hash": "sha256:e9e41e3bcd1a0d83af4863e3f8f61d9381f44da91424816a94a41072f58c0bbc"
+    },
+    {
+      "case_id": "short_hotpotqa_10-row9",
+      "length": "440K",
+      "dataset": "hotpotqa",
+      "question": "For which band, was the female member of Fitz and The Tantrums, the front woman for ten years ?",
+      "answers": [
+        "The Rebirth"
+      ],
+      "answer_style": "shortest_exact_span_v1",
+      "eligible_for_accuracy_aggregate": true,
+      "target_output_tokens": 0,
+      "full_input_ids_sha256": "sha256:3b0a63ebbafd5d3290dd884190e3a5ac61619db9541582f7957c35c57a1c7fb1",
+      "id": "440K:short_hotpotqa_10-row9",
+      "num_chunks": 8,
+      "chunk_tokens": 56320,
+      "total_tokens": 450618,
+      "query_tokens": 58,
+      "offline_chunk_hashes": [
+        "sha256:40298a6538fdf606e50f8923df218046c46238be7f8835bb2b2c3713b4ae3e4f",
+        "sha256:7d0619ac875fbb87bb5aa971e44278ac2e660260246b6fae92071201a7103a20",
+        "sha256:5fe6df8afb7ac334db7b4e2f8205bf38f9308e6905f51c14fbd69f64fef4a4ea",
+        "sha256:cc4e0e4cb629a687da5e84eb2890a128eea6e78e9e92225f82fbdb492dfa652a",
+        "sha256:da15c95d344084e3a7f9b13171af072cf8cbf332969991a6b1520b6f33dffb20",
+        "sha256:2106c81aef18d423115f974b6eaab7a706fe239c6d430060fe78a50b5afe90ee",
+        "sha256:14141c95ea842262adf6e4e429d24c2ae5ca04e81e54b160574f3ff5fb926b61",
+        "sha256:9c50031d376ffabb19a635c7edf5398259b2397d4ce64389dca61b94841fe71e"
+      ],
+      "query_hash": "sha256:7574f4f9bd461c84ce4ac22cfc8c62ae65b1f916f9bad11afb21ea45e4377361"
+    },
+    {
+      "case_id": "short_hotpotqa_10-row14",
+      "length": "440K",
+      "dataset": "hotpotqa",
+      "question": "What are some other areas that share a common deer species with the forests of Mara and Mondrem?",
+      "answers": [
+        "New Zealand, Canada, the United States, the Falkland Islands, and Peru."
+      ],
+      "answer_style": "shortest_exact_span_v1",
+      "eligible_for_accuracy_aggregate": true,
+      "target_output_tokens": 0,
+      "full_input_ids_sha256": "sha256:d75ce61936bb8fb4bc1f8e3422f64543c65745178b6ef9d074baa26f0cec08ad",
+      "id": "440K:short_hotpotqa_10-row14",
+      "num_chunks": 8,
+      "chunk_tokens": 56320,
+      "total_tokens": 450616,
+      "query_tokens": 56,
+      "offline_chunk_hashes": [
+        "sha256:40298a6538fdf606e50f8923df218046c46238be7f8835bb2b2c3713b4ae3e4f",
+        "sha256:7d0619ac875fbb87bb5aa971e44278ac2e660260246b6fae92071201a7103a20",
+        "sha256:5fe6df8afb7ac334db7b4e2f8205bf38f9308e6905f51c14fbd69f64fef4a4ea",
+        "sha256:cc4e0e4cb629a687da5e84eb2890a128eea6e78e9e92225f82fbdb492dfa652a",
+        "sha256:da15c95d344084e3a7f9b13171af072cf8cbf332969991a6b1520b6f33dffb20",
+        "sha256:2106c81aef18d423115f974b6eaab7a706fe239c6d430060fe78a50b5afe90ee",
+        "sha256:14141c95ea842262adf6e4e429d24c2ae5ca04e81e54b160574f3ff5fb926b61",
+        "sha256:9c50031d376ffabb19a635c7edf5398259b2397d4ce64389dca61b94841fe71e"
+      ],
+      "query_hash": "sha256:dd41e8d46e8cd03a587d09e4faac91bca752bd4b8eb5dfbe86e84396f252c88d"
+    },
+    {
+      "case_id": "short_hotpotqa_10-row19",
+      "length": "440K",
+      "dataset": "hotpotqa",
+      "question": "Name a member of a British-American supergroup who recored a version of Nobody's child in 1990",
+      "answers": [
+        "Bob Dylan"
+      ],
+      "answer_style": "shortest_exact_span_v1",
+      "eligible_for_accuracy_aggregate": true,
+      "target_output_tokens": 0,
+      "full_input_ids_sha256": "sha256:cca8ecf842ff5b2fe82a1fd7588bb5a81d8d5dbac18dc3613af077ae969767ae",
+      "id": "440K:short_hotpotqa_10-row19",
+      "num_chunks": 8,
+      "chunk_tokens": 56320,
+      "total_tokens": 450619,
+      "query_tokens": 59,
+      "offline_chunk_hashes": [
+        "sha256:40298a6538fdf606e50f8923df218046c46238be7f8835bb2b2c3713b4ae3e4f",
+        "sha256:7d0619ac875fbb87bb5aa971e44278ac2e660260246b6fae92071201a7103a20",
+        "sha256:5fe6df8afb7ac334db7b4e2f8205bf38f9308e6905f51c14fbd69f64fef4a4ea",
+        "sha256:cc4e0e4cb629a687da5e84eb2890a128eea6e78e9e92225f82fbdb492dfa652a",
+        "sha256:da15c95d344084e3a7f9b13171af072cf8cbf332969991a6b1520b6f33dffb20",
+        "sha256:2106c81aef18d423115f974b6eaab7a706fe239c6d430060fe78a50b5afe90ee",
+        "sha256:14141c95ea842262adf6e4e429d24c2ae5ca04e81e54b160574f3ff5fb926b61",
+        "sha256:9c50031d376ffabb19a635c7edf5398259b2397d4ce64389dca61b94841fe71e"
+      ],
+      "query_hash": "sha256:c0809ada713293d726b3b971b4fdb3678c6d744fc39976d7328387a4c13c30e7"
+    },
+    {
+      "case_id": "short_hotpotqa_10-row24",
+      "length": "440K",
+      "dataset": "hotpotqa",
+      "question": "Robbie Tucker plays in what series that follows a group of friends who run an Irish bar?",
+      "answers": [
+        "It's Always Sunny in Philadelphia"
+      ],
+      "answer_style": "shortest_exact_span_v1",
+      "eligible_for_accuracy_aggregate": true,
+      "target_output_tokens": 0,
+      "full_input_ids_sha256": "sha256:8510f81647067c586303e0fc003b9b0ef4753ac78b9eac324d86a169df1d7116",
+      "id": "440K:short_hotpotqa_10-row24",
+      "num_chunks": 8,
+      "chunk_tokens": 56320,
+      "total_tokens": 450614,
+      "query_tokens": 54,
+      "offline_chunk_hashes": [
+        "sha256:40298a6538fdf606e50f8923df218046c46238be7f8835bb2b2c3713b4ae3e4f",
+        "sha256:7d0619ac875fbb87bb5aa971e44278ac2e660260246b6fae92071201a7103a20",
+        "sha256:5fe6df8afb7ac334db7b4e2f8205bf38f9308e6905f51c14fbd69f64fef4a4ea",
+        "sha256:cc4e0e4cb629a687da5e84eb2890a128eea6e78e9e92225f82fbdb492dfa652a",
+        "sha256:da15c95d344084e3a7f9b13171af072cf8cbf332969991a6b1520b6f33dffb20",
+        "sha256:2106c81aef18d423115f974b6eaab7a706fe239c6d430060fe78a50b5afe90ee",
+        "sha256:14141c95ea842262adf6e4e429d24c2ae5ca04e81e54b160574f3ff5fb926b61",
+        "sha256:9c50031d376ffabb19a635c7edf5398259b2397d4ce64389dca61b94841fe71e"
+      ],
+      "query_hash": "sha256:8fdd2fce8bab3aca4bccbd47ed1070ae6998302b85918bb1729a4a72fc3523e9"
+    },
+    {
+      "case_id": "short_hotpotqa_10-row30",
+      "length": "440K",
+      "dataset": "hotpotqa",
+      "question": "Yau Ma Tei North is a district of a city with how many citizens?",
+      "answers": [
+        "7.2 million"
+      ],
+      "answer_style": "shortest_exact_span_v1",
+      "eligible_for_accuracy_aggregate": true,
+      "target_output_tokens": 0,
+      "full_input_ids_sha256": "sha256:42ad00add0a5221506e6e58f77a9ac943f43351e2ef3849037387d6228a5f269",
+      "id": "440K:short_hotpotqa_10-row30",
+      "num_chunks": 8,
+      "chunk_tokens": 56320,
+      "total_tokens": 450613,
+      "query_tokens": 53,
+      "offline_chunk_hashes": [
+        "sha256:40298a6538fdf606e50f8923df218046c46238be7f8835bb2b2c3713b4ae3e4f",
+        "sha256:7d0619ac875fbb87bb5aa971e44278ac2e660260246b6fae92071201a7103a20",
+        "sha256:5fe6df8afb7ac334db7b4e2f8205bf38f9308e6905f51c14fbd69f64fef4a4ea",
+        "sha256:cc4e0e4cb629a687da5e84eb2890a128eea6e78e9e92225f82fbdb492dfa652a",
+        "sha256:da15c95d344084e3a7f9b13171af072cf8cbf332969991a6b1520b6f33dffb20",
+        "sha256:2106c81aef18d423115f974b6eaab7a706fe239c6d430060fe78a50b5afe90ee",
+        "sha256:14141c95ea842262adf6e4e429d24c2ae5ca04e81e54b160574f3ff5fb926b61",
+        "sha256:9c50031d376ffabb19a635c7edf5398259b2397d4ce64389dca61b94841fe71e"
+      ],
+      "query_hash": "sha256:a338ece0c8eb3f95c4177a70d5a33c7b75f25ddb2a62b447d3793c039b7c35b0"
+    },
+    {
+      "case_id": "short_hotpotqa_10-row34",
+      "length": "440K",
+      "dataset": "hotpotqa",
+      "question": "What city, located in Lincoln County, Montana, United States, is Vegepet based in?",
+      "answers": [
+        "Troy, Montana"
+      ],
+      "answer_style": "shortest_exact_span_v1",
+      "eligible_for_accuracy_aggregate": true,
+      "target_output_tokens": 0,
+      "full_input_ids_sha256": "sha256:05a193f7fd75eacc9610baeea709feb8f71a6248b281c917d0d3504ff9930727",
+      "id": "440K:short_hotpotqa_10-row34",
+      "num_chunks": 8,
+      "chunk_tokens": 56320,
+      "total_tokens": 450616,
+      "query_tokens": 56,
+      "offline_chunk_hashes": [
+        "sha256:40298a6538fdf606e50f8923df218046c46238be7f8835bb2b2c3713b4ae3e4f",
+        "sha256:7d0619ac875fbb87bb5aa971e44278ac2e660260246b6fae92071201a7103a20",
+        "sha256:5fe6df8afb7ac334db7b4e2f8205bf38f9308e6905f51c14fbd69f64fef4a4ea",
+        "sha256:cc4e0e4cb629a687da5e84eb2890a128eea6e78e9e92225f82fbdb492dfa652a",
+        "sha256:da15c95d344084e3a7f9b13171af072cf8cbf332969991a6b1520b6f33dffb20",
+        "sha256:2106c81aef18d423115f974b6eaab7a706fe239c6d430060fe78a50b5afe90ee",
+        "sha256:14141c95ea842262adf6e4e429d24c2ae5ca04e81e54b160574f3ff5fb926b61",
+        "sha256:9c50031d376ffabb19a635c7edf5398259b2397d4ce64389dca61b94841fe71e"
+      ],
+      "query_hash": "sha256:f31c62e956425ed42f20fed6fb05b7b76f304646702e848c1cb707c887d27884"
+    },
+    {
+      "case_id": "short_hotpotqa_10-row1",
+      "length": "440K",
+      "dataset": "hotpotqa",
+      "question": "The actor that plays Phileas Fogg in \"Around the World in 80 Days\", co-starred with Gary Cooper in a 1939 Goldwyn Productions film based on a novel by what author?",
+      "answers": [
+        "Charles L. Clifford"
+      ],
+      "answer_style": "shortest_exact_span_v1",
+      "eligible_for_accuracy_aggregate": true,
+      "target_output_tokens": 0,
+      "full_input_ids_sha256": "sha256:8419bde74ee4fba4d37dac187b466b2e631758e9aa45f2a173a9048fcdd79f8d",
+      "id": "440K:short_hotpotqa_10-row1",
+      "num_chunks": 8,
+      "chunk_tokens": 56320,
+      "total_tokens": 450638,
+      "query_tokens": 78,
+      "offline_chunk_hashes": [
+        "sha256:40298a6538fdf606e50f8923df218046c46238be7f8835bb2b2c3713b4ae3e4f",
+        "sha256:7d0619ac875fbb87bb5aa971e44278ac2e660260246b6fae92071201a7103a20",
+        "sha256:5fe6df8afb7ac334db7b4e2f8205bf38f9308e6905f51c14fbd69f64fef4a4ea",
+        "sha256:cc4e0e4cb629a687da5e84eb2890a128eea6e78e9e92225f82fbdb492dfa652a",
+        "sha256:da15c95d344084e3a7f9b13171af072cf8cbf332969991a6b1520b6f33dffb20",
+        "sha256:2106c81aef18d423115f974b6eaab7a706fe239c6d430060fe78a50b5afe90ee",
+        "sha256:14141c95ea842262adf6e4e429d24c2ae5ca04e81e54b160574f3ff5fb926b61",
+        "sha256:9c50031d376ffabb19a635c7edf5398259b2397d4ce64389dca61b94841fe71e"
+      ],
+      "query_hash": "sha256:ab5d7ae5a42603ef5ed2c155b10a943b8f2427f6e2b9958c3fa40fff5b1ec935"
+    },
+    {
+      "case_id": "short_hotpotqa_10-row5",
+      "length": "440K",
+      "dataset": "hotpotqa",
+      "question": "Celebrity Fifteen to One has had more than one appearance by an English writer and former Conservative Member of what?",
+      "answers": [
+        "Parliament"
+      ],
+      "answer_style": "shortest_exact_span_v1",
+      "eligible_for_accuracy_aggregate": true,
+      "target_output_tokens": 0,
+      "full_input_ids_sha256": "sha256:a1a1c8f5491aea0f13d4572f2ce44b1f3abfba98a0a93b45e6699cffdf88807c",
+      "id": "440K:short_hotpotqa_10-row5",
+      "num_chunks": 8,
+      "chunk_tokens": 56320,
+      "total_tokens": 450618,
+      "query_tokens": 58,
+      "offline_chunk_hashes": [
+        "sha256:40298a6538fdf606e50f8923df218046c46238be7f8835bb2b2c3713b4ae3e4f",
+        "sha256:7d0619ac875fbb87bb5aa971e44278ac2e660260246b6fae92071201a7103a20",
+        "sha256:5fe6df8afb7ac334db7b4e2f8205bf38f9308e6905f51c14fbd69f64fef4a4ea",
+        "sha256:cc4e0e4cb629a687da5e84eb2890a128eea6e78e9e92225f82fbdb492dfa652a",
+        "sha256:da15c95d344084e3a7f9b13171af072cf8cbf332969991a6b1520b6f33dffb20",
+        "sha256:2106c81aef18d423115f974b6eaab7a706fe239c6d430060fe78a50b5afe90ee",
+        "sha256:14141c95ea842262adf6e4e429d24c2ae5ca04e81e54b160574f3ff5fb926b61",
+        "sha256:9c50031d376ffabb19a635c7edf5398259b2397d4ce64389dca61b94841fe71e"
+      ],
+      "query_hash": "sha256:a3b53cf0a29c96c88f0084618a61b9a5bd5bd40f3ef5abb20b06316f82273fe3"
+    },
+    {
+      "case_id": "long_hotpotqa_2-row0",
+      "length": "440K",
+      "dataset": "hotpotqa",
+      "question": "Which case was brought to court first Miller v. California or Gates v. Collier ?",
+      "answers": [
+        "Miller v. California"
+      ],
+      "answer_style": "direct_answer_plus_document_evidence_v1",
+      "eligible_for_accuracy_aggregate": false,
+      "target_output_tokens": 30,
+      "full_input_ids_sha256": "sha256:b55fe1472139e3cd66250f1f8316080e354b7a74f9bde73767cd1ba60a7d798f",
+      "id": "440K:long_hotpotqa_2-row0",
+      "num_chunks": 8,
+      "chunk_tokens": 56320,
+      "total_tokens": 450654,
+      "query_tokens": 94,
+      "offline_chunk_hashes": [
+        "sha256:40298a6538fdf606e50f8923df218046c46238be7f8835bb2b2c3713b4ae3e4f",
+        "sha256:7d0619ac875fbb87bb5aa971e44278ac2e660260246b6fae92071201a7103a20",
+        "sha256:5fe6df8afb7ac334db7b4e2f8205bf38f9308e6905f51c14fbd69f64fef4a4ea",
+        "sha256:cc4e0e4cb629a687da5e84eb2890a128eea6e78e9e92225f82fbdb492dfa652a",
+        "sha256:da15c95d344084e3a7f9b13171af072cf8cbf332969991a6b1520b6f33dffb20",
+        "sha256:2106c81aef18d423115f974b6eaab7a706fe239c6d430060fe78a50b5afe90ee",
+        "sha256:14141c95ea842262adf6e4e429d24c2ae5ca04e81e54b160574f3ff5fb926b61",
+        "sha256:9c50031d376ffabb19a635c7edf5398259b2397d4ce64389dca61b94841fe71e"
+      ],
+      "query_hash": "sha256:d802be00cf6149382ddd9157d841bd497d1d0eeef20009871b5002c9c78c6b48"
+    },
+    {
+      "case_id": "long_hotpotqa_2-row4",
+      "length": "440K",
+      "dataset": "hotpotqa",
+      "question": "Was Atom Egoyans biggest commercial success on stage or on film?",
+      "answers": [
+        "erotic thriller film"
+      ],
+      "answer_style": "direct_answer_plus_document_evidence_v1",
+      "eligible_for_accuracy_aggregate": false,
+      "target_output_tokens": 30,
+      "full_input_ids_sha256": "sha256:fd08303c4843f6c31a046a33d8db2e73e983f6f8985e76c208d5b6c0ff498070",
+      "id": "440K:long_hotpotqa_2-row4",
+      "num_chunks": 8,
+      "chunk_tokens": 56320,
+      "total_tokens": 450651,
+      "query_tokens": 91,
+      "offline_chunk_hashes": [
+        "sha256:40298a6538fdf606e50f8923df218046c46238be7f8835bb2b2c3713b4ae3e4f",
+        "sha256:7d0619ac875fbb87bb5aa971e44278ac2e660260246b6fae92071201a7103a20",
+        "sha256:5fe6df8afb7ac334db7b4e2f8205bf38f9308e6905f51c14fbd69f64fef4a4ea",
+        "sha256:cc4e0e4cb629a687da5e84eb2890a128eea6e78e9e92225f82fbdb492dfa652a",
+        "sha256:da15c95d344084e3a7f9b13171af072cf8cbf332969991a6b1520b6f33dffb20",
+        "sha256:2106c81aef18d423115f974b6eaab7a706fe239c6d430060fe78a50b5afe90ee",
+        "sha256:14141c95ea842262adf6e4e429d24c2ae5ca04e81e54b160574f3ff5fb926b61",
+        "sha256:9c50031d376ffabb19a635c7edf5398259b2397d4ce64389dca61b94841fe71e"
+      ],
+      "query_hash": "sha256:b86f9349c3ab5a5511516ed317bbbde11f87e509ce2dd492f746fc5f51123349"
+    },
+    {
+      "case_id": "long_musique_2-row0",
+      "length": "440K",
+      "dataset": "musique",
+      "question": "Who plays the wife of the producer of Here Comes the Boom in Grown Ups?",
+      "answers": [
+        "Maria Bello"
+      ],
+      "answer_style": "direct_answer_plus_document_evidence_v1",
+      "eligible_for_accuracy_aggregate": false,
+      "target_output_tokens": 30,
+      "full_input_ids_sha256": "sha256:a8a40169f986d861660ae5d0d7eff9f2b7914f2a84526f7022b0bdaf58ed7e4c",
+      "id": "440K:long_musique_2-row0",
+      "num_chunks": 8,
+      "chunk_tokens": 56320,
+      "total_tokens": 450654,
+      "query_tokens": 94,
+      "offline_chunk_hashes": [
+        "sha256:3f4fbf8cf046633c23f4c32fe232381393e96bae4aa7b24a90c1b62237abf07a",
+        "sha256:ff4f391a99309efbc04662d8e78a02c53849674a7236183c85782c388377fa03",
+        "sha256:79e0c4d0cd4a4e8923c036c4b4bc2e6f7a6f03cf7e8dba9f3fcbba8afd672f5e",
+        "sha256:d2091758a1f53a53098f42c8f694eeb0bc251490965b4ebc0065ac631355db0a",
+        "sha256:acabf8405bbfeb8e0ee338c0a4e078c19b833d4c8c32a34844d02c21ea6b0959",
+        "sha256:25553609b72e1a25f96a37a40053a6ccf1737b02e834039eba09ab25247d07b0",
+        "sha256:5eb00fb82a7e4d605bad2296c8ce7f0f417d370daa4eb0fc49e5be12f8496def",
+        "sha256:dda45c22712287a15dd786ba9598360756ee2a8f3cc1a3ace934910357f8101c"
+      ],
+      "query_hash": "sha256:18f7931cbf5d0e3a409b824146c53c8e8981beb07c942b0995671e5f17e82fd3"
+    },
+    {
+      "case_id": "long_musique_2-row4",
+      "length": "440K",
+      "dataset": "musique",
+      "question": "Who is the spouse of the actor who played hannibal smith in the a team?",
+      "answers": [
+        "Sherry Boucher"
+      ],
+      "answer_style": "direct_answer_plus_document_evidence_v1",
+      "eligible_for_accuracy_aggregate": false,
+      "target_output_tokens": 30,
+      "full_input_ids_sha256": "sha256:d1017b80a4597cf2e1bbf1716f8d013dbb6665b7cc016e58e5f7280d0df5e2c9",
+      "id": "440K:long_musique_2-row4",
+      "num_chunks": 8,
+      "chunk_tokens": 56320,
+      "total_tokens": 450656,
+      "query_tokens": 96,
+      "offline_chunk_hashes": [
+        "sha256:3f4fbf8cf046633c23f4c32fe232381393e96bae4aa7b24a90c1b62237abf07a",
+        "sha256:ff4f391a99309efbc04662d8e78a02c53849674a7236183c85782c388377fa03",
+        "sha256:79e0c4d0cd4a4e8923c036c4b4bc2e6f7a6f03cf7e8dba9f3fcbba8afd672f5e",
+        "sha256:d2091758a1f53a53098f42c8f694eeb0bc251490965b4ebc0065ac631355db0a",
+        "sha256:acabf8405bbfeb8e0ee338c0a4e078c19b833d4c8c32a34844d02c21ea6b0959",
+        "sha256:25553609b72e1a25f96a37a40053a6ccf1737b02e834039eba09ab25247d07b0",
+        "sha256:5eb00fb82a7e4d605bad2296c8ce7f0f417d370daa4eb0fc49e5be12f8496def",
+        "sha256:dda45c22712287a15dd786ba9598360756ee2a8f3cc1a3ace934910357f8101c"
+      ],
+      "query_hash": "sha256:eafeb4f68bc2e9934dd59e6bc75aa42412e969919c544ee5b7f68a4254bd0132"
+    },
+    {
+      "case_id": "long_multifieldqa_en_1-row0",
+      "length": "440K",
+      "dataset": "multifieldqa_en",
+      "question": "What is the name of the most active fan club?",
+      "answers": [
+        "South West Ultras fan club."
+      ],
+      "answer_style": "direct_answer_plus_document_evidence_v1",
+      "eligible_for_accuracy_aggregate": false,
+      "target_output_tokens": 30,
+      "full_input_ids_sha256": "sha256:65797ef6a37eed653a70c970587ba54e9194d4a7378721a29ec0f28d56ed1b14",
+      "id": "440K:long_multifieldqa_en_1-row0",
+      "num_chunks": 8,
+      "chunk_tokens": 56320,
+      "total_tokens": 450631,
+      "query_tokens": 71,
+      "offline_chunk_hashes": [
+        "sha256:5bf9bad74aa6b61d63be9f7f87d1ed6bac61c8f174481a6144152eb80c407414",
+        "sha256:dca38a0b1ad3fe5c3aefe40035eb503d331a8337f33ed633b8a12b700eccbc53",
+        "sha256:14cc52f36334820e2213d72dcb81357167a65364671d540813b895e93f263ddc",
+        "sha256:7530442c8532aad6ee08b1606d45253809fbc47de0c3997f9cc051d4480c4d57",
+        "sha256:bd9d569a4dd2caf00e7f74f1f84d5372c90aac807c0880f008f16bb1e3e28298",
+        "sha256:7cc8818c926fc0db38bf9c831e8cb75dca0f6cabdee5fef978f02966b3aa64bf",
+        "sha256:01b629663663a36ae8a836c5e616d67197419484613b990c9906d6ba55da73bd",
+        "sha256:1c660d1ac064971eb06d7a42a6fe2fe5c01ec43432532584d5acbbde29be524b"
+      ],
+      "query_hash": "sha256:a33683d7a932c2ec05b40f27a9748eb83b5e7184099b44aaf73c211078deb6b5"
+    }
+  ],
+  "source_files_sha256": {
+    "test/srt/redknot/datasets/LongBench/suites/RELEASE_SUITES.json": "8f3b84299f98a6704e79782a203481ca97f8d73df2706b4f5ce2c5cff636bff1",
+    "test/srt/redknot/datasets/LongBench/suites/release_64k_15case.jsonl": "b255dfebb82c39aaec2dde919afcd405a422aa4c2fe051104a045ad47dcef2e1",
+    "test/srt/redknot/datasets/LongBench/cohorts/64k_curated_non_diffuse15/short_00_hotpotqa_row0/profile.json": "7427eb843641afebc42e19c9c5243569ea6db0045d6fb6690ddcfb151352ef71",
+    "test/srt/redknot/datasets/LongBench/cohorts/64k_curated_non_diffuse15/short_01_hotpotqa_row1/profile.json": "105e784472295d921c0c765f893c9915aa7daf206d98b52d02043c5b14cd0fb8",
+    "test/srt/redknot/datasets/LongBench/cohorts/64k_curated_non_diffuse15/short_02_hotpotqa_row2/profile.json": "c546afe91f198ae061422dce67e572fe9fef1922c83cb633977fcd9d02b3d486",
+    "test/srt/redknot/datasets/LongBench/cohorts/64k_curated_non_diffuse15/short_03_2wikimqa_row0/profile.json": "ee4216c841d12acb3631386c253fa208a65188b06573cba502988451d9b59eeb",
+    "test/srt/redknot/datasets/LongBench/cohorts/64k_curated_non_diffuse15/short_04_2wikimqa_row1/profile.json": "1361c7bb7f16edc89d39dcf78c55f03fa35f9557b70c078e9c29fc4fa47333d5",
+    "test/srt/redknot/datasets/LongBench/cohorts/64k_curated_non_diffuse15/short_05_2wikimqa_row5/profile.json": "e27057865a445cc27f766b758701b467a7b49acf3fb3da8ee68b579e68d1f0f4",
+    "test/srt/redknot/datasets/LongBench/cohorts/64k_curated_non_diffuse15/short_06_musique_row0/profile.json": "116724c6f719c38f31dcf715e9ed7aeee22e2b395da712c3f8466a8bc96c6e1e",
+    "test/srt/redknot/datasets/LongBench/cohorts/64k_curated_non_diffuse15/short_07_musique_row2/profile.json": "4b9e3345982278bbfc0c2766608f949fd0483ce02fc1f10d7724f6a2af527362",
+    "test/srt/redknot/datasets/LongBench/cohorts/64k_curated_non_diffuse15/short_08_multifieldqa_en_row1/profile.json": "b7684dc9ac8aca9175852fe429bc539549a115a969052593ab7317472ea363dd",
+    "test/srt/redknot/datasets/LongBench/cohorts/64k_curated_non_diffuse15/short_09_multifieldqa_en_row4/profile.json": "26fa781b7b3e0ef511268d5d002f86546f54ff196317bb909384b59e3edf13a6",
+    "test/srt/redknot/datasets/LongBench/cohorts/64k_curated_non_diffuse15/long_10_hotpotqa_row3/profile.json": "4344ebb945dfcc5fae99d7de076d7104e64b9a0d59a97237ac6e0fbdcf07d5e4",
+    "test/srt/redknot/datasets/LongBench/cohorts/64k_final_hot15_candidates/long_extra_2wikimqa_row0/profile.json": "439e8f145c0d444a01e8b81892f49abba75297b2f675610be60ef573fa1cdc51",
+    "test/srt/redknot/datasets/LongBench/cohorts/64k_curated_non_diffuse15/long_12_musique_row3/profile.json": "f71b4400cd45d20b9b51bb59571e2db2454694391aff1b41beeb775cbd4384d2",
+    "test/srt/redknot/datasets/LongBench/cohorts/64k_final_hot15_candidates/long_extra_musique_row0/profile.json": "21e0a12756da4b5d2abbe2a1a95fb1e00936c05b8497d633304e1da77434cfd8",
+    "test/srt/redknot/datasets/LongBench/cohorts/64k_curated_non_diffuse15/long_14_multifieldqa_en_row5/profile.json": "db650ba9193f1ae18ccab3a797b30954dd7078f29621be9205617ebc63bb1430",
+    "test/srt/redknot/datasets/LongBench/suites/release_128k_15case.jsonl": "d1a74ffbe2d9f46ec8840559fb5189f88966ad2641b6863a04e22d8b630c38da",
+    "test/srt/redknot/datasets/LongBench/cohorts/128k_curated_non_diffuse15/short_00_hotpotqa_row0/profile.json": "fe9ecac5a4536732c7371e41d50fe9aaab86d797fd4449396bac7d9b3fece971",
+    "test/srt/redknot/datasets/LongBench/cohorts/128k_curated_non_diffuse15/short_01_hotpotqa_row2/profile.json": "9b5fb800c828f28305f788da786bbf88e5890f657aaeaecb34d40b38190c7cea",
+    "test/srt/redknot/datasets/LongBench/cohorts/128k_curated_non_diffuse15/short_02_hotpotqa_row3/profile.json": "d5d9afc76ea7f9de522c0a35faf5bb381e82a6faad5b7264fbef85681b2ad932",
+    "test/srt/redknot/datasets/LongBench/cohorts/128k_curated_non_diffuse15/short_03_2wikimqa_row0/profile.json": "6d93012733ebea13416f112968b1eac878c8a802abc7bf5b508682c1c9d30b49",
+    "test/srt/redknot/datasets/LongBench/cohorts/128k_curated_non_diffuse15/short_04_2wikimqa_row5/profile.json": "04eae685d10cbcadbe4a379e57ea05b218a74e264ed9d472da0148e39fb3bd9b",
+    "test/srt/redknot/datasets/LongBench/cohorts/128k_curated_non_diffuse15/short_05_2wikimqa_row8/profile.json": "cdd7e0d8646f20fb64aa0d7e74f9a8a27d856fdb5302dc1bf5c45a1b1c905889",
+    "test/srt/redknot/datasets/LongBench/cohorts/128k_curated_non_diffuse15/short_06_musique_row0/profile.json": "b8dd84aa624e36af6b05398db0c4936e40047a3d06242a41f96321bb5f7acf55",
+    "test/srt/redknot/datasets/LongBench/cohorts/128k_curated_non_diffuse15/short_07_musique_row2/profile.json": "3846db39f47bb5d2d2a8d594a6d09e3c788a4d5cf4bb7882efc5e3de94d2206e",
+    "test/srt/redknot/datasets/LongBench/cohorts/128k_curated_non_diffuse15/short_08_multifieldqa_en_row1/profile.json": "440f44518eff1518393d766fe2bf0cde6957f02ec843ca0fceb69e8c5fa1917b",
+    "test/srt/redknot/datasets/LongBench/cohorts/128k_curated_non_diffuse15/short_09_multifieldqa_en_row4/profile.json": "1c2ff84b74ca51a58cdc68cf4b29608ec17ffddaf3590c9f38963355d39cd326",
+    "test/srt/redknot/datasets/LongBench/cohorts/128k_curated_non_diffuse15/long_10_hotpotqa_row4/profile.json": "571fb2a9a2d3f832950e980a885c2c1f63852539b25574bae02fca37bb56806d",
+    "test/srt/redknot/datasets/LongBench/cohorts/128k_curated_non_diffuse15/long_11_2wikimqa_row12/profile.json": "d824c7b08ce400c73626d6c5a4f047b4279309e3cd3f7b6560c043916a7d2b8d",
+    "test/srt/redknot/datasets/LongBench/cohorts/128k_curated_non_diffuse15/long_12_musique_row3/profile.json": "bc3992ec2fde4d97687fd50ebb4a403dab0bb19b9c2551e467dd4db2ae2803a6",
+    "test/srt/redknot/datasets/LongBench/cohorts/128k_curated_non_diffuse15/long_14_multifieldqa_en_row5/profile.json": "938d9ec13ad51dcdf556a1da40709bcdad1efd4d1b2ff19443621b7f82e8375d",
+    "test/srt/redknot/datasets/LongBench/cohorts/128k_final_hot15_candidates/long_extra_2wikimqa_row0/profile.json": "7c4e74c86d1770d26cb51e6ee91292821d2fed20f89eec8647eed4ad23aa22da",
+    "test/srt/redknot/datasets/LongBench/suites/release_256k_15case.jsonl": "fda5444c9a1fc00c12248340f6c064ac5963b5fbbdbc60830020c029ffd8a5e7",
+    "test/srt/redknot/datasets/LongBench/cohorts/256k_10q/hotpotqa/profile.json": "1f9162019a03c6cf636ded9a95d6b92494f93deb6d91826e0ec4f2477b420c71",
+    "test/srt/redknot/datasets/LongBench/cohorts/256k_suite15/long_hotpotqa_2/profile.json": "603ee90c1870ec0ef261b0306a4310e105531d91be6452fcfe1b2c2b72be4a79",
+    "test/srt/redknot/datasets/LongBench/cohorts/256k_suite15/long_musique_2/profile.json": "033646ce8b8ea373bce7d240121db501c331d9f873b7e07c09b8028982a12b02",
+    "test/srt/redknot/datasets/LongBench/cohorts/256k_suite15/long_multifieldqa_en_1/profile.json": "1bb683be015bd5877e864430b27121f40b3b25a02380b576340628237ab9d4fc",
+    "test/srt/redknot/datasets/LongBench/suites/release_440k_15case.jsonl": "cb02d9cb0e823768b75792c7d65f6dc020caecf7a7e8b76e8963a0516f1eccf0",
+    "test/srt/redknot/datasets/LongBench/cohorts/440k_10q/hotpotqa/profile.json": "9fc19004b147373de89bde50acded8b1f45c54d8d25ca595f2f408437a6c1535",
+    "test/srt/redknot/datasets/LongBench/cohorts/440k_suite15/long_hotpotqa_2/profile.json": "4ea583631002f67ac72e4f89322b118b5a0d7a8d81aa1340e761051f0dcd3767",
+    "test/srt/redknot/datasets/LongBench/cohorts/440k_suite15/long_musique_2/profile.json": "9cf656a33917831a7bd379514bfdb2886cb1e475cd6fcef39df05580c20333b4",
+    "test/srt/redknot/datasets/LongBench/cohorts/440k_suite15/long_multifieldqa_en_1/profile.json": "fa2bec9a10a832d5423d08a3fcebae8accdd65b37938a4abe7fc3f9d9c0b147d"
+  }
+}

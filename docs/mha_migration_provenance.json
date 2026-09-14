@@ -1,0 +1,61 @@
+{
+  "schema": "redknot_mha_callback_migration_v1",
+  "source_repository": "https://github.com/rednote-machine-learning/RedKnot",
+  "source_revision": "55ee4e8401603f8d2612877e4053e18b37b1c1bd",
+  "source_license": "Apache-2.0; project LICENSE and NOTICE retained",
+  "target_path": "vllm_redknot/model_backends/mha_reuse.py",
+  "target_sha256": "26ecdae6a22a3140b4fcecc806afee0bc1268b4d24f2004e39e1b6d27a1ce5de",
+  "runtime_integrated": false,
+  "status": "explicit_callback_algorithm_migrated_native_runner_wiring_pending",
+  "modification_types": [
+    "extract_boundary_offset_prefix_suffix_semantics_into_pure_plan",
+    "replace_transformers_model_cache_and_generation_driver_with_explicit_callbacks",
+    "retain_first_document_and_move_later_offline_keys_before_boundary_replay",
+    "validate_tensor_layout_and_clone_callback_inputs_for_failure_isolation",
+    "reuse_existing_portable_head_config_and_sparse_ffn_policy_without_duplication",
+    "defer_torch_imports_until_tensor_or_core_policy_helpers_are_called"
+  ],
+  "sources": [
+    {
+      "path": "python/sglang/srt/layers/attention/redknot/driver_batched.py",
+      "sha256": "b257dd96d3712a34df2fbcb566f39802d17c9974f12d1c59faf6a3fc137ce817",
+      "symbols": [
+        "run_redknot_swa_offlinekv",
+        "run_redknot_offlinekv"
+      ],
+      "scope": "Mistral offline key relocation and later-document boundary-prefix replacement; head-policy adaptive-window calculation only. No Transformers or engine implementation copied."
+    },
+    {
+      "path": "python/sglang/srt/layers/attention/redknot/head_config.py",
+      "sha256": "5400c701dd37ae9e0d8b11489c278f5e9ebde055fe603a2993454ed4e77cc1c9",
+      "symbols": [
+        "HeadClassConfig",
+        "HeadStrategy"
+      ],
+      "scope": "Delegates to already extracted core/head_config.py; preserves source alias, per-head distance/sink, retrieval merge and dense-prefix behavior."
+    },
+    {
+      "path": "python/sglang/srt/layers/attention/redknot/sparse_ffn.py",
+      "sha256": "4114bb81514e71d2b4e4877b3fbaab27d4313478c94c63883cc016ce87da3da5",
+      "symbols": [
+        "SparseFFNSchedule"
+      ],
+      "scope": "Delegates to already extracted core/sparse_ffn.py; no MLP hook or kernel activation."
+    },
+    {
+      "path": "test/srt/redknot/benchmark_RedKnot_Mistral_RAG.py",
+      "sha256": "1d757a09c338b2481db527b2ae771df0f0c40f9f840a0f6ce5498beba567d213",
+      "symbols": [
+        "RECOMPUTE_RATIO"
+      ],
+      "scope": "Default 20% boundary policy only; no model loading, dataset preparation, generation driver or measurements copied."
+    }
+  ],
+  "default_policy_source": {
+    "path": "test/srt/redknot/benchmark_RedKnot_Mistral_RAG.py",
+    "symbol": "RECOMPUTE_RATIO",
+    "default": 0.2,
+    "note": "Default benchmark ratio, not a proof of exactness or measured performance."
+  },
+  "validation_scope": "Pure plan checks, provenance, import isolation and optional CPU tensor callback oracle; no model generation, CUDA, quality, speedup or memory-saving validation."
+}
