@@ -3,7 +3,9 @@
 This package implements an experimental bounded MHA/GQA KV manager and a
 direct paged attention backend. Pages belong to physical KV heads/groups,
 not to query heads. The existing RedKnot `segpaged_attention` entry point
-dispatches to this backend when given `ManagedSegPagedKVCache`.
+dispatches to this backend when given `ManagedSegPagedKVCache`. The regular
+`RedKnotAttnBackend` and `SegPagedAttnBackend` also expose an explicit shared
+request path for both prefill/extend and decode.
 
 ## Ownership and mutation
 
@@ -72,6 +74,114 @@ values differently; model-level comparisons must report both logit error
 and token agreement. The public API validates descriptors (including a CPU
 sync on CUDA). This initial implementation targets correctness, decode and
 small query batches, not optimized dense prefill or production throughput.
+
+## RedKnot and SegPaged backend integration
+
+The registered `redknot` and `segpaged` backends accept a caller-owned manager.
+Set `runner.redknot_shared_kv_manager` **before backend construction**; the
+registry passes it into `RedKnotAttnBackend` or `SegPagedAttnBackend`. Direct
+construction accepts `shared_kv_manager=manager` as well. This is an opt-in
+integration API, not a new command-line switch or automatic scheduler setup.
+
+```python
+import torch
+from sglang.srt.layers.attention.attention_registry import create_redknot_backend
+from sglang.srt.mem_cache.head_kv import HeadKVManager, HeadPagePool
+
+# runner is an existing, configured ModelRunner. Choose capacity for the
+# physical KV heads of all participating local layers, with room for COW.
+pool = HeadPagePool(4096, 16, 128, dtype=torch.float32, device=runner.device)
+runner.redknot_shared_kv_manager = HeadKVManager(pool)
+backend = create_redknot_backend(runner)
+# create_segpaged_backend(runner) selects the same ownership adapter.
+shared = backend.shared_kv
+```
+
+The pool dtype/device and equal Q/K/V head dimension must match the actual
+model tensors. The FP32 example reflects the currently qualified model
+comparison; BF16 model qualification remains incomplete as described below.
+The contract must identify weights, adapters, KV representation and position
+semantics. The namespace is the isolation domain, and the context ID identifies
+the already-computed context. These values are supplied by the integration;
+the backend does not derive them from a token-pool slot.
+
+The following illustrates the lifecycle at the attention boundary. `layer`,
+projected Q/K/V, and prefill/decode batches come from the model's existing
+forward loop. Apply the same request handles to every participating model
+layer, and complete the parent's model prefill before forking it.
+
+```python
+parent = shared.create_request(
+    "request-parent", context_id="canonical-context-identity",
+    contract="weights-adapters-kv-position-contract", namespace="tenant-a",
+)
+handles_to_release = [parent]
+try:
+    prefill_batch.redknot_shared_kv_handles = [parent]
+    # Run for each layer as its Q/K/V become available. They already include
+    # the model's position transform. Batch metadata supplies explicit positions.
+    backend.init_forward_metadata(prefill_batch)
+    prefill_output = backend.forward_extend(
+        q, k, v, layer, prefill_batch, save_kv_cache=True,
+    )
+
+    # After all parent layers finish: both children share its immutable pages.
+    left = shared.fork_request(parent, "request-left")
+    handles_to_release.append(left)
+    right = shared.fork_request(parent, "request-right")
+    handles_to_release.append(right)
+    decode_batch.redknot_shared_kv_handles = [left, right]
+    # Q/K/V contain one new token for each request in this same order.
+    backend.init_forward_metadata(decode_batch)
+    decode_output = backend.forward_decode(
+        q_decode, k_decode, v_decode, layer, decode_batch, save_kv_cache=True,
+    )
+    # Later appends or shared.repair_request(handle, patches) detach only
+    # changed pages. Repairs require model-correct upstream inputs.
+finally:
+    # The scheduler invokes release for completion, cancellation and errors.
+    for handle in reversed(handles_to_release):
+        shared.release_request(handle)
+    pool.collect()  # In-flight reader events can defer physical reclamation.
+```
+
+A `SharedKVRequestHandle` contains the stable request ID and its generation.
+Recreating an ID cannot make an old handle valid. A fork preserves the parent's
+context/contract/namespace; it does not authorize reuse for an unrelated prompt.
+A batch must carry exactly one distinct live handle per request, in token order.
+Extend uses `positions`, `extend_seq_lens`, `extend_prefix_lens` and `seq_lens`;
+decode uses one token per handle, `positions` and `seq_lens`. Every layer/head
+must already cover its complete declared prefix. The adapter neither imports
+an absent dense-cache prefix nor silently creates a request.
+
+The registered backend dispatches this path before dense KV reads/writes.
+It stores one persistent `__redknot_live__` segment per physical KV head/layer,
+atomically appends that request's heads with `append_many`, and reads them via
+`ManagedSegPagedKVCache` page descriptors. It never expands GQA KV into query
+heads or gathers full historical KV. Local/global/dense head policies and
+model scaling are preserved. The model's sliding window further restricts a
+head window; sink policies that would expand a model sliding window are rejected.
+Retrieval policies, legacy dense `redknot_offline_segments` splice plans and
+extra model attention keyword arguments with non-`None` values are rejected.
+
+This adapter requires eager execution and explicit lifecycle wiring. It rejects
+unsupported cross-attention, encoder/bidirectional attention, speculative trees,
+multiaxis positions, quantized/scaled KV, logit capping, unequal Q/K/V dimensions
+and graph capture/replay paths. Supplying handles to an unconfigured backend also
+fails instead of falling through to dense execution.
+
+An append is atomic across one request's physical heads in one layer. Entire
+batches and model forwards are **not** transactions: a later OOM or kernel error
+can occur after earlier requests/layers committed. The caller must abort affected
+requests or restore a checkpoint before retrying; validation failures detected
+by the adapter's whole-batch preflight occur before its first append.
+
+The existing scheduler still needs to allocate/admit requests, attach the right
+handles, fork only valid contexts, retire requests and coordinate other model
+state. It can still allocate its original dense KV slab even when these attention
+calls bypass it. Therefore pool admission savings are not evidence of an
+end-to-end serving memory reduction until that allocation and lifecycle are
+integrated and measured.
 
 ## Cross-process sharing
 
@@ -142,8 +252,9 @@ position-encoded keys without a materialized adapter transform is rejected.
 This package does not treat MLA latent state or recurrent/native bundles
 as independent query-head KV pages.
 
-This change provides a callable managed SegPaged path, not automatic
-replacement of the SGLang scheduler's existing request/KV pools. It does
+This change provides managed SegPaged attention and opt-in paths in both
+registered RedKnot/SegPaged backends. It does not automatically replace the
+SGLang scheduler's existing request/KV pools. It does
 not yet implement TP/CP/PP serving integration, scheduler-wide atomic
 model steps, RDMA/GPU-direct transfer, authority replication/failover,
 quantized-page mutation, or an MLA-specific backend. The Qwen3 validation
@@ -157,7 +268,9 @@ From the repository root, with PyTorch and pytest installed:
 python -m pytest -q test/srt/redknot/test_head_kv_manager.py \
   test/srt/redknot/test_head_kv_attention.py \
   test/srt/redknot/test_head_kv_distributed.py \
-  test/srt/redknot/test_head_kv_transfer.py
+  test/srt/redknot/test_head_kv_transfer.py \
+  test/srt/redknot/test_shared_kv_adapter.py \
+  test/srt/redknot/test_shared_kv_backend.py
 python test/srt/redknot/benchmark_head_kv_manager.py \
   --device cuda:0 --dtype bfloat16 --output benchmark.json
 python test/srt/redknot/validate_head_kv_qwen3.py \
@@ -167,7 +280,9 @@ python test/srt/redknot/validate_head_kv_qwen3.py \
 
 Tests cover local ownership/COW/events, direct attention, real HTTP
 transfers and faults, restart decisions, migration fencing and snapshot
-validation. Benchmarks distinguish raw samples, page capacity, reserved
+validation. The shared-backend suites exercise registered entry-point dispatch,
+chunked prefill, batched fork/decode, generation fencing, local repair, window
+semantics, atomic multi-head admission and fail-closed unsupported inputs. Benchmarks distinguish raw samples, page capacity, reserved
 GPU memory and latency; the dense Torch attention reference is not an
 optimized FlashAttention throughput baseline.
 

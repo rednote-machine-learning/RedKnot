@@ -166,6 +166,157 @@ def test_append_partial_shared_tail_and_truncate():
     assert_data(m,"child",(0,0,"D"),torch.cat((data[0][0][:9],k[:1])),torch.cat((data[0][1][:9],v[:1])))
 
 
+@pytest.mark.parametrize("device", ["cpu", pytest.param("cuda", marks=pytest.mark.skipif(
+    not torch.cuda.is_available(), reason="CUDA required"))])
+def test_append_many_initial_heads_shared_tail_and_new_head_commit_once(monkeypatch, device):
+    pool = HeadPagePool(24, 4, 8, device=device)
+    m = HeadKVManager(pool)
+    m.create_request("source", context_id="ctx")
+    data = [(torch.randn(n, 8, device=device), torch.randn(n, 8, device=device)) for n in (6, 8)]
+    initial = [SegmentWrite((0, h, "D"), k, v, tuple(range(len(k))), "initial",
+                            "rope-v1", "policy_approximate", "adapter-cert")
+               for h, (k, v) in enumerate(data)]
+    version = m.append_many("source", appends=initial, expected_epoch=0)
+    assert version.epoch == 1
+    m.fork("source", "child")
+    before = m.stats()
+    payloads = [(torch.randn(n, 8, device=device), torch.randn(n, 8, device=device)) for n in (3, 1, 2)]
+    appends = [SegmentWrite((0, h, "D"), k, v,
+                            tuple(range((6, 8, 0)[h], (6, 8, 0)[h] + len(k))),
+                            "append", "rope-v1")
+               for h, (k, v) in enumerate(payloads)]
+    cat_rows, original_cat = [], torch.cat
+
+    def tracked_cat(tensors, *args, **kwargs):
+        cat_rows.append(tuple(len(tensor) for tensor in tensors))
+        return original_cat(tensors, *args, **kwargs)
+
+    with monkeypatch.context() as patch:
+        patch.setattr(torch, "cat", tracked_cat)
+        child = m.append_many("child", appends=appends, expected_epoch=0)
+    assert child.epoch == 1  # All heads publish as one root, not one per head.
+    assert cat_rows == [(2, 3), (2, 3)]  # K/V copy only the partial tail.
+    assert m.stats()["live_pages"] - before["live_pages"] == 4
+    assert m.stats()["copied_bytes"] - before["copied_bytes"] == 2 * 2 * 8 * 4
+    for h in range(2):
+        old = version.segments[(0, h, "D")]
+        new = child.segments[(0, h, "D")]
+        full = len(data[h][0]) // 4
+        assert new.pages[:full] == old.pages[:full]
+        if len(data[h][0]) % 4:
+            assert new.pages[full] != old.pages[full]
+        assert new.reuse_kind == "policy_approximate"
+        assert new.validity_certificate == "adapter-cert"
+        assert_data(m, "source", (0, h, "D"), *data[h])
+        assert_data(m, "child", (0, h, "D"),
+                    torch.cat((data[h][0], payloads[h][0])),
+                    torch.cat((data[h][1], payloads[h][1])))
+    assert_data(m, "child", (0, 2, "D"), *payloads[2])
+    m.release_request("source")
+    m.release_request("child")
+    if device == "cuda":
+        torch.cuda.synchronize(pool.device)
+    assert m.stats()["free_pages"] == 24
+
+
+@pytest.mark.parametrize("initial", [True, False])
+def test_append_many_oom_is_atomic_before_first_head_write(initial):
+    if initial:
+        m = HeadKVManager(HeadPagePool(3, 4, 8))
+        m.create_request("source", context_id="ctx")
+        n, start = 6, 0
+    else:
+        m, _ = setup(capacity=7, heads=2, length=6)
+        n, start = 5, 6
+    before, version = m.stats(), m.version("source")
+    appends = [SegmentWrite((0, h, "D"), torch.ones(n, 8), torch.zeros(n, 8),
+                            tuple(range(start, start + n)), "append") for h in range(2)]
+    with pytest.raises(CapacityError):
+        m.append_many("source", appends=appends)
+    assert m.version("source") is version
+    after = m.stats()
+    assert after["written_bytes"] == before["written_bytes"]
+    assert after["free_pages"] == before["free_pages"]
+    assert after["reserved_pages"] == after["pinned_pages"] == after["pending_transactions"] == 0
+
+
+@pytest.mark.parametrize("invalid", ["duplicate_key", "duplicate_position", "negative_position",
+                                     "position_basis", "new_certificate", "stale_epoch"])
+def test_append_many_validates_entire_batch_before_reserving(invalid):
+    from dataclasses import replace
+
+    m, _ = setup(heads=2, length=6)
+    before, old = m.stats(), m.version("source")
+    appends = [SegmentWrite((0, h, "D"), torch.ones(1, 8), torch.zeros(1, 8), (6,), "append")
+               for h in range(2)]
+    changes = {
+        "duplicate_key": {"key": (0, 0, "D")},
+        "duplicate_position": {"positions": (5,)},
+        "negative_position": {"positions": (-1,)},
+        "position_basis": {"position_basis": "untransformed-rope"},
+        "new_certificate": {"key": (0, 2, "D"), "reuse_kind": "policy_approximate"},
+    }
+    if invalid != "stale_epoch":
+        appends[1] = replace(appends[1], **changes[invalid])
+    with pytest.raises((ValueError, RuntimeError)):
+        m.append_many("source", appends=appends,
+                      expected_epoch=old.epoch + int(invalid == "stale_epoch"))
+    assert m.version("source") is old
+    assert m.stats()["written_bytes"] == before["written_bytes"]
+    assert m.stats()["high_water_pages"] == before["high_water_pages"]
+    assert m.stats()["free_pages"] == before["free_pages"]
+
+
+def test_append_many_interrupted_second_head_waits_for_event_before_reclamation(monkeypatch):
+    import head_kv.manager as manager_module
+
+    m, data = setup(capacity=12, heads=2, length=6)
+    before, old = m.stats(), m.version("source")
+    gate = Gate()
+    writes, original = [], m.pool.write_page
+
+    def interrupted(ref, k, v):
+        writes.append(ref)
+        if len(writes) == 2:
+            raise KeyboardInterrupt("second head interrupted")
+        return original(ref, k, v)
+
+    with monkeypatch.context() as patch:
+        patch.setattr(m.pool, "write_page", interrupted)
+        patch.setattr(manager_module, "completion_event", lambda device: gate)
+        with pytest.raises(KeyboardInterrupt, match="second head"):
+            m.append_many("source", appends=[SegmentWrite(
+                (0, h, "D"), torch.ones(1, 8), torch.zeros(1, 8), (6,), "append")
+                for h in range(2)])
+    assert m.version("source") is old
+    assert m.stats()["free_pages"] == before["free_pages"] - 2
+    assert m.stats()["retiring_pages"] == 2
+    # Pending device dependencies protect both old read sources and destinations;
+    # the host read-lease pins themselves have already been released.
+    assert m.stats()["pinned_pages"] == 6
+    assert all(page.pins == 0 for page in m.pool._pages.values())
+    assert m.stats()["pending_transactions"] == 0
+    for h in range(2):
+        assert_data(m, "source", (0, h, "D"), *data[h])
+    gate.ready = True
+    m.pool.collect()
+    assert m.stats()["free_pages"] == before["free_pages"]
+    assert m.stats()["pinned_pages"] == 0
+    assert not m.pool.poisoned
+
+
+def test_append_many_empty_existing_segment_preserves_version_and_scalar_missing_key():
+    m, _ = setup(heads=1)
+    old = m.version("source")
+    empty = torch.empty(0, 8)
+    append = SegmentWrite((0, 0, "D"), empty, empty, (), "unused")
+    assert m.append_many("source", appends=[append]) is old
+    assert m.append_many("source", appends=[]) is old
+    assert m.append("source", append.key, empty, empty, (), provenance="unused") is old
+    with pytest.raises(KeyError):
+        m.append("source", (0, 1, "missing"), empty, empty, (), provenance="unused")
+
+
 def test_exact_context_and_rope_relocation_rejected():
     m,_ = setup(heads=1)
     m.create_request("target",context_id="new",contract="test-weights-v1")

@@ -8,7 +8,7 @@ import threading
 import uuid
 from dataclasses import dataclass, replace
 from types import MappingProxyType
-from typing import Mapping
+from typing import Mapping, Sequence
 
 import torch
 
@@ -475,49 +475,113 @@ class HeadKVManager:
     def append(self, request_id, key, k, v, positions, *, provenance):
         """Append with page reuse; sealed partial tails are always detached."""
         with self._lock:
+            # Preserve the scalar API's requirement that its segment exists.
+            s = self._requests[request_id].segments[key]
+            return self.append_many(request_id, appends=(SegmentWrite(
+                key, k, v, tuple(positions), provenance, s.position_basis,
+                s.reuse_kind, s.validity_certificate),))
+
+    def append_many(self, request_id, *, appends: Sequence[SegmentWrite],
+                    expected_epoch=None):
+        """Append all supplied heads with one reservation and root publication.
+
+        Missing segment keys create their initial pages. Existing segments keep
+        their complete historical pages, validity lineage and position basis;
+        only a partial tail is copied alongside the current input chunk. The
+        caller must already have transformed K into the declared position basis.
+
+        Validation and admission cover the complete write set before any page
+        is written. This is one request transaction, not a multi-request/model
+        step transaction. Empty appends to existing segments are no-ops.
+        """
+        with self._lock:
             old = self._requests[request_id]
             if request_id in self._pending:
                 raise RuntimeError("request has pending writer")
-            s = old.segments[key]
-            w = SegmentWrite(key, k, v, tuple(positions), provenance, s.position_basis)
-            self._validate_write(w)
-            if len(k) != len(positions) or any(not isinstance(p, int) or p < 0 for p in positions):
-                raise ValueError("invalid append positions")
-            all_pos = s.positions + tuple(positions)
-            if len(set(all_pos)) != len(all_pos):
-                raise ValueError("duplicate append positions")
-            if not len(k):
+            if expected_epoch is not None and expected_epoch != old.epoch:
+                raise RuntimeError("stale table epoch")
+            appends = tuple(appends)
+            keys = [w.key for w in appends]
+            if len(keys) != len(set(keys)):
+                raise ValueError("each segment may appear once in an append transaction")
+            plans, total = [], 0
+            for w in appends:
+                self._validate_write(w)
+                positions = tuple(w.positions)
+                if len(positions) != len(w.k):
+                    raise ValueError("positions must match append payload")
+                if any(not isinstance(p, int) or isinstance(p, bool) or p < 0
+                       for p in positions):
+                    raise ValueError("invalid append positions")
+                if len(set(positions)) != len(positions):
+                    raise ValueError("duplicate append positions")
+                s = old.segments.get(w.key)
+                if s is None:
+                    if w.reuse_kind not in ("exact_context", "certified_transform", "policy_approximate"):
+                        raise ValueError("unknown reuse kind")
+                    if not isinstance(w.validity_certificate, str) or (
+                            w.reuse_kind != "exact_context" and not w.validity_certificate):
+                        raise ValueError("non-exact writes require an adapter validity certificate")
+                    full, tail = 0, 0
+                else:
+                    if w.position_basis != s.position_basis:
+                        raise ValueError("append position basis differs from existing segment")
+                    if set(s.positions).intersection(positions):
+                        raise ValueError("duplicate append positions")
+                    if not len(w.k):
+                        continue
+                    positions = s.positions + positions
+                    full, tail = divmod(s.length, self.pool.page_size)
+                count = math.ceil((tail + len(w.k)) / self.pool.page_size)
+                plans.append((w, s, positions, full, tail, count))
+                total += count
+            if not plans:
                 return old
-            full = s.length // self.pool.page_size
-            tail = s.length % self.pool.page_size
-            count = math.ceil((tail + len(k))/self.pool.page_size)
-            reserved = self.pool.reserve(count)
+
+            # Allocate host bookkeeping before reserving physical pages.
+            segments = dict(old.segments)
+            reserved = self.pool.reserve(total)
             lease = None
+            tx = None
             try:
                 lease = ReadLease(self.pool, old)
-                if tail:
-                    oldk, oldv = self.pool.read_page(s.pages[-1], tail)
-                    wk, wv = torch.cat((oldk, k.to(self.pool.device, self.pool.dtype))), torch.cat((oldv, v.to(self.pool.device, self.pool.dtype)))
-                    self.pool.copied_bytes += 2*tail*self.pool.head_dim*self.pool.k.element_size()
-                else:
-                    wk, wv = k, v
-                for i, ref in enumerate(reserved):
-                    self.pool.write_page(ref, wk[i*self.pool.page_size:(i+1)*self.pool.page_size], wv[i*self.pool.page_size:(i+1)*self.pool.page_size])
+                cursor = 0
+                for w, s, positions, full, tail, count in plans:
+                    pages = reserved[cursor:cursor + count]
+                    cursor += count
+                    if tail:
+                        oldk, oldv = self.pool.read_page(s.pages[-1], tail)
+                        wk = torch.cat((oldk, w.k.to(self.pool.device, self.pool.dtype)))
+                        wv = torch.cat((oldv, w.v.to(self.pool.device, self.pool.dtype)))
+                        self.pool.copied_bytes += 2 * tail * self.pool.head_dim * self.pool.k.element_size()
+                    else:
+                        wk, wv = w.k, w.v
+                    for i, ref in enumerate(pages):
+                        start, end = i * self.pool.page_size, (i + 1) * self.pool.page_size
+                        self.pool.write_page(ref, wk[start:end], wv[start:end])
+                    if s is None:
+                        segments[w.key] = Segment(w.key, pages, positions, w.provenance,
+                                                  w.position_basis, w.reuse_kind, w.validity_certificate)
+                    else:
+                        # Appending exact new rows must not erase approximate
+                        # or transformed lineage already present in the history.
+                        segments[w.key] = replace(s, pages=s.pages[:full] + pages,
+                                                  positions=positions, provenance=w.provenance)
                 self.pool.seal(reserved)
                 event = completion_event(self.pool.device)
+                tx = WriteTransaction(self, old, segments, reserved, lease, event)
+                self._pending[request_id] = tx
             except BaseException:
                 try:
                     event = completion_event(self.pool.device)
                     self.pool.release(reserved, event)
                     if lease is not None:
                         lease.complete(event)
+                    if tx is not None and self._pending.get(request_id) is tx:
+                        self._pending.pop(request_id)
                 except BaseException:
                     self.pool.poisoned = True
                 raise
-            segs = dict(old.segments)
-            segs[key] = replace(s, pages=s.pages[:full]+reserved, positions=all_pos, provenance=provenance)
-            tx = WriteTransaction(self, old, segs, reserved, lease, event)
-            self._pending[request_id] = tx
             return tx.commit(wait=True)
 
     def stats(self):

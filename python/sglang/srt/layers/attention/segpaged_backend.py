@@ -55,6 +55,7 @@ class SegPagedAttnBackend(RedKnotAttnBackend):
         q_chunk_size: int = DEFAULT_Q_CHUNK,
         kernel: str = "fa2",
         page_size: int = 64,
+        shared_kv_manager=None,
     ):
         if head_config is None:
             head_config = _load_segpaged_head_config(model_runner)
@@ -65,6 +66,7 @@ class SegPagedAttnBackend(RedKnotAttnBackend):
             kernel=kernel,
             use_segpaged_decode=True,
             segpaged_page_size=page_size,
+            shared_kv_manager=shared_kv_manager,
         )
         logger.info(
             "SegPagedAttnBackend initialized (kernel=%s, page_size=%d, head_config=%s)",

@@ -85,6 +85,21 @@ levels. RedKnot keeps a full online Recomputed path as its reference; reported
 gains are therefore measured against the same checkpoint and input IDs rather
 than against a prefix-cache hit.
 
+## Multi-request shared KV backend (experimental)
+
+The `redknot` and `segpaged` attention backends support an explicitly supplied
+head-page KV manager for MHA/GQA request forks, copy-on-write append/repair and
+direct paged attention. The manager also provides cross-process snapshot
+sharing over HTTP. Request lifecycle and stable batch handles must be wired by
+the caller; selecting the backend alone does not enable shared ownership.
+
+See the [integration and lifecycle guide](python/sglang/srt/mem_cache/head_kv/README.md)
+and [validation report](test/srt/redknot/HEAD_KV_VALIDATION.md). This eager path
+does not implement MLA, full scheduler/TP serving integration or automatic
+dense-pool replacement. Strict Qwen3-8B FP32 qualification passes; BF16 model
+qualification remains unresolved. The component capacity results do not
+establish an end-to-end serving speedup.
+
 ## DeepSeek V4 Flash release
 
 The DeepSeek-V4-Flash release is the primary reproducible path in this repository. It runs on a TP8 server and ships all frozen inputs, head policy, sparse-MoE policy and execution manifests required for the packaged benchmark.
@@ -114,9 +129,10 @@ online prefill with no RedKnot prefix reuse; RedKnot materializes the first
 document as the certified prefix and applies the published reuse, row-sparse
 and adaptive-Top-K policy to the remaining documents.
 
-All measurements and validation experiments in this repository were run on
+The packaged DeepSeek-V4-Flash release measurements were run on
 8× NVIDIA H200 or 8× NVIDIA B300 nodes in TP8. No L20X/L20Y measurements are
-reported. H200 uses the certified Hopper release configuration; B300 uses the
+reported for that release. The separate shared-KV component report records its
+driver-reported hardware identity. H200 uses the certified Hopper release configuration; B300 uses the
 separate SM103 hardware profile and rebuilds the hardware-specific FlashMLA,
 DeepGEMM and SGL kernels before running the same frozen suites.
 

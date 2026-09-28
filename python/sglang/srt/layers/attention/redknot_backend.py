@@ -38,6 +38,11 @@ scheduler / a custom processor):
 - ``forward_batch.redknot_head_config``:
     Optional override for the layer-wide ``HeadClassConfig`` (otherwise the
     one passed at backend construction is used).
+- ``forward_batch.redknot_shared_kv_handles``:
+    Stable request ID/generation handles for a backend constructed with
+    ``shared_kv_manager``. This selects persistent shared head pages for both
+    extend and decode, before any access to the dense token KV pool. Requests
+    are created, forked, repaired and released through ``backend.shared_kv``.
 
 The backend lazily attaches them at first ``init_forward_metadata`` and
 ignores them on subsequent layers in the same step.
@@ -124,16 +129,24 @@ class RedKnotAttnBackend(AttentionBackend):
         kernel: str = "fa2",
         use_segpaged_decode: bool = False,
         segpaged_page_size: int = 64,
+        shared_kv_manager=None,
     ):
         super().__init__()
         self.device = model_runner.device
         self.req_to_token_pool = model_runner.req_to_token_pool
         self.token_to_kv_pool = model_runner.token_to_kv_pool
 
-        # Resolve kernel up-front so server start fails loudly if the
-        # requested implementation isn't available.
+        # Legacy execution validates FA availability up-front. Managed sharing
+        # uses direct paged attention and does not depend on the FA gather path.
         self.kernel_name = (kernel or "fa2").lower()
-        self._kernel_fn = _resolve_kernel_fn(self.kernel_name)
+        self.shared_kv = None
+        if shared_kv_manager is not None:
+            from sglang.srt.layers.attention.redknot.shared_kv import SharedKVBackend
+
+            self.shared_kv = SharedKVBackend(shared_kv_manager)
+        self._kernel_fn = (
+            _resolve_kernel_fn(self.kernel_name) if self.shared_kv is None else None
+        )
 
         # SegPagedAttention decode: when enabled, decode reads a per-head
         # paged KV view (local heads -> sink+recent only, global heads ->
@@ -143,7 +156,7 @@ class RedKnotAttnBackend(AttentionBackend):
         # reduction (paper §5.4 / §5.5).
         self.use_segpaged_decode = bool(use_segpaged_decode)
         self.segpaged_page_size = int(segpaged_page_size)
-        if self.use_segpaged_decode and not is_fused_varlen_available():
+        if self.shared_kv is None and self.use_segpaged_decode and not is_fused_varlen_available():
             logger.warning(
                 "RedKnot: use_segpaged_decode requested but fused varlen "
                 "FA-3 is unavailable; SegPaged decode will use the exact "
@@ -246,6 +259,50 @@ class RedKnotAttnBackend(AttentionBackend):
     # ────────────────────────────────────────────────────────────────
     # forward_extend / forward_decode
     # ────────────────────────────────────────────────────────────────
+    def _forward_shared_kv(self, q, k, v, layer, forward_batch, *, decode,
+                           save_kv_cache):
+        """Route one batch through persistent multi-request COW storage.
+
+        The caller owns request lifecycle and batch handles. Legacy offline
+        splice plans refer to the dense pool and cannot be mixed into this path;
+        use explicit manager segment sharing/repair before submitting the batch.
+        """
+        offline_segments = getattr(forward_batch, "redknot_offline_segments", None)
+        if offline_segments is not None and any(offline_segments):
+            raise ValueError("shared KV uses manager segments, not dense offline splice plans")
+        meta = self.forward_metadata
+        config = meta.head_config if meta is not None else self.head_config
+        windows = sinks = None
+        if config is not None:
+            index = self._head_cfg_layer_index(layer.layer_id)
+            head_start = self._attn_tp_rank * layer.tp_k_head_num
+            plan = build_layer_mask_plan(
+                config, index, self.device, kv_head_start=head_start,
+                kv_head_count=layer.tp_k_head_num,
+            )
+            sink_values = config.as_tensors(self.device)["sink_size"][index][
+                head_start:head_start + layer.tp_k_head_num
+            ].tolist()
+            windows, sinks = [], []
+            for code, window, sink in zip(
+                plan.type_codes.tolist(), plan.window.tolist(), sink_values
+            ):
+                if code == HeadClassConfig.TYPE_RETRIEVAL:
+                    raise ValueError("retrieval head policy is unsupported by shared KV")
+                local = code == HeadClassConfig.TYPE_LOCAL
+                if local and window <= 0:
+                    raise ValueError("shared KV local heads require a positive window")
+                windows.append(int(window) if local else 0)
+                sinks.append(max(0, int(sink)) if local else 0)
+        return self.shared_kv.forward(
+            q, k, v, layer, forward_batch, decode=decode,
+            save_kv_cache=save_kv_cache, windows=windows, sinks=sinks,
+        )
+
+    def _reject_unconfigured_shared_kv(self, forward_batch):
+        if getattr(forward_batch, "redknot_shared_kv_handles", None) is not None:
+            raise ValueError("shared KV handles require a shared_kv_manager backend")
+
     @debug_kernel_api
     def forward_extend(
         self,
@@ -263,6 +320,14 @@ class RedKnotAttnBackend(AttentionBackend):
         the no-RedKnot case, but when ``forward_batch`` carries offline
         segment ids we route attention per-head according to ``head_config``.
         """
+        if self.shared_kv is not None:
+            if any(value is not None for value in kwargs.values()):
+                raise ValueError("unsupported shared KV attention arguments")
+            return self._forward_shared_kv(
+                q, k, v, layer, forward_batch, decode=False,
+                save_kv_cache=save_kv_cache,
+            )
+        self._reject_unconfigured_shared_kv(forward_batch)
         # Write incoming K/V to sglang's KV cache exactly like other backends.
         if save_kv_cache and k is not None and v is not None:
             cache_loc = (
@@ -402,6 +467,14 @@ class RedKnotAttnBackend(AttentionBackend):
         applied during prefill; decode is a plain windowed SDPA over the
         materialised KV — identical to TorchNativeAttnBackend.
         """
+        if self.shared_kv is not None:
+            if any(value is not None for value in kwargs.values()):
+                raise ValueError("unsupported shared KV attention arguments")
+            return self._forward_shared_kv(
+                q, k, v, layer, forward_batch, decode=True,
+                save_kv_cache=save_kv_cache,
+            )
+        self._reject_unconfigured_shared_kv(forward_batch)
         q = q.reshape(-1, layer.tp_q_head_num * layer.qk_head_dim)
         if layer.qk_head_dim != layer.v_head_dim:
             out = q.new_empty((q.shape[0], layer.tp_q_head_num * layer.v_head_dim))

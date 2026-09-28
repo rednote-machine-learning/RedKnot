@@ -50,6 +50,7 @@ def create_redknot_backend(runner):
         kernel=kernel,
         use_segpaged_decode=use_segpaged,
         segpaged_page_size=page_size,
+        shared_kv_manager=getattr(runner, "redknot_shared_kv_manager", None),
     )
 
 
@@ -66,6 +67,7 @@ def create_segpaged_backend(runner):
         q_chunk_size=q_chunk,
         kernel=kernel,
         page_size=page_size,
+        shared_kv_manager=getattr(runner, "redknot_shared_kv_manager", None),
     )
 
 

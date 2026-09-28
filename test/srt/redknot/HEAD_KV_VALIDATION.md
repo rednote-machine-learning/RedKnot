@@ -3,7 +3,40 @@
 This is an experimental MHA/GQA KV manager, not a production serving rollout.
 See the package README for API usage and integration boundaries.
 
-## Measured qualification
+## Backend integration regression
+
+The `redknot` and `segpaged` registry factories now accept a caller-supplied
+shared KV manager. Both backend extend/decode entry points use stable request
+handles and persistent head pages before any dense token-pool access.
+
+- 149 tests passed on two visible CUDA GPUs, with no skipped or failed tests.
+  The six suites include the four ownership/attention/distribution suites and
+  `test_shared_kv_adapter.py` plus `test_shared_kv_backend.py`.
+- Backend tests exercise multi-request chunk prefill, fork, reordered decode,
+  GQA/local-window policies, tail COW, source isolation and reclamation. Dense
+  pool reads/writes raise in the managed tests. Actual backend, registry,
+  manager and attention code runs; heavyweight SGLang runtime import dependencies
+  are stubbed. This is not a full scheduler/HTTP serving test.
+- Multi-head first-write/append admission is atomic per request/layer. Tests
+  cover OOM, stale handles, invalid later heads, pending events and interruption.
+  Unsupported retrieval policies and non-`None` model-specific attention keyword
+  arguments fail before cache mutation.
+- The three-process/two-GPU snapshot experiment was repeated successfully:
+  98,304 payload bytes, non-prefix sharing, COW, rollback, migration fences and
+  cleanup. Real Qwen3-8B FP32 was also repeated: 40/40 argmax agreement and maximum
+  logit error 3.7193298e-05, with all 3168 pool pages reclaimed.
+- GPU guard restoration reported both borrowed workers restored and verified,
+  with no restoration errors. Local CPU validation passed 136 tests; its 13 CUDA
+  skips were all exercised by the server run.
+
+Request lifecycle, compatibility contracts and batch handles are explicit caller
+responsibilities. Entire batches/model steps are not atomic. CUDA graphs and full
+scheduler/TP/CP/PP integration are not implemented; the surrounding scheduler may
+still allocate its original dense slab. See the package README for usage and
+failure recovery requirements. These changes do not resolve the BF16 qualification
+failures below.
+
+## Original component qualification
 
 - 91 tests passed on two visible CUDA GPUs, with no skipped tests. Tests cover COW, atomic admission, event retirement, device changes, real HTTP transfers, durable decisions and fault handling.
 - Three independent owner/source/destination processes transferred 98,304 bytes between two GPUs on one host. Non-prefix occurrence reordering, two-page repair, unchanged parent hashes, exact target KV and same-policy attention passed. READY checkpoint data remained resident through authority COMMIT; stale owners were fenced. All page/store references and process CUDA allocations were reclaimed.
@@ -31,7 +64,8 @@ This qualifies single-host, multi-process HTTP host staging, not cross-physical-
 
 ## Reproduce
 
-Run the four `test_head_kv_*.py` suites under `test/srt/redknot` with pytest.
+Run the four `test_head_kv_*.py` suites plus `test_shared_kv_adapter.py` and
+`test_shared_kv_backend.py` under `test/srt/redknot` with pytest.
 For a two-device component experiment:
 
 ```bash
