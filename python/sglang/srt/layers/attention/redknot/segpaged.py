@@ -433,6 +433,8 @@ def segpaged_attention(
     num_q_per_kv: int,
     sm_scale: float,
     use_fused: bool = True,
+    query_positions: Optional[torch.Tensor] = None,
+    causal: Optional[bool] = None,
 ) -> torch.Tensor:
     """SegPagedAttention forward for one layer (Algorithm 2).
 
@@ -457,11 +459,32 @@ def segpaged_attention(
         Use the fused FA-3 varlen kernel when available; otherwise (or on
         CPU) fall back to the exact per-head reference. Both paths are
         numerically equivalent up to fp tolerance.
+    query_positions, causal:
+        ManagedSegPagedKVCache requires explicit target query positions and
+        defaults to causal attention. It dispatches to the bounded manager and
+        direct paged kernel before the legacy gather/pack path. Legacy caches
+        retain their existing noncausal behavior; they reject these new options.
 
     Returns
     -------
     ``[Hq, Lq, D]`` attention output.
     """
+    if getattr(cache, "_managed_segpaged_cache", False):
+        return cache.attention(
+            query,
+            layer=layer,
+            query_positions=query_positions,
+            num_q_per_kv=num_q_per_kv,
+            sm_scale=sm_scale,
+            use_fused=use_fused,
+            causal=True if causal is None else causal,
+        )
+    if query_positions is not None or causal is not None:
+        raise ValueError(
+            "query_positions/causal require ManagedSegPagedKVCache; "
+            "the legacy gather path has no position descriptors"
+        )
+
     Hq, Lq, D = query.shape
     Hkv = cache.num_kv_heads
     if Hq != Hkv * num_q_per_kv:
