@@ -73,7 +73,7 @@ Also, do not rely on the "Latency/Output throughput" from this script, as it is 
 GSM8K is too easy for state-of-the-art models nowadays. Please try your own more challenging accuracy tests.
 You can find additional accuracy eval examples in:
 - [test_eval_accuracy_large.py](https://github.com/sgl-project/sglang/blob/main/test/manual/eval/test_eval_accuracy_large.py)
-- [test_gpt_oss_1gpu.py](https://github.com/sgl-project/sglang/tree/main/test/registered)
+- [test_gpt_oss_sm120.py](https://github.com/sgl-project/sglang/blob/main/test/registered/e2e/models/test_gpt_oss_sm120.py)
 
 ## Benchmark the speed
 Refer to [Benchmark and Profiling](../../developer_guide/benchmark_and_profiling.md).
