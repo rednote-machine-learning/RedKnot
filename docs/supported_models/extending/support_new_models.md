@@ -65,7 +65,7 @@ should give the same text output and very similar prefill logits:
 ### Add the Model to the Test Suite
 
 To ensure the new model is well maintained, add it to the test suite by including it in the `ALL_OTHER_MODELS` list in
-the [test_generation_models.py](https://github.com/sgl-project/sglang/blob/main/test/registered/models/test_generation_models.py)
+the [test_generation_models.py](https://github.com/sgl-project/sglang/blob/main/test/registered/e2e/models/test_generation_models.py)
 file, test the new model on your local machine and report the results on demonstrative benchmarks (GSM8K, MMLU, MMMU,
 MMMU-Pro, etc.) in your PR. \\
 For VLMs, also include a test in `test_vision_openai_server_{x}.py` (e.g. [test_vision_openai_server_a.py](https://github.com/sgl-project/sglang/blob/main/test/registered/vlm/test_vision_openai_server_a.py)).
@@ -136,7 +136,7 @@ launch_server(server_args)
 
 ## Example: Implementing and Serving a Llama Wrapper Model
 
-Below is an introductory, step-by-step walkthrough on how to implement a new model end-to-end in SGLang and then run it via the [Offline Engine](https://github.com/sgl-project/sglang/blob/main/docs/basic_usage/offline_engine_api.ipynb).
+Below is an introductory, step-by-step walkthrough on how to implement a new model end-to-end in SGLang and then run it via the [Offline Engine](https://github.com/sgl-project/sglang/blob/main/docs/docs/basic_usage/offline_engine_api.mdx).
 
 ### Implementing Our Model
 
