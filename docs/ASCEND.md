@@ -36,8 +36,8 @@ platform layer that RedKnot builds on:
 | Dockerfile | [`docker/npu.Dockerfile`](https://github.com/sgl-project/sglang/blob/main/docker/npu.Dockerfile) |
 | Quickstart | [`docs/platforms/ascend/ascend_npu_quick_start.md`](https://github.com/sgl-project/sglang/blob/main/docs/docs/hardware-platforms/ascend-npus/getting-started/quick_start.mdx) |
 | Best practice | [`ascend_npu_best_practice.md`](https://github.com/sgl-project/sglang/tree/main/docs/docs/hardware-platforms/ascend-npus/model-deployment/best-practices) |
-| Environment variables | [`ascend_npu_environment_variables.md`](https://github.com/sgl-project/sglang/blob/main/docs/docs/hardware-platforms/ascend-npus/getting-started/installation.mdx) |
-| Supported models & features | [`ascend_npu_support_models.md`](https://github.com/sgl-project/sglang/blob/main/docs/docs/hardware-platforms/ascend-npus/development/support_new_models.mdx), [`ascend_npu_support_features.md`](https://github.com/sgl-project/sglang/blob/main/docs/docs/hardware-platforms/ascend-npus/faq.mdx) |
+| Environment variables | [`ascend_npu_environment_variables.md`](https://github.com/sgl-project/sglang/blob/main/docs/docs/hardware-platforms/ascend-npus/reference/environment_variables.mdx) |
+| Supported models & features | [`ascend_npu_support_models.md`](https://github.com/sgl-project/sglang/blob/main/docs/docs/hardware-platforms/ascend-npus/reference/support_models.mdx), [`ascend_npu_support_features.md`](https://github.com/sgl-project/sglang/blob/main/docs/docs/hardware-platforms/ascend-npus/reference/support_features.mdx) |
 | CI | `.github/workflows/{pr-test-npu,full-test-npu,nightly-test-npu,release-docker-npu*}.yml` |
 
 If you only need SGLang on Ascend, follow the upstream quickstart directly.
