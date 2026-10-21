@@ -4,9 +4,9 @@
 > adaptation to Huawei Ascend NPU platforms. It complements — and does not
 > replace — the upstream SGLang Ascend documentation, which now provides the
 > baseline NPU runtime, container images and CI. See
-> [SGLang Ascend NPU Quickstart](https://github.com/sgl-project/sglang/blob/main/docs/platforms/ascend/ascend_npu_quick_start.md)
+> [SGLang Ascend NPU Quickstart](https://github.com/sgl-project/sglang/blob/main/docs/docs/hardware-platforms/ascend-npus/getting-started/quick_start.mdx)
 > and the surrounding
-> [`docs/platforms/ascend/`](https://github.com/sgl-project/sglang/tree/main/docs/platforms/ascend)
+> [`docs/platforms/ascend/`](https://github.com/sgl-project/sglang/tree/main/docs/docs/hardware-platforms/ascend-npus)
 > tree for the underlying platform contract.
 
 RedKnot is a long-context inference framework layered on top of SGLang. Its
@@ -34,10 +34,10 @@ platform layer that RedKnot builds on:
 | Supported devices | Atlas 800I A2 / A3 inference series |
 | Container image | `quay.io/ascend/sglang:main-cann8.5.0-a3` (A3) · `main-cann8.5.0-910b` (A2) |
 | Dockerfile | [`docker/npu.Dockerfile`](https://github.com/sgl-project/sglang/blob/main/docker/npu.Dockerfile) |
-| Quickstart | [`docs/platforms/ascend/ascend_npu_quick_start.md`](https://github.com/sgl-project/sglang/blob/main/docs/platforms/ascend/ascend_npu_quick_start.md) |
-| Best practice | [`ascend_npu_best_practice.md`](https://github.com/sgl-project/sglang/blob/main/docs/platforms/ascend/ascend_npu_best_practice.md) |
-| Environment variables | [`ascend_npu_environment_variables.md`](https://github.com/sgl-project/sglang/blob/main/docs/platforms/ascend/ascend_npu_environment_variables.md) |
-| Supported models & features | [`ascend_npu_support_models.md`](https://github.com/sgl-project/sglang/blob/main/docs/platforms/ascend/ascend_npu_support_models.md), [`ascend_npu_support_features.md`](https://github.com/sgl-project/sglang/blob/main/docs/platforms/ascend/ascend_npu_support_features.md) |
+| Quickstart | [`docs/platforms/ascend/ascend_npu_quick_start.md`](https://github.com/sgl-project/sglang/blob/main/docs/docs/hardware-platforms/ascend-npus/getting-started/quick_start.mdx) |
+| Best practice | [`ascend_npu_best_practice.md`](https://github.com/sgl-project/sglang/tree/main/docs/docs/hardware-platforms/ascend-npus/model-deployment/best-practices) |
+| Environment variables | [`ascend_npu_environment_variables.md`](https://github.com/sgl-project/sglang/blob/main/docs/docs/hardware-platforms/ascend-npus/getting-started/installation.mdx) |
+| Supported models & features | [`ascend_npu_support_models.md`](https://github.com/sgl-project/sglang/blob/main/docs/docs/hardware-platforms/ascend-npus/development/support_new_models.mdx), [`ascend_npu_support_features.md`](https://github.com/sgl-project/sglang/blob/main/docs/docs/hardware-platforms/ascend-npus/faq.mdx) |
 | CI | `.github/workflows/{pr-test-npu,full-test-npu,nightly-test-npu,release-docker-npu*}.yml` |
 
 If you only need SGLang on Ascend, follow the upstream quickstart directly.
