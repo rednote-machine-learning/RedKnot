@@ -93,7 +93,7 @@ For more usage examples (e.g. OpenAI compatible API, server mode), check [cli.md
 
 ## Contributing
 
-All contributions are welcome. The contribution guide is available [here](https://github.com/sgl-project/sglang/tree/main/docs/diffusion/contributing.md).
+All contributions are welcome. The contribution guide is available [here](https://github.com/sgl-project/sglang/blob/main/docs/docs/sglang-diffusion/contributing.mdx).
 
 ## Acknowledgement
 
