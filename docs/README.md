@@ -120,7 +120,7 @@ docs/advanced_features/lora.ipynb
 
 ### CI Execution
 
-In our [CI](https://github.com/sgl-project/sglang/blob/main/.github/workflows/release-docs.yml), the documentation pipeline first gets all the executed results and renders HTML and Markdown by:
+In our [CI](https://github.com/sgl-project/sglang/tree/main/.github/workflows), the documentation pipeline first gets all the executed results and renders HTML and Markdown by:
 
 ```bash
 make compile    # execute notebooks (ensure outputs are up to date)
