@@ -320,7 +320,7 @@ If a pre-quantized checkpoint is not available for your model, you can create on
 
 **Hardware requirements:** Hopper and higher are recommended. Insufficient GPU memory may cause weight offloading, resulting in extremely long quantization time.
 
-For detailed usage and supported model architectures, see [NVIDIA Model Optimizer LLM PTQ](https://github.com/NVIDIA/Model-Optimizer/tree/main/examples/llm_ptq).
+For detailed usage and supported model architectures, see [NVIDIA Model Optimizer LLM PTQ](https://github.com/NVIDIA/Model-Optimizer/blob/main/examples/vllm_serve/vllm_ptq_utils.py).
 
 SGLang includes a streamlined workflow for quantizing models with ModelOpt and automatically exporting them for deployment.
 
@@ -626,7 +626,7 @@ For the full quantization + format conversion workflow and a complete list of su
 - [GPTQModel](https://github.com/ModelCloud/GPTQModel)
 - [LLM Compressor](https://github.com/vllm-project/llm-compressor/)
 - [NVIDIA Model Optimizer (ModelOpt)](https://github.com/NVIDIA/Model-Optimizer)
-- [NVIDIA Model Optimizer LLM PTQ](https://github.com/NVIDIA/Model-Optimizer/tree/main/examples/llm_ptq)
+- [NVIDIA Model Optimizer LLM PTQ](https://github.com/NVIDIA/Model-Optimizer/blob/main/examples/vllm_serve/vllm_ptq_utils.py)
 - [Petit: NVFP4 on ROCm](https://github.com/causalflow-ai/petit-kernel) — [LMSYS blog](https://lmsys.org/blog/2025-09-21-petit-amdgpu/), [AMD ROCm blog](https://rocm.blogs.amd.com/artificial-intelligence/fp4-mixed-precision/README.html)
 - [Torchao: PyTorch Architecture Optimization](https://github.com/pytorch/ao)
 - [vLLM Quantization](https://docs.vllm.ai/en/latest/quantization/)
