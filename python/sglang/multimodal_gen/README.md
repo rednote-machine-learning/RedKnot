@@ -21,15 +21,15 @@ SGLang Diffusion has the following features:
 
 ### AMD/ROCm Support
 
-SGLang Diffusion supports AMD Instinct GPUs through ROCm. On AMD platforms, we use the Triton attention backend and leverage AITER kernels for optimized layernorm and other operations. See the [installation guide](https://github.com/sgl-project/sglang/tree/main/docs/docs/hardware-platforms/ascend-npus/diffusion) for setup instructions.
+SGLang Diffusion supports AMD Instinct GPUs through ROCm. On AMD platforms, we use the Triton attention backend and leverage AITER kernels for optimized layernorm and other operations. See the [installation guide](https://github.com/sgl-project/sglang/blob/main/docs/docs/sglang-diffusion/installation.mdx) for setup instructions.
 
 ### Moore Threads/MUSA Support
 
-SGLang Diffusion supports Moore Threads GPUs (MTGPU) through the MUSA software stack. On MUSA platforms, we use FlashAttention (FA3) when available; also supports Sage Attention when installed; otherwise falls back to the Torch SDPA backend. See the [installation guide](https://github.com/sgl-project/sglang/tree/main/docs/docs/hardware-platforms/ascend-npus/diffusion) for setup instructions.
+SGLang Diffusion supports Moore Threads GPUs (MTGPU) through the MUSA software stack. On MUSA platforms, we use FlashAttention (FA3) when available; also supports Sage Attention when installed; otherwise falls back to the Torch SDPA backend. See the [installation guide](https://github.com/sgl-project/sglang/blob/main/docs/docs/sglang-diffusion/installation.mdx) for setup instructions.
 
 ### Apple MPS Support
 
-SGLang Diffusion supports Apple Silicon (M-series) via the MPS backend. Since Triton is Linux-only, all Triton kernels are replaced with PyTorch-native fallbacks on MPS. Norm operations can be optionally accelerated with MLX fused Metal kernels (`SGLANG_USE_MLX=1`). See the [installation guide](https://github.com/sgl-project/sglang/tree/main/docs/docs/hardware-platforms/ascend-npus/diffusion) for setup instructions.
+SGLang Diffusion supports Apple Silicon (M-series) via the MPS backend. Since Triton is Linux-only, all Triton kernels are replaced with PyTorch-native fallbacks on MPS. Norm operations can be optionally accelerated with MLX fused Metal kernels (`SGLANG_USE_MLX=1`). See the [installation guide](https://github.com/sgl-project/sglang/blob/main/docs/docs/sglang-diffusion/installation.mdx) for setup instructions.
 
 ## Getting Started
 
@@ -37,7 +37,7 @@ SGLang Diffusion supports Apple Silicon (M-series) via the MPS backend. Since Tr
 uv pip install 'sglang[diffusion]' --prerelease=allow
 ```
 
-For more installation methods (e.g. pypi, uv, docker, ROCm/AMD, MUSA/Moore Threads), check [install.md](https://github.com/sgl-project/sglang/tree/main/docs/docs/hardware-platforms/ascend-npus/diffusion).
+For more installation methods (e.g. pypi, uv, docker, ROCm/AMD, MUSA/Moore Threads), check [installation.mdx](https://github.com/sgl-project/sglang/blob/main/docs/docs/sglang-diffusion/installation.mdx).
 
 ## Inference
 
@@ -89,11 +89,11 @@ sglang generate \
   --save-output
 ```
 
-For more usage examples (e.g. OpenAI compatible API, server mode), check [cli.md](https://github.com/sgl-project/sglang/tree/main/docs/cookbook/diffusion).
+For more usage examples (e.g. OpenAI compatible API, server mode), check [cli.mdx](https://github.com/sgl-project/sglang/blob/main/docs/docs/sglang-diffusion/api/cli.mdx).
 
 ## Contributing
 
-All contributions are welcome. The contribution guide is available [here](https://github.com/sgl-project/sglang/blob/main/docs/docs/hardware-platforms/ascend-npus/development/contribution_guide.mdx).
+All contributions are welcome. The contribution guide is available [here](https://github.com/sgl-project/sglang/tree/main/docs/diffusion/contributing.md).
 
 ## Acknowledgement
 
