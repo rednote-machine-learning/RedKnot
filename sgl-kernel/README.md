@@ -1,6 +1,6 @@
 # sglang-kernel (prior sgl-kernel)
 
-[Kernel Library](https://github.com/sgl-project/sglang/tree/main/sgl-kernel) for LLM inference engines
+[Kernel Library](https://github.com/sgl-project/sglang/tree/main/3rdparty/amd/wheel/sgl-kernel) for LLM inference engines
 
 <div align="center">
 
@@ -48,11 +48,11 @@ make build MAX_JOBS=2 CMAKE_ARGS="-DSGL_KERNEL_COMPILE_THREADS=1"
 
 ### Steps to add a new kernel:
 
-1. Implement the kernel in [csrc](https://github.com/sgl-project/sglang/tree/main/sgl-kernel/csrc)
-2. Expose the interface in [include/sgl_kernel_ops.h](https://github.com/sgl-project/sglang/blob/main/sgl-kernel/include/sgl_kernel_ops.h)
-3. Create torch extension in [csrc/common_extension.cc](https://github.com/sgl-project/sglang/blob/main/sgl-kernel/csrc/common_extension.cc)
-4. Update [CMakeLists.txt](https://github.com/sgl-project/sglang/blob/main/sgl-kernel/CMakeLists.txt) to include new CUDA source
-5. Expose Python interface in [python](https://github.com/sgl-project/sglang/blob/main/sgl-kernel/python/sgl_kernel)
+1. Implement the kernel in [csrc](https://github.com/sgl-project/sglang/tree/main/3rdparty/amd/wheel/sgl-kernel/csrc)
+2. Expose the interface in [include/sgl_kernel_ops.h](https://github.com/sgl-project/sglang/blob/main/3rdparty/amd/wheel/sgl-kernel/CMakeLists_rocm.txt)
+3. Create torch extension in [csrc/common_extension.cc](https://github.com/sgl-project/sglang/blob/main/3rdparty/amd/wheel/sgl-kernel/build_rocm.sh)
+4. Update [CMakeLists.txt](https://github.com/sgl-project/sglang/blob/main/3rdparty/amd/wheel/sgl-kernel/CMakeLists_rocm.txt) to include new CUDA source
+5. Expose Python interface in [python](https://github.com/sgl-project/sglang/tree/main/3rdparty/amd/wheel/sgl-kernel)
 6. Add test and benchmark
 
 ### Development Tips
@@ -95,7 +95,7 @@ m.impl("fwd", torch::kCUDA, make_pytorch_shim(&mha_fwd));
 
 ### Testing & Benchmarking
 
-1. Add pytest tests in [tests/](https://github.com/sgl-project/sglang/tree/main/sgl-kernel/tests), if you need to skip some test, please use `@pytest.mark.skipif`
+1. Add pytest tests in [tests/](https://github.com/sgl-project/sglang/tree/main/3rdparty/amd/wheel/sgl-kernel/tests), if you need to skip some test, please use `@pytest.mark.skipif`
 
 ```python
 @pytest.mark.skipif(
@@ -103,7 +103,7 @@ m.impl("fwd", torch::kCUDA, make_pytorch_shim(&mha_fwd));
 )
 ```
 
-2. Add benchmarks using [triton benchmark](https://triton-lang.org/main/python-api/generated/triton.testing.Benchmark.html) in [benchmark/](https://github.com/sgl-project/sglang/tree/main/sgl-kernel/benchmark)
+2. Add benchmarks using [triton benchmark](https://triton-lang.org/main/python-api/generated/triton.testing.Benchmark.html) in [benchmark/](https://github.com/sgl-project/sglang/tree/main/3rdparty/amd/wheel/sgl-kernel/benchmark)
 
    **We recommend using `triton.testing.do_bench_cudagraph` for kernel benchmarking**:
 
