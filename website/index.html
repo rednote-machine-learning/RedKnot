@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>RedKnot · Head-aware KV reuse for long-context LLM serving</title>
+  <meta name="description" content="RedKnot reuses most of the KV cache head by head, so long prompts get their first token several times faster without retraining.">
+  <link rel="icon" href="assets/logo.png">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav-inner">
+      <a class="nav-logo" href="./"><img src="assets/logo.png" alt="RedKnot"></a>
+      <div class="nav-links">
+        <a class="active" href="./">Home</a>
+        <a href="blog/">Blog</a>
+        <a href="https://arxiv.org/abs/2606.06256">Paper</a>
+        <a href="https://github.com/rednote-machine-learning/RedKnot">GitHub</a>
+      </div>
+    </div>
+  </nav>
+
+  <header class="hero wrap">
+    <img class="hero-logo" src="assets/logo.png" alt="RedKnot logo">
+    <p class="hero-tag">Not every attention head needs the whole prompt.</p>
+    <p class="hero-sub">Head-aware KV cache reuse for long-context LLM serving.</p>
+    <div class="btn-row">
+      <a class="btn primary" href="blog/redknot-explained/">Read the explainer →</a>
+      <a class="btn" href="https://github.com/rednote-machine-learning/RedKnot">GitHub</a>
+    </div>
+  </header>
+
+  <section class="section tint">
+    <div class="wrap center">
+      <p class="eyebrow">The idea in one picture</p>
+      <div class="headviz" id="home-grid"></div>
+      <div class="legend">
+        <span><i style="background:var(--red)"></i>computed for this request</span>
+        <span><i style="background:#f6eef0;border:1px solid var(--grid)"></i>reused from cache</span>
+      </div>
+      <p class="muted small" style="margin-top:14px">Rows are attention heads, columns are prompt tokens.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap">
+      <div class="formulas">
+        <div class="formula">
+          <div class="num">SPLIT</div>
+          <div class="k">$$\mathcal{H}=\mathcal{L}\cup\mathcal{G},\quad \tfrac{|\mathcal{G}|}{|\mathcal{H}|}\approx 3\text{–}17\%$$</div>
+          <div class="cap">A few <b>global</b> heads read everything. Most heads are <b>local</b>.</div>
+        </div>
+        <div class="formula">
+          <div class="num">REUSE</div>
+          <div class="k">$$W(i)=S_{\text{sink}}\cup[\,i-w,\;i\,]$$</div>
+          <div class="cap">A local head only looks at a few first tokens and a short recent window.</div>
+        </div>
+        <div class="formula">
+          <div class="num">MERGE</div>
+          <div class="k">$$y=W_b\,(z_{\text{off}}+z_{\text{on}})$$</div>
+          <div class="cap">Cached local part + fresh global part, combined in one step.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section tint">
+    <div class="wrap">
+      <div class="stats">
+        <div class="stat"><div class="v">1.6–5.2×</div><div class="l">faster first token</div><div class="src">7B to 397B models, 16K–128K tokens</div></div>
+        <div class="stat"><div class="v">4.7–7.8×</div><div class="l">more sessions per GPU</div><div class="src">32K and 64K context</div></div>
+        <div class="stat"><div class="v">67–79%</div><div class="l">less prefill compute</div><div class="src">same model, no retraining</div></div>
+      </div>
+      <p class="muted small center" style="margin-top:28px">All numbers compare against recomputing the full prompt. Details and caveats are in the <a href="blog/redknot-explained/#results">blog</a> and the papers.</p>
+    </div>
+  </section>
+
+  <footer>
+    <div class="wrap">
+      <span>RedKnot · Apache-2.0 · Built on SGLang</span>
+      <span><a href="https://arxiv.org/abs/2606.06256">RedKnot paper</a> · <a href="https://arxiv.org/abs/2609.07008">RedKnot-MLA paper</a> · <a href="https://github.com/rednote-machine-learning/RedKnot">GitHub</a></span>
+    </div>
+  </footer>
+
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body)"></script>
+  <script type="module">
+    import { headGrid, toggle } from "./assets/charts.js";
+    const host = document.getElementById("home-grid");
+    const g = headGrid(host, { heads: 8, tokens: 44, global: [2, 6], window: 8, mode: "redknot", aria: "Standard KV cache recomputes every head for every token; RedKnot recomputes only global heads and a short window for local heads" });
+    toggle(host, [["redknot", "RedKnot"], ["dense", "Without reuse"]], g.paint);
+  </script>
+</body>
+</html>

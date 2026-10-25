@@ -1,0 +1,351 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>RedKnot, explained: most attention heads can reuse their cache · RedKnot Blog</title>
+  <meta name="description" content="A plain-language tour of RedKnot and RedKnot-MLA: why long prompts are slow, why most attention heads can reuse cached work, and what that buys in speed and quality.">
+  <link rel="icon" href="../../assets/logo.png">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <link rel="stylesheet" href="../../assets/style.css">
+  <style>
+    .reqs { display: grid; gap: 10px; margin: 8px 0 4px; }
+    .req { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: 14px; }
+    .req .lab { width: 92px; color: var(--ink-2); font-weight: 600; }
+    .blk { padding: 6px 12px; border-radius: 8px; border: 1.5px solid var(--red-line); background: #fff; color: var(--ink); }
+    .blk.hit { background: var(--red); border-color: var(--red); color: #fff; }
+    .blk.miss { background: #fff; border-style: dashed; color: var(--ink-2); }
+    .blk.q { background: var(--surface-2); border-color: var(--grid); }
+  </style>
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav-inner">
+      <a class="nav-logo" href="../../"><img src="../../assets/logo.png" alt="RedKnot"></a>
+      <div class="nav-links">
+        <a href="../../">Home</a>
+        <a class="active" href="../">Blog</a>
+        <a href="https://arxiv.org/abs/2606.06256">Paper</a>
+        <a href="https://github.com/rednote-machine-learning/RedKnot">GitHub</a>
+      </div>
+    </div>
+  </nav>
+
+  <article class="article">
+    <header class="article-head prose">
+      <p class="eyebrow">Explainer</p>
+      <h1>RedKnot, explained: most attention heads can reuse their cache</h1>
+      <p class="dek">Long prompts are slow because every attention head re-reads every token. Most heads only look nearby, so most of that work can be reused.</p>
+      <p class="meta">The RedKnot team · October 2026 · about 10 minutes · Based on <a href="https://arxiv.org/abs/2606.06256">RedKnot</a> and <a href="https://arxiv.org/abs/2609.07008">RedKnot-MLA</a></p>
+    </header>
+
+    <div class="prose">
+      <div class="tldr">
+        <p><b>TL;DR</b></p>
+        <p>Language models have many attention heads. We found that only a small share of them (about 3–17%) need to read the whole prompt. The rest look at the start and at the last few hundred tokens.</p>
+        <p>RedKnot recomputes the few heads that need the whole prompt and reuses cached work for all the others. The first token arrives <b>1.6–5.2× sooner</b>, one GPU holds <b>4.7–7.8× more sessions</b>, and answers stay close to full recomputation (on some long-context tests they get better). No retraining is needed.</p>
+      </div>
+
+      <div class="toc">
+        <b>In this post</b>
+        <ol>
+          <li><a href="#problem">Why long prompts are slow</a></li>
+          <li><a href="#tokens">Why fixing tokens one by one falls short</a></li>
+          <li><a href="#heads">Insight 1: heads have different jobs</a></li>
+          <li><a href="#ffn">Insight 2: attention is not the only cost</a></li>
+          <li><a href="#memory">Insight 3: savings must show up in memory</a></li>
+          <li><a href="#mla">The same idea on DeepSeek-V4</a></li>
+          <li><a href="#results">Results</a></li>
+          <li><a href="#cite">Cite us and join us</a></li>
+        </ol>
+      </div>
+
+      <!-- problem -->
+      <h2 id="problem">Why long prompts are slow</h2>
+      <p>Today's LLM apps send very long prompts. A RAG system pastes in dozens of retrieved documents. A coding agent includes files, tool outputs, and earlier steps. Prompts of 10K to 100K+ tokens are common.</p>
+      <p>Before the model can write its first word, it has to read the whole prompt. This step is called <b>prefill</b>, and the wait it causes is the <b>time to first token (TTFT)</b>. For example, prefill of a 64K-token prompt on Llama-3.3-70B with 4 GPUs takes about a minute.</p>
+      <p>While it reads, the model writes notes about every token, called the <b>KV cache</b>. A natural fix is to save these notes and reuse them. Today's engines do this with <b>prefix caching</b>, but it only works when a new prompt <i>starts with exactly the same text</i> as an old one.</p>
+
+      <figure class="chart">
+        <p class="title">Reused documents rarely sit at the same place in the prompt</p>
+        <p class="subtitle">Two RAG requests that share Doc&nbsp;B. A prefix cache can only reuse the part before the first difference.</p>
+        <div class="reqs">
+          <div class="req"><span class="lab">Request 1</span><span class="blk">System</span><span class="blk">Doc A</span><span class="blk">Doc B</span><span class="blk q">Question 1</span></div>
+          <div class="req"><span class="lab">Request 2</span><span class="blk hit">System ✓</span><span class="blk miss">Doc C</span><span class="blk miss">Doc B ✗</span><span class="blk q">Question 2</span></div>
+        </div>
+        <figcaption>Filled red = reused by a prefix cache. Doc&nbsp;B was already processed, but it now comes after Doc&nbsp;C, so a prefix cache processes it again. In a real RAG request stream (MuSiQue, 48,315 document uses), on average <b>95% of a document's reuses happened at a different position</b>, where a prefix cache can't help.</figcaption>
+      </figure>
+
+      <p>So there is a lot of work to save, if we can reuse a document's cache <i>wherever</i> it appears. This is called <b>position-independent caching</b>. The catch is that each document's cache was computed alone, without seeing the text that now comes before it. The cached notes are slightly wrong, and something has to repair them.</p>
+
+      <!-- tokens -->
+      <h2 id="tokens">Why fixing tokens one by one falls short</h2>
+      <p>Earlier systems (for example CacheBlend and ProphetKV) repair the cache by picking a small set of <b>tokens</b> and recomputing them. The idea makes sense: if only a few tokens matter, fix those.</p>
+      <p>The problem is that a model has many attention heads, and <b>each head cares about different tokens</b>. A token-level fix recomputes a token for <i>all</i> heads at once, so it has to cover every token that <i>any</i> head cares about. Try it:</p>
+
+      <figure class="chart">
+        <p class="title">Each head cares about different tokens</p>
+        <p class="subtitle">Each row is one attention head and each column is one token. Red cells are the tokens that head needs fixed.</p>
+        <div id="union-grid"></div>
+        <figcaption id="union-cap"></figcaption>
+      </figure>
+
+      <p>In real models the effect is strong. In shallow layers, the union of tokens that matter to <i>some</i> head covers <b>nearly every token</b>. A token-level method then has two bad options. It can recompute almost everything and lose the speedup, or recompute too little and leave errors in some heads. Those errors also spread: a token recomputed on top of stale neighbors is still slightly wrong.</p>
+
+      <!-- heads -->
+      <h2 id="heads">Insight 1: heads have different jobs</h2>
+      <p>So we stopped asking "which tokens?" and asked "which heads?" When we tested heads across five very different models, we found two kinds:</p>
+      <ul>
+        <li><b>Global heads</b> look across the whole prompt. Their output changes when the text before a document changes.</li>
+        <li><b>Local heads</b> look at a few tokens at the very start (the "sink") and a short recent window. Text far away barely affects them.</li>
+      </ul>
+
+      <figure class="chart">
+        <p class="title">Most attention heads are local</p>
+        <p class="subtitle">Share of KV heads in each model that are local (reusable) vs. global (must be recomputed). Found with needle-in-a-haystack tests.</p>
+        <div id="c-heads"></div>
+        <figcaption>Each bar adds up to 100% of the model's KV heads. <b>83–97% of heads are local</b> in every model we tested, from a 7B dense model to a 397B mixture-of-experts model.</figcaption>
+      </figure>
+
+      <div class="insight">
+        <b class="tag">Insight</b>
+        Whether a head is global or local depends on the model, not on the prompt. Head 5 in layer 30 behaves the same way on every request. We test each model <b>once, offline</b>, and the result costs nothing at serving time.
+      </div>
+
+      <p>That gives RedKnot's main rule. For each reused document:</p>
+      <ol>
+        <li><b>Global heads</b> are recomputed in full. They are few, so this is cheap, and they are exactly the heads that the new context changes.</li>
+        <li><b>Local heads</b> reuse the cache. We only refresh what they can actually see: the sink tokens plus a short window before each token.</li>
+      </ol>
+      <div class="math-block">$$W(i) \;=\; \underbrace{S_{\text{sink}}}_{\text{first few tokens}} \;\cup\; \underbrace{[\,i-w,\; i\,]}_{\text{recent window}}$$</div>
+      <p class="muted small center">For example, with a window of w = 256, token 1000 of a local head only needs tokens 744–1000 and the sink. Everything else is reused.</p>
+
+      <p>One more detail: a reused document has moved to a new position. Modern LLMs encode position as a <i>rotation</i> (RoPE), so moving a document just means rotating its cached keys by the difference. This step is exact and cheap:</p>
+      <div class="math-block">$$K(p_{\text{new}}) \;=\; R(p_{\text{new}})\,R(p_{\text{old}})^{-1}\,K(p_{\text{old}})$$</div>
+      <p>RedKnot is also careful about where it saves work. Shallow layers are sensitive, and errors there spread to every later layer, so they stay close to dense. Deep layers are more selective, so that is where most of the reuse happens.</p>
+
+      <!-- ffn -->
+      <h2 id="ffn">Insight 2: attention is not the only cost</h2>
+      <p>Each transformer layer has two parts: attention, where tokens look at each other, and the feed-forward network (FFN), which processes each token on its own. Caching only helps attention. But how much of prefill time does attention take?</p>
+
+      <figure class="chart">
+        <p class="title">The FFN takes most of the prefill time</p>
+        <p class="subtitle">Share of prefill time spent in the FFN, at a short and a long prompt.</p>
+        <div id="c-ffn"></div>
+        <figcaption><b>How to read:</b> 61% means 61% of the time before the first token goes to FFN work that no attention cache can skip. Agent workloads often use chunks of 2K–8K tokens, where the FFN takes 57–62% of the time.</figcaption>
+      </figure>
+
+      <p>So even a perfect attention cache leaves more than half the time on the table. RedKnot uses the attention it just computed as a signal for <b>which tokens matter</b>. In deep layers, only those tokens go through the FFN. The others skip it and pass through the layer's residual connection unchanged.</p>
+      <div class="insight">
+        <b class="tag">Insight</b>
+        Skipping low-value tokens does more than save compute. In very long prompts, most tokens are noise for the current question, and leaving them out of later layers keeps that noise out of the answer. We return to this in the results.
+      </div>
+
+      <!-- memory -->
+      <h2 id="memory">Insight 3: savings must show up in memory</h2>
+      <p>The last problem is less obvious. Standard engines (PagedAttention) store the KV cache in blocks of tokens, with <b>all heads packed together</b>. To tell a local head to skip most tokens, you have to add a mask. On GPUs, a mask turns off the fastest attention kernel (FlashAttention), and the masked path is <b>4.9–7.6× slower</b>. The math is saved on paper, but the kernel still runs on the slow path.</p>
+      <p>RedKnot's <b>SegPagedAttention</b> stores the cache <b>per head</b>. A global head keeps pages for the whole prompt. A local head keeps pages only for its sink and window. No mask is needed, and every head stays on the fast path. It also means local heads use far less GPU memory, so more requests fit at once.</p>
+
+      <figure class="chart">
+        <p class="title">Per-head storage keeps attention fast as prompts grow</p>
+        <p class="subtitle">Time for attention prefill over 64 layers (shaped like Qwen3-32B). Lower is better.</p>
+        <div id="c-seg"></div>
+        <figcaption><b>How to read:</b> "Dense + mask" is the usual layout with a mask that hides tokens. Both versions compute the same result (cosine similarity &gt; 0.99998). At 128K tokens, SegPagedAttention takes 0.23 s instead of 5.42 s, which is <b>23× faster</b>. The gap grows with length because the masked version still pays for the full prompt on every head.</figcaption>
+      </figure>
+
+      <!-- mla -->
+      <h2 id="mla">The same idea on DeepSeek-V4</h2>
+      <p>DeepSeek models use <b>multi-head latent attention (MLA)</b>. Instead of one cache per head, all heads share <b>one compressed cache</b>, so the per-head cache that RedKnot splits does not exist. Splitting it by force would undo MLA's memory savings.</p>
+      <p><b>RedKnot-MLA</b> splits the heads <i>logically</i> instead. DeepSeek-V4 groups its heads in sets of 8. In each group, 1 head stays global and is recomputed for the request, and 7 heads are local and reused. Each document is processed once offline, starting at position 0. At request time we rotate the <i>query</i> to the document's position instead of rewriting the cache. The two parts are then added together before the layer's shared output projection:</p>
+      <div class="math-block">$$z \;=\; \underbrace{z_{\text{off}}}_{\text{local heads, cached}} \;+\; \underbrace{z_{\text{on}}}_{\text{global heads, fresh}}, \qquad y \;=\; W_b\, z$$</div>
+      <p>When the cached part is exactly what full recomputation would give, this sum is exact. Any error comes only from local heads now sitting in a new context. Global heads and a small set of protected tokens (the query, the edges of each document, and tokens DeepSeek's own indexer marks as important) correct it.</p>
+      <p>How much work can this skip? On DeepSeek-V4-Flash, 37 of 43 layers are reusable and 56 of 64 heads per layer are local:</p>
+      <div class="math-block">$$\frac{37}{43}\times\frac{56}{64} \;\approx\; 75\%\ \text{of attention-head work can be reused}$$</div>
+
+      <!-- results -->
+      <h2 id="results">Results</h2>
+      <p>Every number below compares RedKnot with <b>recomputing the whole prompt</b> on the same model, the same GPUs, and the same input tokens. <b>Speedup</b> means time with full recomputation ÷ time with RedKnot, so <b>1×</b> means no gain and <b>3×</b> means the first token arrives in a third of the time.</p>
+
+      <h3>Faster first token than token-level methods</h3>
+      <figure class="chart">
+        <p class="title">TTFT speedup on three dense models</p>
+        <p class="subtitle">Higher is better. Each group is one model, dataset, and prompt length. The dashed line at 1× is full recomputation.</p>
+        <div id="c-ttft"></div>
+        <figcaption>RedKnot is fastest in 3 of the 4 settings, and its lead grows with prompt length (3.5× at 64K). CacheBlend and ProphetKV level off around 2.0–2.4×. At 16K CacheBlend is slightly faster, because it recomputes only a small fixed share of tokens. The next chart shows what that costs in accuracy.</figcaption>
+      </figure>
+
+      <h3>…while staying much closer to the original answer</h3>
+      <figure class="chart">
+        <p class="title">Does the model still predict the same next token?</p>
+        <p class="subtitle">How often each method agrees with full recomputation on the first generated token. Higher is better; 1.0 = always the same.</p>
+        <div id="c-match"></div>
+        <figcaption><b>Top-1</b>: the single most likely next token is the same as with full recomputation. <b>Top-10</b>: overlap between the 10 most likely next tokens. RedKnot agrees 93% / 87% of the time. The token-level methods agree 40–50% of the time. On Llama-3.3-70B HotpotQA, RedKnot's exact-match score is even <b>higher</b> than full recomputation (0.80 vs. 0.60 at both 32K and 64K).</figcaption>
+      </figure>
+
+      <h3>DeepSeek-V4-Flash: long contexts, up to 440K tokens</h3>
+      <figure class="chart">
+        <p class="title">RedKnot-MLA TTFT speedup on DeepSeek-V4-Flash (8× H200)</p>
+        <p class="subtitle">Higher is better. Cached documents are already built ("hot"), which is the normal case when documents are reused. The dashed line at 1× is full recomputation.</p>
+        <div id="c-dsv4"></div>
+        <figcaption>The first token arrives <b>2.0–3.8× sooner</b>. Each bar is a separate test with its own fixed settings, so the bars do not form a trend, and 256K being lower than 128K is not a scaling result. You can reproduce all four points with one script in the repo.</figcaption>
+      </figure>
+
+      <figure class="chart">
+        <p class="title">Answer quality at 256K tokens on DeepSeek-V4-Flash</p>
+        <p class="subtitle">Change in F1 score (answer word overlap) vs. full recomputation, in percentage points. Right of zero = RedKnot-MLA is better.</p>
+        <div id="c-dq"></div>
+        <figcaption>On average F1 goes up by 3.2 points (0.572 → 0.605) and exact match by 4.2 points, while about 79% of the main computation is skipped. To be fair, one dataset (MultiFieldQA) drops by 2.8 points, so we don't claim quality never drops.</figcaption>
+      </figure>
+
+      <h3>More users per GPU</h3>
+      <figure class="chart">
+        <p class="title">Concurrent sessions that fit in one GPU's memory</p>
+        <p class="subtitle">Higher is better. Standard dense KV storage vs. RedKnot with per-head SegPagedAttention.</p>
+        <div id="c-cap"></div>
+        <figcaption>Local heads store only their short window, so each session needs much less memory. At 32K tokens one GPU holds <b>31 sessions instead of 4 (7.8×)</b>. At 64K it holds 14 instead of 3 (4.7×).</figcaption>
+      </figure>
+
+      <h3>Why it can beat full recomputation</h3>
+      <p>Some results above beat the baseline. That sounds odd for a method that skips work, but there is a reason. As prompts grow, attention focuses on fewer tokens, and the rest acts like noise. Full recomputation lets that noise into every layer. RedKnot's sparse steps keep the tokens and heads that carry the signal. On Qwen3.5-397B and DeepSeek-V4-Flash, full recomputation loses accuracy as context grows, while RedKnot stays steady and <b>overtakes it at long context</b>.</p>
+
+      <div class="note">
+        <b>A note on the numbers.</b> All figures come from the two papers. Each was measured on a fixed model, prompt set, and GPU setup, and the papers list the exact settings. Results from the open-source code take priority over the paper: if you run the code and get different numbers, the code results win, and please tell us.
+      </div>
+
+      <!-- cite -->
+      <section id="cite" class="cta-box">
+        <h2>Like the idea? Cite us and build with us.</h2>
+        <p>If RedKnot is useful for your research or product, please cite our papers. It helps the project and the people who build it.</p>
+        <p>RedKnot is fully open source (Apache-2.0) and belongs to its contributors. We would love your help:</p>
+        <ul>
+          <li><b>Try it</b>: one command reproduces the DeepSeek-V4-Flash results.</li>
+          <li><b>Open an issue</b>: bug reports, questions, and requests for the next model to support are all welcome.</li>
+          <li><b>Send a pull request</b>: there is open work on hybrid models (Qwen3.5 → Qwen4, GLM-5.3), DeepSeek-V4-Pro, the <a href="https://github.com/rednote-machine-learning/RedKnot/tree/RedKnot-vLLM">vLLM port</a>, and the <a href="https://github.com/rednote-machine-learning/RedKnot/blob/main/docs/ASCEND.md">Ascend NPU port</a>.</li>
+        </ul>
+        <p>Meaningful contributions earn a bigger voice in the community.</p>
+        <div class="btn-row" style="justify-content:flex-start;margin-top:18px">
+          <a class="btn" href="https://github.com/rednote-machine-learning/RedKnot">★ Star on GitHub</a>
+          <a class="btn ghost" href="https://github.com/rednote-machine-learning/RedKnot/issues">Open an issue</a>
+          <a class="btn ghost" href="https://arxiv.org/abs/2606.06256">Read the paper</a>
+        </div>
+      </section>
+
+<pre class="bib"><code>@article{liu2026redknot,
+  title   = {RedKnot: Efficient Long-Context LLM Serving with Head-Aware KV Reuse and SegPagedAttention},
+  author  = {Liu, Yang and Luo, Zhaokai and Jin, Huayi and Wang, Zhiyong and He, Ruozhou and Wang, Boyu and Chen, Guanjie and Liu, Yifei and Xie, Tao and Hu, Junhao},
+  journal = {arXiv preprint arXiv:2606.06256},
+  year    = {2026}
+}
+
+@article{liu2026redknotmla,
+  title   = {RedKnot-MLA: Multi-Head Offline-Online Reuse for DeepSeek-V4 Long-Context Serving},
+  author  = {Liu, Yang and Luo, Zhaokai and Jin, Huayi and He, Ruozhou and Hong, Chenchen and Ma, Mingxiao and Zhang, Biao and Wang, Zhiyong and Wang, Boyu and Chen, Guanjie and Liu, Yifei and Xie, Tao and Hu, Junhao},
+  journal = {arXiv preprint arXiv:2609.07008},
+  year    = {2026}
+}</code></pre>
+    </div>
+  </article>
+
+  <footer>
+    <div class="wrap">
+      <span>RedKnot · Apache-2.0 · Built on SGLang</span>
+      <span><a href="../">← All posts</a> · <a href="https://github.com/rednote-machine-learning/RedKnot">GitHub</a></span>
+    </div>
+  </footer>
+
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body)"></script>
+  <script type="module">
+    import { bars, split, diverge, headGrid, toggle, copyButtons } from "../../assets/charts.js";
+
+    // Token-level vs head-level repair
+    const ug = document.getElementById("union-grid"), cap = document.getElementById("union-cap");
+    const grid = headGrid(ug, { heads: 8, tokens: 40, global: [2, 6], union: true, mode: "token", seed: 11 });
+    const pct = Math.round(grid.unionShare * 100);
+    const caps = {
+      token: `<b>Token-level fix:</b> the bottom row is what must be recomputed. Every head only cares about about 16% of tokens, but together they cover <b>${pct}% of all tokens</b>, so most of the work comes back.`,
+      head: `<b>Head-level fix (RedKnot):</b> recompute only the 2 global heads in full (solid red rows). The 6 local heads keep their cache, so their scattered needs (light red) are already covered by the cache plus a short window.`,
+    };
+    cap.innerHTML = caps.token;
+    toggle(ug, [["token", "Fix by token"], ["head", "Fix by head"]], (m) => { grid.paint(m); cap.innerHTML = caps[m]; });
+
+    split(document.getElementById("c-heads"), {
+      aName: "Global heads (recompute)", bName: "Local heads (reuse)", aColor: "--red", bColor: "--s-local",
+      rows: [
+        { name: "Mistral-7B", a: 15.6 },
+        { name: "Qwen3-32B", a: 15.0 },
+        { name: "Llama-3.3-70B", a: 12.5 },
+        { name: "Qwen3.5-397B", a: 16.6 },
+        { name: "DeepSeek-V4-Flash", a: 3.2 },
+      ],
+    });
+
+    bars(document.getElementById("c-ffn"), {
+      categories: ["Qwen3-32B", "Llama-3.3-70B"],
+      series: [
+        { name: "2K-token prompt", color: "--red", values: [61.3, 59.5] },
+        { name: "32K-token prompt", color: "--s-local", values: [44.4, 53.4] },
+      ],
+      yTitle: "FFN share of prefill time (%)", yMax: 80, fmt: (v) => v + "%", tickFmt: (t) => t + "%", height: 260, barWidth: 40,
+    });
+
+    bars(document.getElementById("c-seg"), {
+      categories: ["8K", "32K", "128K"],
+      series: [
+        { name: "Dense + mask", color: "--s-base", values: [0.34, 1.35, 5.42] },
+        { name: "SegPagedAttention", color: "--s-redknot", values: [0.055, 0.12, 0.23] },
+      ],
+      xTitle: "Prompt length (tokens)", yTitle: "Prefill attention time (seconds)", fmt: (v) => v + " s", height: 280, barWidth: 40,
+    });
+
+    bars(document.getElementById("c-ttft"), {
+      categories: ["Mistral-7B\nTriviaQA · 16K", "Qwen3-32B\nMultiFieldQA · 24K", "Llama-3.3-70B\nHotpotQA · 32K", "Llama-3.3-70B\nHotpotQA · 64K"],
+      series: [
+        { name: "RedKnot", color: "--s-redknot", values: [1.6, 2.9, 2.9, 3.5] },
+        { name: "CacheBlend", color: "--s-cacheblend", values: [1.8, 2.1, 2.0, 2.4] },
+        { name: "ProphetKV", color: "--s-prophet", values: [1.4, 1.7, 1.7, 2.0] },
+      ],
+      yTitle: "TTFT speedup (× vs. full recompute)", yMax: 4, fmt: (v) => v.toFixed(1) + "×", tickFmt: (t) => t + "×",
+      refLine: { y: 1, label: "full recompute = 1×" },
+    });
+
+    bars(document.getElementById("c-match"), {
+      categories: ["Top-1 agreement", "Top-10 agreement"],
+      series: [
+        { name: "RedKnot", color: "--s-redknot", values: [0.93, 0.87] },
+        { name: "CacheBlend", color: "--s-cacheblend", values: [0.4, 0.4] },
+        { name: "ProphetKV", color: "--s-prophet", values: [0.5, 0.4] },
+      ],
+      yTitle: "Agreement with full recompute", yMax: 1, fmt: (v) => v.toFixed(2), height: 260, barWidth: 36,
+    });
+
+    bars(document.getElementById("c-dsv4"), {
+      categories: ["64K", "128K", "256K", "440K"],
+      series: [{ name: "RedKnot-MLA", color: "--s-redknot", values: [2.91, 3.20, 2.02, 3.84] }],
+      xTitle: "Prompt length (tokens)", yTitle: "TTFT speedup (× vs. full recompute)", yMax: 4, fmt: (v) => v.toFixed(2) + "×", tickFmt: (t) => t + "×",
+      refLine: { y: 1, label: "full recompute = 1×" }, height: 270, barWidth: 44,
+    });
+
+    diverge(document.getElementById("c-dq"), {
+      rows: [
+        { name: "2WikiMQA", v: 0.0 },
+        { name: "HotpotQA", v: 12.5 },
+        { name: "MultiFieldQA", v: -2.81 },
+        { name: "Average of three", v: 3.24, bold: true },
+      ],
+      fmt: (v) => (v > 0 ? "+" : "") + v.toFixed(1) + " pts", xTitle: "F1 change vs. full recompute (percentage points)", range: 15,
+    });
+
+    bars(document.getElementById("c-cap"), {
+      categories: ["32K-token context", "64K-token context"],
+      series: [
+        { name: "Dense KV storage", color: "--s-base", values: [4, 3] },
+        { name: "RedKnot + SegPagedAttention", color: "--s-redknot", values: [31, 14] },
+      ],
+      yTitle: "Concurrent sessions per GPU", yMax: 35, fmt: (v) => String(v), height: 260, barWidth: 44,
+    });
+
+    copyButtons();
+  </script>
+</body>
+</html>
