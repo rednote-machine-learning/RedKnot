@@ -209,15 +209,19 @@ docs/ASCEND.md                                RedKnot Ascend NPU adaptation note
 ## Partners
 
 <p align="center">
-  <a href="https://www.xiaohongshu.com"><img src="assets/partners/xiaohongshu.png" alt="Xiaohongshu" width="72" /></a>
-  &emsp;&emsp;
-  <a href="https://www.pku.edu.cn"><img src="assets/partners/peking-university.png" alt="Peking University" width="174" /></a>
-  &emsp;&emsp;
-  <a href="https://www.huawei.com"><img src="assets/partners/huawei.png" alt="Huawei" width="132" /></a>
-  &emsp;&emsp;
-  <a href="https://www.ubiquant.com"><img src="assets/partners/ubiquant.svg" alt="Ubiquant" width="205" /></a>
-  &emsp;&emsp;
-  <img src="assets/partners/quanjie.jpg" alt="Quanjie" width="126" />
+  <a href="https://www.xiaohongshu.com"><img src="assets/partners/xiaohongshu.png" alt="Xiaohongshu" width="64" /></a>
+  &emsp;
+  <a href="https://www.pku.edu.cn"><img src="assets/partners/peking-university.png" alt="Peking University" width="150" /></a>
+  &emsp;
+  <a href="https://www.huawei.com"><img src="assets/partners/huawei.png" alt="Huawei" width="112" /></a>
+  &emsp;
+  <a href="https://www.iflytek.com"><img src="assets/partners/iflytek.png" alt="iFLYTEK" width="130" /></a>
+  &emsp;
+  <a href="https://www.ubiquant.com"><img src="assets/partners/ubiquant.svg" alt="Ubiquant" width="170" /></a>
+  &emsp;
+  <a href="https://www.quanjieinfra.com"><img src="assets/partners/quanjie.jpg" alt="Quanjie" width="110" /></a>
+  &emsp;
+  <a href="https://www.tlaic.ac.cn"><img src="assets/partners/tongming-lake.svg" alt="Beijing Tongming Lake Information Technology Application Innovation Center" width="96" /></a>
 </p>
 
 ## Citation

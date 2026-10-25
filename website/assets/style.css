@@ -180,6 +180,13 @@ pre.bib {
 .cta-box .btn { border-color: #fff; color: var(--red); background: #fff; text-decoration: none; }
 .cta-box .btn.ghost { background: transparent; color: #fff; }
 
+/* partners */
+.partners { padding: 56px 0 24px; }
+.partner-row { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 24px 36px; margin-top: 18px; }
+.partner-row a { display: block; opacity: .85; transition: opacity .15s, transform .15s; }
+.partner-row a:hover { opacity: 1; transform: translateY(-2px); }
+.partner-row img { width: auto; max-width: 220px; }
+
 footer { border-top: 1px solid var(--grid); padding: 28px 0 40px; margin-top: 40px; font-size: 14px; color: var(--ink-3); }
 footer .wrap { display: flex; gap: 18px; flex-wrap: wrap; justify-content: space-between; }
 
