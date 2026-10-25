@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Blog · RedKnot</title>
+  <link rel="icon" href="../assets/logo.png">
+  <link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav-inner">
+      <a class="nav-logo" href="../"><img src="../assets/logo.png" alt="RedKnot"></a>
+      <div class="nav-links">
+        <a href="../">Home</a>
+        <a class="active" href="./">Blog</a>
+        <a href="https://arxiv.org/abs/2606.06256">Paper</a>
+        <a href="https://github.com/rednote-machine-learning/RedKnot">GitHub</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="wrap" style="max-width:880px">
+    <header class="article-head">
+      <p class="eyebrow">Blog</p>
+      <h1 style="font-size:40px;margin:4px 0 8px">Notes from the RedKnot team</h1>
+      <p class="muted">Plain-language posts on long-context LLM serving.</p>
+    </header>
+
+    <a class="post-card" href="redknot-explained/">
+      <div class="thumb" id="thumb"></div>
+      <div>
+        <p class="meta">October 2026 · Explainer</p>
+        <h2>RedKnot, explained: most attention heads can reuse their cache</h2>
+        <p>Why long prompts are slow, why only a few attention heads need the whole prompt, and how that gives a 1.6–5.2× faster first token.</p>
+      </div>
+    </a>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <span>RedKnot · Apache-2.0 · Built on SGLang</span>
+      <span><a href="https://github.com/rednote-machine-learning/RedKnot">GitHub</a></span>
+    </div>
+  </footer>
+
+  <script type="module">
+    import { headGrid } from "../assets/charts.js";
+    headGrid(document.getElementById("thumb"), { heads: 6, tokens: 18, global: [1, 4], window: 4, aria: "Global heads computed in full, local heads only a short window" });
+  </script>
+</body>
+</html>
