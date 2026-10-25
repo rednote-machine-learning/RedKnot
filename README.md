@@ -4,12 +4,16 @@
   <p><strong>Head-aware reuse and token-selective execution for long-context LLM serving.</strong></p>
 
   <p>
+    <a href="https://rednote-machine-learning.github.io/RedKnot/"><img src="https://img.shields.io/badge/website-RedKnot-d91e3c" alt="RedKnot website" /></a>
     <a href="https://github.com/sgl-project/sglang"><img src="https://img.shields.io/badge/built%20on-SGLang-blue" alt="Built on SGLang" /></a>
     <a href="./LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-green" alt="Apache-2.0 License" /></a>
     <a href="#deepseek-v4-flash-release"><img src="https://img.shields.io/badge/DeepSeek--V4--Flash-TP8%20release-orange" alt="DeepSeek V4 Flash TP8 release" /></a>
   </p>
 
+  <p>New here? Start with our <a href="https://rednote-machine-learning.github.io/RedKnot/"><strong>website</strong></a>: a short, plain-language <a href="https://rednote-machine-learning.github.io/RedKnot/blog/redknot-explained/">explainer</a> of how RedKnot works and what it gains, with interactive figures.</p>
+
   <p>
+    <a href="https://rednote-machine-learning.github.io/RedKnot/">Website</a> ·
     <a href="#deepseek-v4-flash-release">Quick start</a> ·
     <a href="#what-is-redknot">Technology</a> ·
     <a href="#other-benchmark-entrypoints">Benchmarks</a> ·
