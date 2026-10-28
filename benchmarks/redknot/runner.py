@@ -101,7 +101,9 @@ def source_identity(root: str | Path) -> dict:
     root = Path(root).resolve()
 
     def git(*args: str) -> bytes:
-        return subprocess.check_output(["git", "-C", str(root), *args], stderr=subprocess.DEVNULL)
+        # The caller selected this checkout. Trust exactly its resolved path
+        # for this command, without changing persistent Git configuration.
+        return subprocess.check_output(["git", "-c", f"safe.directory={root}", "-C", str(root), *args], stderr=subprocess.PIPE)
 
     try:
         commit = git("rev-parse", "HEAD").decode().strip()
@@ -131,8 +133,12 @@ def source_identity(root: str | Path) -> dict:
             "changes_sha256": digest(files),
             "submodules": submodules,
         }
-    except (OSError, subprocess.SubprocessError):
-        raise ValueError(f"runtime root must be an identifiable Git checkout: {root}") from None
+    except (OSError, subprocess.SubprocessError) as exc:
+        detail = getattr(exc, "stderr", None) or str(exc)
+        if isinstance(detail, bytes):
+            detail = detail.decode("utf-8", errors="replace")
+        detail = " ".join(detail.split())[:1000]
+        raise ValueError(f"runtime root must be an identifiable Git checkout: {root}: {detail}") from None
 
 
 def _loaded_module_identity(module: Any) -> dict:

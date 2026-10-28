@@ -22,6 +22,7 @@ from benchmarks.redknot.runner import (
     aggregate_ranks,
     preflight_model,
     run_benchmark,
+    source_identity,
 )
 
 
@@ -161,6 +162,54 @@ class RunnerTests(unittest.TestCase):
         (self.checkpoint / "tokenizer.json").write_text("changed")
         with self.assertRaisesRegex(ValueError, "fingerprint"):
             preflight_model(self.manifest, self.checkpoint)
+
+    def test_selected_runtime_git_trust_is_process_local_and_exactly_scoped(self) -> None:
+        checkout = self.root / "mounted runtime"
+        checkout.mkdir()
+        subprocess.run(["git", "-C", str(checkout), "init", "-q"], check=True)
+        subprocess.run(
+            [
+                "git",
+                "-C",
+                str(checkout),
+                "-c",
+                "user.name=Benchmark Test",
+                "-c",
+                "user.email=benchmark-test@example.invalid",
+                "commit",
+                "--allow-empty",
+                "-q",
+                "-m",
+                "CPU ownership fixture",
+            ],
+            check=True,
+        )
+        config_path = checkout / ".git" / "config"
+        original_config = config_path.read_bytes()
+        check_output = subprocess.check_output
+        with patch.dict(os.environ, {"GIT_TEST_ASSUME_DIFFERENT_OWNER": "1"}):
+            untrusted = subprocess.run(["git", "-C", str(checkout), "rev-parse", "HEAD"], capture_output=True, check=False)
+            if untrusted.returncode == 0:
+                self.skipTest("installed Git does not enforce GIT_TEST_ASSUME_DIFFERENT_OWNER")
+            self.assertIn(b"dubious ownership", untrusted.stderr)
+            with patch("benchmarks.redknot.runner.subprocess.check_output", wraps=check_output) as git:
+                identity = source_identity(checkout)
+            for invocation in git.call_args_list:
+                self.assertEqual(
+                    invocation.args[0][:5],
+                    ["git", "-c", f"safe.directory={checkout.resolve()}", "-C", str(checkout.resolve())],
+                )
+        self.assertEqual(len(identity["commit"]), 40)
+        self.assertFalse(identity["dirty"])
+        self.assertEqual(config_path.read_bytes(), original_config)
+
+    def test_source_identity_keeps_bounded_git_error_diagnostics(self) -> None:
+        failure = subprocess.CalledProcessError(128, ["git"], stderr=b"fatal: selected runtime unavailable\n")
+        with (
+            patch("benchmarks.redknot.runner.subprocess.check_output", side_effect=failure),
+            self.assertRaisesRegex(ValueError, "selected runtime unavailable"),
+        ):
+            source_identity(self.runtime)
 
     def test_configuration_only_profile_cannot_run_under_a_supported_checkpoint(self) -> None:
         for changes, message in (
