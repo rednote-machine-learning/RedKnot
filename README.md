@@ -1,4 +1,26 @@
-# DeepInfer
+<p align="center">
+  <img src="RedKnot_Logo.png" alt="RedKnot logo" width="600" />
+</p>
+
+# RedKnot + DeepInfer
+
+The DeepInfer-based development track of **RedKnot**, an open-source project for efficient long-context LLM serving.
+
+[Website](https://rednote-machine-learning.github.io/RedKnot/) · [RedKnot paper](https://arxiv.org/abs/2606.06256) · [Upstream DeepInfer](https://github.com/deepseek-ai/DeepInfer) · [Apache-2.0 license](LICENSE)
+
+**Status:** This branch starts from the complete [DeepInfer baseline at `5537415`](https://github.com/deepseek-ai/DeepInfer/commit/553741557a57df44a46fb3ab72b6aafeaf945337), including its pinned submodules. RedKnot integration is planned; the features, usage instructions, and benchmarks below describe the upstream DeepInfer baseline.
+
+## Framework branches
+
+| Branch | Purpose |
+| --- | --- |
+| **[RedKnot+DeepInfer](https://github.com/rednote-machine-learning/RedKnot/tree/RedKnot%2BDeepInfer)** | **Default branch** · DeepInfer baseline for RedKnot development |
+| [RedKnot-SGLang](https://github.com/rednote-machine-learning/RedKnot/tree/RedKnot-SGLang) | SGLang-based RedKnot implementation; formerly `main` |
+| [RedKnot-vLLM](https://github.com/rednote-machine-learning/RedKnot/tree/RedKnot-vLLM) | vLLM adaptation track |
+
+RedKnot belongs to its contributors. We welcome issues, bug reports, suggestions, and pull requests across all framework branches.
+
+## DeepInfer baseline
 
 DeepInfer is the high-performance inference framework that powers DeepSeek's large-scale production services. This open-source release provides offline inference with the core features needed for serving at scale.
 
@@ -43,6 +65,13 @@ Required for a complete inference service (not included in this release):
 
 ## Getting started
 
+Clone this branch together with its upstream dependencies:
+
+```bash
+git clone --branch 'RedKnot+DeepInfer' --recurse-submodules https://github.com/rednote-machine-learning/RedKnot.git
+cd RedKnot
+```
+
 ### Prerequisites
 
 - Linux
@@ -74,7 +103,7 @@ python examples/offline_inference.py
 
 See [examples](examples/README.md) for details.
 
-## Performance benchmarks
+## Upstream performance benchmarks
 
 | Prefill | Decode |
 | :---: | :---: |
@@ -91,6 +120,8 @@ See [eval/README.md](eval/README.md).
 DeepInfer is released under the Apache License 2.0. See [LICENSE](LICENSE) for details.
 
 ## Acknowledgments
+
+This RedKnot development track builds on [DeepInfer](https://github.com/deepseek-ai/DeepInfer) by DeepSeek-AI. We preserve the upstream source, license, and attribution.
 
 DeepInfer was originally built primarily on [vLLM](https://github.com/vllm-project/vllm), with additional inspiration from [SGLang](https://github.com/sgl-project/sglang) and [TensorRT-LLM](https://github.com/NVIDIA/TensorRT-LLM). We thank their developers.
 
