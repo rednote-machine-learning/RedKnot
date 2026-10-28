@@ -2,7 +2,7 @@ name: Deploy website to GitHub Pages
 
 on:
   push:
-    branches: [main]
+    branches: [RedKnot-SGLang]
     paths: ["website/**", ".github/workflows/pages.yml"]
   workflow_dispatch:
 
@@ -23,6 +23,8 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: RedKnot-SGLang
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

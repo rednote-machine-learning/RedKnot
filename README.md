@@ -1,6 +1,8 @@
 <div align="center" id="redknottop">
   <img src="RedKnot_Logo.png" alt="RedKnot logo" width="600" />
 
+  <h1>RedKnot + SGLang</h1>
+
   <p><strong>Head-aware reuse and token-selective execution for long-context LLM serving.</strong></p>
 
   <p>
@@ -21,6 +23,14 @@
     <a href="https://arxiv.org/abs/2606.06256">Paper</a>
   </p>
 </div>
+
+This is the **SGLang-based RedKnot implementation**, now maintained on `RedKnot-SGLang` (formerly `main`). The repository opens on the DeepInfer development track by default.
+
+| Framework branch | Purpose |
+| --- | --- |
+| [RedKnot+DeepInfer](https://github.com/rednote-machine-learning/RedKnot/tree/RedKnot%2BDeepInfer) | Default branch · DeepInfer baseline for RedKnot development |
+| **[RedKnot-SGLang](https://github.com/rednote-machine-learning/RedKnot/tree/RedKnot-SGLang)** | **This branch** · SGLang-based RedKnot implementation |
+| [RedKnot-vLLM](https://github.com/rednote-machine-learning/RedKnot/tree/RedKnot-vLLM) | vLLM adaptation track |
 
 ## RedKnot belongs to its contributors.
 
@@ -143,7 +153,7 @@ DeepGEMM and SGL kernels before running the same frozen suites.
 ### Quick start
 
 ```bash
-git clone git@github.com:rednote-machine-learning/RedKnot.git
+git clone --branch RedKnot-SGLang https://github.com/rednote-machine-learning/RedKnot.git
 cd RedKnot/test/srt/redknot
 
 # Creates or validates the pinned environment, then runs all four suites.
