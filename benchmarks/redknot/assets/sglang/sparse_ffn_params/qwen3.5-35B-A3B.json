@@ -1,0 +1,28 @@
+{
+  "model": "Qwen3.5-35B-A3B",
+  "component": "linear_attention",
+  "method": "per_head_token_window_with_prefix_reuse",
+  "rationale": "Qwen3.5 linear-attention (GatedDeltaNet) heads have widely different decay/memory. Short-memory heads can use a TOKEN window: window-外 history is reused from the decayed prefix status, window-内 is recomputed (lossless when window >= head memory). Implemented via segmented native kernel: GLOBAL heads relay full status (full recompute), LOCAL heads reset to decayed prefix at window boundaries.",
+  "dense_prefix_layers": 5,
+  "decay_quantile": 0.95,
+  "safety": 2.0,
+  "min_window": 256,
+  "segment": 4096,
+  "moe": {
+    "method": "deep_token_sparse_by_attention_mass",
+    "deep_moe_start_layer": 8,
+    "mass_thresh": 0.7,
+    "note": "Deep MoE layers (>= deep_moe_start_layer) let tokens with attention-mass < mass_thresh*mean SKIP routed experts (keep shared only). Mass is collected from the deep half of full-attention layers (collect_attention_mass)."
+  },
+  "summary": {
+    "linear_local_head_windowed_pct": "59-65% on selected 16K/32K/64K scans",
+    "linear_compute_save": "53-61% on selected scans",
+    "moe_routed_skip_pct": "~55-63% tokens on selected scans with deep_start=8/mass_thresh=0.7",
+    "note": "window_tok[head] = clamp(ceil(safety * mem_len_token), min_window); >= context => GLOBAL. mem_len from p95 decay. Layers < dense_prefix_layers stay dense. This is the selected Qwen3.5 sweet spot for triviaqa/multifieldqa_en; hotpotqa@32K was excluded because the more aggressive MoE setting dropped that sample."
+  },
+  "benchmark_datasets": [
+    {"dataset": "triviaqa", "context": 16000, "n_chunk": 2, "chunk": 8000},
+    {"dataset": "multifieldqa_en", "context": 32000, "n_chunk": 4, "chunk": 8000},
+    {"dataset": "triviaqa", "context": 64000, "n_chunk": 8, "chunk": 8000}
+  ]
+}

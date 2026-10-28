@@ -1,0 +1,70 @@
+{
+  "data_selection_sha256": "6b654d853fa0de1080535c4b5bc4b235a4fd25420f1d666f0284ab18d2ee7804",
+  "dataset": {
+    "bytes": 4483926,
+    "name": "multifieldqa_en",
+    "row_id_base": 0,
+    "sha256": "0aac182fd317dcf6d74f8e1e0f3e61029407435346c2e0b3ff9fb45ae49c5c3f"
+  },
+  "format": "redknot_pure_mla_prompt_v1",
+  "geometry": {
+    "chunk_tokens": 16384,
+    "num_chunks": 4,
+    "online_suffix_tokens": 89,
+    "query_start": 65536,
+    "total_tokens": 65625
+  },
+  "output_blind": true,
+  "prompt": {
+    "answers_sha256": "sha256:f3dbbcaa381db69ac9fcf57aae8a873f5a611ea6fa3f65092e13f4a2d8c8526c",
+    "full_input_ids_sha256": "sha256:8295dbc213fd0b050c182d0f014a3ace761d69c0eced95046b108a0cdd9f5587",
+    "offline_chunk_hashes": [
+      "sha256:6cec580f155b70e8c60ed679043a1f2bd27d55835866d09006a88ebd200bfe24",
+      "sha256:1a9f883634da807474484588cb9fbed163211050b6e56ccd1b488f84f878fe7a",
+      "sha256:570d3ac40997a1e44ebb96151b68e4bb9a95f9bef806757917b44750668e3885",
+      "sha256:fb5dfe8f7e0504ade43d5997a7edd17e8b79ff5fdca7b01fa5b7ae7a88e30b10"
+    ],
+    "offline_prefix_hash": "sha256:d55e6556d24c872024811a4f40366aca88324fb6fb6b2d52fedf237b59faef07",
+    "online_suffix_hash": "sha256:b3842a42bd4eb8a566480f573c2513c4696a04e7db2dd91d94ab4481d483171f",
+    "question_sha256": "sha256:78d2bf743b8dbe89640d65c2c65882f78c07c482e5fa658927b68161ec9f1afa",
+    "text_sha256": "sha256:bce768337a7b60dbf017f345feb8b2b73b285b62102ba762f5903825db08a648"
+  },
+  "prompt_manifest_sha256": "1ac4a833512ff73c27abfa13d10978e34f9255926717666d3f4b8582c3163323",
+  "prompt_mode": "official_rag_v1",
+  "protocol": {
+    "add_default_bos_token": true,
+    "answer_style": "direct_answer_plus_document_evidence_v1",
+    "document_delimiter": "\n\n",
+    "drop_thinking": true,
+    "encoder_path": "/mnt/tidal-alsh01/dataset/redone/checkpoints/opensource/DeepSeek-V4-Flash-0731/encoding/encoding_dsv4.py",
+    "encoder_sha256": "sha256:abc0d26120250dda0ae077dc64aa28836026e61e970854aaeb792445e6a0dde6",
+    "query_instruction": "\n\nAnswer the question using only the documents above. Put the direct answer alone on the first line. Then give one or two concise sentences explaining the supporting evidence from the documents. Do not use bullets or introduce outside facts. Keep the complete response between 25 and 35 tokens (target: about 30 tokens).\nQuestion: What is the effect of the proximity of superconductivity on the Kondo effect?\nAnswer:",
+    "reasoning_effort": "low",
+    "target_output_token_range": [
+      25,
+      35
+    ],
+    "target_output_tokens": 30,
+    "thinking_mode": "chat",
+    "tokenizer_config_path": "/mnt/tidal-alsh01/dataset/redone/checkpoints/opensource/DeepSeek-V4-Flash-0731/tokenizer_config.json",
+    "tokenizer_config_sha256": "sha256:6ac8c8dc065ed118161d02dd532749ae3f52c243deac27872134fae2f50d8547",
+    "tokenizer_path": "/mnt/tidal-alsh01/dataset/redone/checkpoints/opensource/DeepSeek-V4-Flash-0731/tokenizer.json",
+    "tokenizer_sha256": "sha256:8f9f37ca37fdc4f5fd36d5cf4d3b0e8392edb4e894fd10cc0d70b4957c8633cf"
+  },
+  "source": {
+    "chunk_hashes": [
+      "sha256:0a3d38da6226e513624dfeac5cfcd96880e87689e67105347a882ac56401229a",
+      "sha256:1527ab7146ee8d4c0118185bf586bcc406c4d8d0c715f23165e1385460315d47",
+      "sha256:4629504740b042110792e30f2a625958d3223d7cad4037d74c85844186bc8e60",
+      "sha256:f4d023132425f4840afde906bc2c12dfd76f26ff081913a1203bf3d7d55a9df5"
+    ],
+    "chunk_order": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "expected_source_chunk": 0,
+    "query_row_id": 5
+  }
+}

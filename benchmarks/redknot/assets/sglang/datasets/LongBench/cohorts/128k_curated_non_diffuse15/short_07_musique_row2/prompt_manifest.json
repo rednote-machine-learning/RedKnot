@@ -1,0 +1,64 @@
+{
+  "data_selection_sha256": "fa1c6638cc35c5f86a9ad06ad770c12a0fc6251dfcbb785dd690162ba44e2074",
+  "dataset": {
+    "bytes": 14085077,
+    "name": "musique",
+    "row_id_base": 0,
+    "sha256": "4ac69b91281c4ec6b21316cb7282e83fb6b4dda04fc68480bb8d8ed1e19ff7bd"
+  },
+  "format": "redknot_pure_mla_prompt_v1",
+  "geometry": {
+    "chunk_tokens": 32768,
+    "num_chunks": 4,
+    "online_suffix_tokens": 43,
+    "query_start": 131072,
+    "total_tokens": 131115
+  },
+  "output_blind": true,
+  "prompt": {
+    "answers_sha256": "sha256:3f8eef673c06bc0a4abd3f00fc99649b5f07d3b933148d68bac9f415b5203286",
+    "full_input_ids_sha256": "sha256:37e405beb4ae5dbe594ee4b5088bc0f84042c93072128e4bd27f71d1dd9786f7",
+    "offline_chunk_hashes": [
+      "sha256:2404ad2771b7f1c466c46d2609f0d7a6928a277c1de9016e037ab2c48128691a",
+      "sha256:39e1c364f27b9a614aefea00c307e57f26c5cd31667c22d6e257dbd440281f48",
+      "sha256:29db6073ca5a7e60c6bdf988600693a65414c57632373cb1111db7551167938d",
+      "sha256:39a0a1bf693193d9788e99c1a0415f71f417dd9bfc2a7e9b9f6170bfd669a190"
+    ],
+    "offline_prefix_hash": "sha256:8a39393dc27ec5539a5bafac14b8978e5f13108cf15eab0bc2a9d499ca75cfa7",
+    "online_suffix_hash": "sha256:dc86ad529c9b8c3a576a4007cbbb29f39e2d2c0d5d38b3beb6c5ebfe4276debf",
+    "question_sha256": "sha256:704608676133738dea409e579ac8ee23df85ce8f8db248cf39086bdfca97becb",
+    "text_sha256": "sha256:f594e7995d4b440aa4b80e7f88a4f64bea289c4545dac399d725b6d93fefbeca"
+  },
+  "prompt_manifest_sha256": "f187cbbd50c9d4572c9427792f0f6a36b9fb1cac89f0b8ea2abfb4f23a6dc63b",
+  "prompt_mode": "official_rag_v1",
+  "protocol": {
+    "add_default_bos_token": true,
+    "document_delimiter": "\n\n",
+    "drop_thinking": true,
+    "encoder_path": "/mnt/tidal-alsh01/dataset/redone/checkpoints/opensource/DeepSeek-V4-Flash-0731/encoding/encoding_dsv4.py",
+    "encoder_sha256": "sha256:abc0d26120250dda0ae077dc64aa28836026e61e970854aaeb792445e6a0dde6",
+    "query_instruction": "\n\nAnswer the question using only the documents above. Return the shortest exact answer span only, with no explanation.\nQuestion: In which borough was Callum McManaman born?\nAnswer:",
+    "reasoning_effort": "low",
+    "thinking_mode": "chat",
+    "tokenizer_config_path": "/mnt/tidal-alsh01/dataset/redone/checkpoints/opensource/DeepSeek-V4-Flash-0731/tokenizer_config.json",
+    "tokenizer_config_sha256": "sha256:6ac8c8dc065ed118161d02dd532749ae3f52c243deac27872134fae2f50d8547",
+    "tokenizer_path": "/mnt/tidal-alsh01/dataset/redone/checkpoints/opensource/DeepSeek-V4-Flash-0731/tokenizer.json",
+    "tokenizer_sha256": "sha256:8f9f37ca37fdc4f5fd36d5cf4d3b0e8392edb4e894fd10cc0d70b4957c8633cf"
+  },
+  "source": {
+    "chunk_hashes": [
+      "sha256:2753bbf492e9fbed927d040898e6e562ea4d819a54e76291b303ee8cdc2435ca",
+      "sha256:089d853bf267fe012db9eae019f9a2f9106568c3bc7905176a3fa0a41f48f8e1",
+      "sha256:a22d926c9ac77cb955b2ed2415421b937c01ee190ec6918c62369b89d5b16419",
+      "sha256:c15db0ec66fe414e6354f8afa4c96d6cb6ac86f8c1687ca82a2df2930f5e4b04"
+    ],
+    "chunk_order": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "expected_source_chunk": 0,
+    "query_row_id": 2
+  }
+}

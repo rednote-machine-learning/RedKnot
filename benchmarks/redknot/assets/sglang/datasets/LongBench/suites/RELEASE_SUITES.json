@@ -1,0 +1,42 @@
+{
+  "format": "redknot_deepseek_v4_flash_release_suites_v1",
+  "ordered_lengths": [
+    "64K",
+    "128K",
+    "256K",
+    "440K"
+  ],
+  "execution": {
+    "baseline_label": "Recomputed",
+    "baseline_semantics": "same DeepSeek-V4-Flash model with full online recomputation and no RedKnot reuse",
+    "quality_repeats_per_case": 1,
+    "ttft_measured_pairs_per_case": 10,
+    "ttft_protocol": "hot_state_client_stream_first_output_token_p50_p95",
+    "ttft_warmup_pairs_per_case": 3
+  },
+  "selection_policy": {
+    "cases_per_length": 15,
+    "long_output_cases": 5,
+    "long_output_eligible_for_accuracy_aggregate": false,
+    "long_output_tokens": 30,
+    "short_output_cases": 10
+  },
+  "suites": {
+    "64K": {
+      "path": "release_64k_15case.jsonl",
+      "sha256": "b255dfebb82c39aaec2dde919afcd405a422aa4c2fe051104a045ad47dcef2e1"
+    },
+    "128K": {
+      "path": "release_128k_15case.jsonl",
+      "sha256": "d1a74ffbe2d9f46ec8840559fb5189f88966ad2641b6863a04e22d8b630c38da"
+    },
+    "256K": {
+      "path": "release_256k_15case.jsonl",
+      "sha256": "fda5444c9a1fc00c12248340f6c064ac5963b5fbbdbc60830020c029ffd8a5e7"
+    },
+    "440K": {
+      "path": "release_440k_15case.jsonl",
+      "sha256": "cb02d9cb0e823768b75792c7d65f6dc020caecf7a7e8b76e8963a0516f1eccf0"
+    }
+  }
+}

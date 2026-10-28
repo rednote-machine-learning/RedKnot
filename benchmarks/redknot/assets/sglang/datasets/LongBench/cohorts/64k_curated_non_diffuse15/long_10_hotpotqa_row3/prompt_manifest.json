@@ -1,0 +1,70 @@
+{
+  "data_selection_sha256": "b4724cbbbe233a6e0a2c7fb09faff53e3f025034e69b0b316e445de2bd715bfe",
+  "dataset": {
+    "bytes": 11483614,
+    "name": "hotpotqa",
+    "row_id_base": 0,
+    "sha256": "a0005ab2a1bc2ac3a70352dccbf96cccc4e0aac6bb677f6a55180fa51b92ef6f"
+  },
+  "format": "redknot_pure_mla_prompt_v1",
+  "geometry": {
+    "chunk_tokens": 16384,
+    "num_chunks": 4,
+    "online_suffix_tokens": 95,
+    "query_start": 65536,
+    "total_tokens": 65631
+  },
+  "output_blind": true,
+  "prompt": {
+    "answers_sha256": "sha256:47ed59efe544ba54c1f497e962a25f33e0402a6b56a6c0d20835b6b036bd71b6",
+    "full_input_ids_sha256": "sha256:fa2e393db84bca4dbe26927097c9a97716c1f8b0bff5e5753edc7e156e3d712b",
+    "offline_chunk_hashes": [
+      "sha256:8f6f1a1bf5d239b3b0f4adc7c37a1656635178b5d2304bceed933be07c257769",
+      "sha256:9d7f8d6c1187990b841fbaaae271d58e3ff514a495c4009347e437a5720ba1ea",
+      "sha256:929f1ddbac06662fcc2e79c3883b7dfc64287e6c1288cb4b7e81f367b13da8ea",
+      "sha256:a5303e8fcd0ba9efeac817cbc33fde3597e421ee121c7c3bec552fedf9fddaf7"
+    ],
+    "offline_prefix_hash": "sha256:1068db04ae083da5b3b18261d1a53286b0fb92449a5ebd30ff2a7564bfc33e51",
+    "online_suffix_hash": "sha256:e47356c838bb45ee0f278b9760c280a545003e4d367046f1b0899af01217c039",
+    "question_sha256": "sha256:74a7e4699c8b25d735d8a820b3977a1439f260eac6c404cddb7270fdf7422277",
+    "text_sha256": "sha256:269c0b6fcc9709dea3407cb3e02028e1fd3ed4593652d316298e9b4a87889861"
+  },
+  "prompt_manifest_sha256": "b1d0098c25bca9eb5807a722cfb6263951868aa6320ddf1fce0bb42a27d170bb",
+  "prompt_mode": "official_rag_v1",
+  "protocol": {
+    "add_default_bos_token": true,
+    "answer_style": "direct_answer_plus_document_evidence_v1",
+    "document_delimiter": "\n\n",
+    "drop_thinking": true,
+    "encoder_path": "/mnt/tidal-alsh01/dataset/redone/checkpoints/opensource/DeepSeek-V4-Flash-0731/encoding/encoding_dsv4.py",
+    "encoder_sha256": "sha256:abc0d26120250dda0ae077dc64aa28836026e61e970854aaeb792445e6a0dde6",
+    "query_instruction": "\n\nAnswer the question using only the documents above. Put the direct answer alone on the first line. Then give one or two concise sentences explaining the supporting evidence from the documents. Do not use bullets or introduce outside facts. Keep the complete response between 25 and 35 tokens (target: about 30 tokens).\nQuestion: Gary L. Bennett was a part of the space missions that have a primary destination of what celestial body?\nAnswer:",
+    "reasoning_effort": "low",
+    "target_output_token_range": [
+      25,
+      35
+    ],
+    "target_output_tokens": 30,
+    "thinking_mode": "chat",
+    "tokenizer_config_path": "/mnt/tidal-alsh01/dataset/redone/checkpoints/opensource/DeepSeek-V4-Flash-0731/tokenizer_config.json",
+    "tokenizer_config_sha256": "sha256:6ac8c8dc065ed118161d02dd532749ae3f52c243deac27872134fae2f50d8547",
+    "tokenizer_path": "/mnt/tidal-alsh01/dataset/redone/checkpoints/opensource/DeepSeek-V4-Flash-0731/tokenizer.json",
+    "tokenizer_sha256": "sha256:8f9f37ca37fdc4f5fd36d5cf4d3b0e8392edb4e894fd10cc0d70b4957c8633cf"
+  },
+  "source": {
+    "chunk_hashes": [
+      "sha256:61bbcd6434b996b7bab8ff0d6ac08cc070c4a2d69c8451fdfd57d6fee85e524d",
+      "sha256:4dbad3af67e70348ed7000ce7437c296a0e88f8d83ffb95164485dc59a54ff78",
+      "sha256:f7d6e6d76cb07c73c35a61136700b59ef2fa40873038efeb79b7d0c45b07378e",
+      "sha256:bb993163f92b3bc69d2dbbfa743b6950088a2c0de24edccdf06caa2baa4a337f"
+    ],
+    "chunk_order": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "expected_source_chunk": 0,
+    "query_row_id": 3
+  }
+}

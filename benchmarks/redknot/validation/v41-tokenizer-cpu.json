@@ -1,0 +1,211 @@
+{
+  "schema": "redknot-target-tokenizer-cpu-validation-v1",
+  "date": "2026-10-28",
+  "execution": "CPU only; no model weights loaded, no native GPU inference performed",
+  "model_id": "deepseek-ai/DeepSeek-V4.1-Flash-1017",
+  "tokenizer_fingerprint": "c457dbea1115c3d544e6310557c074d7649e7f07f1b1654d3a92dffde6a88be2",
+  "tokenizer_files": {
+    "tokenizer.json": "c90dfa01249db1be4245780a052ede752e1361c612ac6d08e2bdada7d599476b",
+    "tokenizer_config.json": "6ac8c8dc065ed118161d02dd532749ae3f52c243deac27872134fae2f50d8547"
+  },
+  "python": "3.12.3",
+  "transformers": "4.50.0",
+  "tokenizers": "0.21.4",
+  "source_commit": "19c152a44eee0439afc85fe95ac23ce5a914c8fd",
+  "source_inventory_sha256": "f8bd7d8e324f681cb9f96714326ff696048bc8a2f636a6cc990549e31801ac3a",
+  "code_sha256": {
+    "catalog.py": "a189f13f81ca9d2c9ea39123c469b5438cfec75a93bd2b1cb88e1187df8fe4f2",
+    "contract.py": "3b1e3c868d6fdcd6a0ec460c9c3bf9d55405bf9a7b872d7275363e1f07f711a8",
+    "prepare.py": "5bdb3f672d65903712e342348424a34a2ee7c56f312a2b9d7ca82ed2f4bb98ca",
+    "prompts.py": "35f13ec7f0fdc0f1edc90a3574285dfa41f3411b6ee36303896e7244c6711bb3"
+  },
+  "repeat_64k_manifest_identical": true,
+  "whole_manifest_hash_note": "Whole manifests include local tokenizer paths; per-case token hashes and tokenizer fingerprints are portable across identical assets.",
+  "validated": [
+    {
+      "name": "128k.manifest.json",
+      "manifest_sha256": "93f23f0109ae90f13ef9f27abc05dc3285f817e83e988ad7df69afa055225658",
+      "suite": "128k",
+      "kind": "migrated_sglang_release",
+      "case_count": 15,
+      "warmup_count": 1,
+      "scored_case_count": 10,
+      "datasets": {
+        "hotpotqa": 4,
+        "2wikimqa": 5,
+        "musique": 3,
+        "multifieldqa_en": 3
+      },
+      "input_tokens_min": 131113,
+      "input_tokens_max": 131176,
+      "required_context": 131206,
+      "full_evidence_retained": true,
+      "token_ids_within_vocab": true,
+      "request_fingerprints": {
+        "case:128k:short_00_hotpotqa_row0": "6e679ab9b150f8385925750a5ac3c818d827f89372d15e06186376dbece32050",
+        "case:128k:short_01_hotpotqa_row2": "09604fd98fd0b0c046b8f4462ce45924d32dca6929056a05679f1567c5229a8b",
+        "case:128k:short_02_hotpotqa_row3": "a4b3ac31dd8b7f694be887f01ab4e4154a0ffa073f17cf5542f1fd1d4a7bdd3b",
+        "case:128k:short_03_2wikimqa_row0": "7f909d6872f13a8417b99e7b791694dada326567ffa2e6dd69424260e53d437e",
+        "case:128k:short_04_2wikimqa_row5": "517037f5e81a92c2c287474e9fb85191c7315028e890a8d4da3190e4996de00f",
+        "case:128k:short_05_2wikimqa_row8": "aadd2849b5b92adcbc5f822d10ceb094f99e444d6a5764b4abaf631b6ef3c87a",
+        "case:128k:short_06_musique_row0": "26eb240e06f7b8f8be75f34ea261d799a087b48ebc950bea820e4a9e95fc02aa",
+        "case:128k:short_07_musique_row2": "dd612632df3acf5941188e93c0f453b9357ad97e4a7836418520ff5cfa79bd5f",
+        "case:128k:short_08_multifieldqa_en_row1": "89e81e452b1d53854fc7ae9ed31829323a1665d2aa07a5efe94d44084c126e16",
+        "case:128k:short_09_multifieldqa_en_row4": "10ae192c5b6d39d097d6c773aa1bd35c14148a3d3c037ba05338a846e022bae4",
+        "case:128k:long_10_hotpotqa_row4": "2a1d524bf8d7c9fb4a1308c12525d9827bae4bc6e6bedf7a3edc50a24b95e5b8",
+        "case:128k:long_11_2wikimqa_row12": "da779e5951d2b629b851484df940dacf0c1631ab2bf121e374ff094e3bb44d22",
+        "case:128k:long_12_musique_row3": "f25702d3d8948ce04b514b353a690e86645bfbfd14f3a0bf47ff11fc92a9187b",
+        "case:128k:long_13_multifieldqa_en_row5": "3095801078031188586643ab1b5705f5046c013627f0eed6bb5830e6b49657e3",
+        "case:128k:long_14_2wikimqa_row0": "ad017daa165c850bc2e19d6157ecde589b9b2d64646c26b887d19602d905b8c9"
+      }
+    },
+    {
+      "name": "256k.manifest.json",
+      "manifest_sha256": "5743cb4c5e84f8a5033d1861d8b1e874a6c0ea1a4524339c7176d920fd407cc7",
+      "suite": "256k",
+      "kind": "migrated_sglang_release",
+      "case_count": 15,
+      "warmup_count": 1,
+      "scored_case_count": 10,
+      "datasets": {
+        "hotpotqa": 12,
+        "musique": 2,
+        "multifieldqa_en": 1
+      },
+      "input_tokens_min": 262193,
+      "input_tokens_max": 262251,
+      "required_context": 262286,
+      "full_evidence_retained": true,
+      "token_ids_within_vocab": true,
+      "request_fingerprints": {
+        "case:256k:short_hotpotqa_10-row0": "85e84aa8d957342b3791e909e48e8683034b9da45856d2dc0458d1b07e8dd921",
+        "case:256k:short_hotpotqa_10-row3": "9cbd1b13a95b37b7a4bae633dae5830d62e1cea4a6fe1832401d01788c7824a1",
+        "case:256k:short_hotpotqa_10-row6": "374e6bdfe1e07cdc7cc5d4c4e541d2f1be53477c7e7e2dac70051cf5ef94811a",
+        "case:256k:short_hotpotqa_10-row10": "afacfa05d2c2dbce0a9180547954b9724caddf510cea1f60cefdf3a09d3b73db",
+        "case:256k:short_hotpotqa_10-row13": "8ca812bbb32ef5abe9049fdd439df0583de8c4e7e4353388b1358bf73e692259",
+        "case:256k:short_hotpotqa_10-row16": "e0342e0f0d745476316467b72bf30ba65d83eba934fe4cc17f147df8515a41d9",
+        "case:256k:short_hotpotqa_10-row19": "1b008edca3a2f00e7663a62304a4269c16ba9d5f99c3b231ae4ead9ab6a995ef",
+        "case:256k:short_hotpotqa_10-row22": "7748b164bec4537ecd0e35e55716e353fdedf3465da9b44986db8d442fb7b7eb",
+        "case:256k:short_hotpotqa_10-row1": "0e46931eb3b2eb684ca1bf6bd6456adb8cd796b4cb88a68e45896ed4d825d74f",
+        "case:256k:short_hotpotqa_10-row4": "7595a1feb011abd4c2c46b89aab3172c7be92ec14b42941c23d8da4fbb3a16fa",
+        "case:256k:long_hotpotqa_2-row6": "d2ba31e3bc8acb9e8a70b601618d0a59120c7399d0697f483452d0cc5f433eff",
+        "case:256k:long_hotpotqa_2-row0": "6d759eb37a234b9ed48b5fbf7b3cd9ba5e9b344ab01ff0d8f872c906af19c283",
+        "case:256k:long_musique_2-row0": "edd5bec9e1e9c503a4a3240c8001a5719767585010302392379a851426ece552",
+        "case:256k:long_musique_2-row3": "b072f7e1065b1a989a0459cfdb12c53ba6ea492896d5ae1ba3e3eb9c8767842d",
+        "case:256k:long_multifieldqa_en_1-row0": "3846726565b00e442ce9246656dc9f326664a8ad171be581587730ce943b5882"
+      }
+    },
+    {
+      "name": "440k.manifest.json",
+      "manifest_sha256": "6ab122df4a0de89954ba0a6aa15db73bb404ceed44341bba5361c2ba4362d0a8",
+      "suite": "440k",
+      "kind": "migrated_sglang_release",
+      "case_count": 15,
+      "warmup_count": 1,
+      "scored_case_count": 10,
+      "datasets": {
+        "hotpotqa": 12,
+        "musique": 2,
+        "multifieldqa_en": 1
+      },
+      "input_tokens_min": 450610,
+      "input_tokens_max": 450656,
+      "required_context": 450702,
+      "full_evidence_retained": true,
+      "token_ids_within_vocab": true,
+      "request_fingerprints": {
+        "case:440k:short_hotpotqa_10-row0": "f4d6dac16962bf43656d0a46729c4090fab3f1487482ee38c55506befbef42be",
+        "case:440k:short_hotpotqa_10-row4": "92c0dc9994f762b5dd21a0d7acc2065c40690082757909b9584c18c22078f4c8",
+        "case:440k:short_hotpotqa_10-row9": "976f319821333f614d57f69faee7a5179d0f2cc7b1dc42c693d6989d9605ac0c",
+        "case:440k:short_hotpotqa_10-row14": "a7735f39e2ad5fd492a868df5f8dcf7595be178e40580ab58700183c58901069",
+        "case:440k:short_hotpotqa_10-row19": "eb80b4cf4bd6cfb71a85849420ac71973e3e8aeb90d02bc1481d8f5832b12f91",
+        "case:440k:short_hotpotqa_10-row24": "87b8d7c42a8a62eb2f5a1ac6a594bd6c210252be4cd3d235ec9ce3e402b122c2",
+        "case:440k:short_hotpotqa_10-row30": "462a113cc72b9c3043326af44bf7c1727e2e3e020b781b0e1b80c0e1563a90bc",
+        "case:440k:short_hotpotqa_10-row34": "0553209b1b334eda0f6d33ba68c5e731606085deb267e3a852dca76344dc9e7f",
+        "case:440k:short_hotpotqa_10-row1": "c62ef9d9c867fe5580c990a0768a4143daffb9a06e56804880295f9835c7112c",
+        "case:440k:short_hotpotqa_10-row5": "84b50165862225797997a1e0075165b789a5fb8b5761601fa984eec03c155a80",
+        "case:440k:long_hotpotqa_2-row0": "1cbc31636778ea2632dd8cc736045a98dd07a66290c734b0e4a05e854f994709",
+        "case:440k:long_hotpotqa_2-row4": "a6f560fd13d853da40934c839d417afe7c2cd7dac262ee970de396a8335590ec",
+        "case:440k:long_musique_2-row0": "aedb4bae8d7d6bba38c38e5f084ce2c64519fe49fe14b4ef89fa448c8037083d",
+        "case:440k:long_musique_2-row4": "bfdecb8eb816b55ece262ed5db3d52560ae792423f4bcedfe7c8195b708fe808",
+        "case:440k:long_multifieldqa_en_1-row0": "fb8dab9335729d73f4b954c505fc985f26227e46865a53a8416df0ebe276c8ef"
+      }
+    },
+    {
+      "name": "64k.manifest.json",
+      "manifest_sha256": "7dbbbfec6ee34fb4e91b0c10e635f62763250826ac073050f2ec52a8199ea57f",
+      "suite": "64k",
+      "kind": "migrated_sglang_release",
+      "case_count": 15,
+      "warmup_count": 1,
+      "scored_case_count": 10,
+      "datasets": {
+        "hotpotqa": 4,
+        "2wikimqa": 4,
+        "musique": 4,
+        "multifieldqa_en": 3
+      },
+      "input_tokens_min": 65579,
+      "input_tokens_max": 65640,
+      "required_context": 65675,
+      "full_evidence_retained": true,
+      "token_ids_within_vocab": true,
+      "request_fingerprints": {
+        "case:64k:short_00_hotpotqa_row0": "fe9c49a2ea5e617e54361fc53c2d0366421645df76077b069c21e26dd095bc5c",
+        "case:64k:short_01_hotpotqa_row1": "b27abe3e8e3d0bf727b04c4e4a90aebb35c8e711f7af7cea2d73480670595b69",
+        "case:64k:short_02_hotpotqa_row2": "4952be915a411c92b4a9494ba4c0154e929c5f1c69e9cd6578ea31fe36b78d15",
+        "case:64k:short_03_2wikimqa_row0": "cec3415bfc688ac3707e1e4ae0132c52f07991ce3d08e72b1b21cc642d836b8f",
+        "case:64k:short_04_2wikimqa_row1": "1441990f4f59e4dfa6b56b05d3ff8f19c64ec25c211ce5f2392db9c3629d193e",
+        "case:64k:short_05_2wikimqa_row5": "37b6a646f7fb458022aab075cc0d6d64132dc30d7143eed92ca8650a0b7c1527",
+        "case:64k:short_06_musique_row0": "5ccadc8b53478523668aca34aabdc9df3cabc7e26a3ec3c2d32f43a61695967c",
+        "case:64k:short_07_musique_row2": "f14cfeea665a448440853309f0ae669258eaf0e7b85d9134fc486d119f3730c2",
+        "case:64k:short_08_multifieldqa_en_row1": "ddfb1667db1b4b09e37fd0f3032269ad81d79b996a566ea5d439aa54773a9715",
+        "case:64k:short_09_multifieldqa_en_row4": "a0b68591066e7718670a1d83d189db551f2bc7b53703d5425410bc92597ab87a",
+        "case:64k:long_10_hotpotqa_row3": "28211595c03ae9dfa51850619c2f9a5f937c8531606034869cdfe9d85ce409ab",
+        "case:64k:long_11_2wikimqa_row0": "f68a0d88b9c4546606091775bd4ebaa02b04307c070b7503d969df4e60e35bf9",
+        "case:64k:long_12_musique_row3": "38a27fbd37704cac81db402ec132124d4a5c60dcce5ad4fad5b240a36ba5ecb5",
+        "case:64k:long_13_musique_row0": "39fd132df446a0dc77e0e105e71f1fca080f656141985e0a98a1d67df8cb89e4",
+        "case:64k:long_14_multifieldqa_en_row5": "426232d645399b68c4101aa8fefedd4448879999c60f6289694bd4ae91a4ebac"
+      }
+    },
+    {
+      "name": "validation-matrix.json",
+      "manifest_sha256": "d18bcfcdd2b52dcbc30667b741a578785cf38a34a7359ea31bda95cf167ae266",
+      "suite": "64k",
+      "kind": "output_blind_dataset_matrix",
+      "case_count": 10,
+      "warmup_count": 1,
+      "scored_case_count": 10,
+      "datasets": {
+        "hotpotqa": 2,
+        "2wikimqa": 2,
+        "musique": 2,
+        "multifieldqa_en": 2,
+        "triviaqa": 2
+      },
+      "input_tokens_min": 65579,
+      "input_tokens_max": 66670,
+      "required_context": 66734,
+      "full_evidence_retained": true,
+      "token_ids_within_vocab": true,
+      "request_fingerprints": {
+        "case:64k:matrix-hotpotqa-row0": "fe9c49a2ea5e617e54361fc53c2d0366421645df76077b069c21e26dd095bc5c",
+        "case:64k:matrix-hotpotqa-row1": "b27abe3e8e3d0bf727b04c4e4a90aebb35c8e711f7af7cea2d73480670595b69",
+        "case:64k:matrix-2wikimqa-row0": "cec3415bfc688ac3707e1e4ae0132c52f07991ce3d08e72b1b21cc642d836b8f",
+        "case:64k:matrix-2wikimqa-row1": "1441990f4f59e4dfa6b56b05d3ff8f19c64ec25c211ce5f2392db9c3629d193e",
+        "case:64k:matrix-musique-row0": "5ccadc8b53478523668aca34aabdc9df3cabc7e26a3ec3c2d32f43a61695967c",
+        "case:64k:matrix-musique-row1": "8eee11fbf047f3cd6af52dc3395c5c814ddf43222431168c540327d10ff68a57",
+        "case:64k:matrix-multifieldqa_en-row0": "d698a8cf570835fa9acb39dbd29bced7837bd803e5f041782018155bbebe21e5",
+        "case:64k:matrix-multifieldqa_en-row1": "ddfb1667db1b4b09e37fd0f3032269ad81d79b996a566ea5d439aa54773a9715",
+        "case:64k:matrix-triviaqa-row0": "4040602b8df31d942bb178958f94a0b784854d467b3bf25bd6edc9dede97160f",
+        "case:64k:matrix-triviaqa-row1": "01ee6c7db2059d523006be01ee3019ac39e42bce6d157db5b5ecb7b81461a476"
+      }
+    }
+  ],
+  "limitations": [
+    "No GPU latency, QA accuracy, or speedup measurement.",
+    "Source curated cases retain their original selection bias.",
+    "Warmup questions are disjoint; background documents may overlap."
+  ],
+  "sha256": "c56e0a854b6055312187f7671c16dbf6853d225c6349cfb820c42aa3a6e2e909"
+}

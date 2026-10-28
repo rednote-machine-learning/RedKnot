@@ -1,0 +1,64 @@
+{
+  "data_selection_sha256": "7782def62bd94234c5e663b62cbfd94baf79eb84466656575987fb8d73dbcaa0",
+  "dataset": {
+    "bytes": 4483926,
+    "name": "multifieldqa_en",
+    "row_id_base": 0,
+    "sha256": "0aac182fd317dcf6d74f8e1e0f3e61029407435346c2e0b3ff9fb45ae49c5c3f"
+  },
+  "format": "redknot_pure_mla_prompt_v1",
+  "geometry": {
+    "chunk_tokens": 16384,
+    "num_chunks": 4,
+    "online_suffix_tokens": 49,
+    "query_start": 65536,
+    "total_tokens": 65585
+  },
+  "output_blind": true,
+  "prompt": {
+    "answers_sha256": "sha256:a3cd1f40e26ccb48b645fdc14244afed13dbf90bce3b71b7b685fdab3be3b6c8",
+    "full_input_ids_sha256": "sha256:2b0b1884d83c6021769e59318110d867e5fc4e258bde6b1d6a047e6f3f80d825",
+    "offline_chunk_hashes": [
+      "sha256:95842f99b9eb0d194ee74764169e6486bd5b4a380522b3af19df3035fa5f5530",
+      "sha256:01f81e6abf032f09d940dc218ad73865d6193d774b5eefe3cbd6641e7420ad2c",
+      "sha256:77516f37cba8066f23928a327d4dba546b9f936b4be740e7153dafa70b0ce4ea",
+      "sha256:13ad6bcd28baf3454811042f88a2423b678b3e257e720656f7075de1a36f0ff2"
+    ],
+    "offline_prefix_hash": "sha256:40290888c08200873ac58e5d699d72f8b34d573356ef6a19937be4638b94f8a0",
+    "online_suffix_hash": "sha256:30febaf2097937713da10948c538678d75860dc5a284064643e4f05919b4b66d",
+    "question_sha256": "sha256:21ddd2fce69d330bbc377c0faa62b32590c1142d7eea7518d606bf26b98ed694",
+    "text_sha256": "sha256:8f488918ea9b8f9ecf0b637b11b8574e191073a32a3ed3d624427034542b9527"
+  },
+  "prompt_manifest_sha256": "f704c850f6525231a22713ae1ef44bfd6efd7d9eac4cc01d5ae273f7d68d38b5",
+  "prompt_mode": "official_rag_v1",
+  "protocol": {
+    "add_default_bos_token": true,
+    "document_delimiter": "\n\n",
+    "drop_thinking": true,
+    "encoder_path": "/mnt/tidal-alsh01/dataset/redone/checkpoints/opensource/DeepSeek-V4-Flash-0731/encoding/encoding_dsv4.py",
+    "encoder_sha256": "sha256:abc0d26120250dda0ae077dc64aa28836026e61e970854aaeb792445e6a0dde6",
+    "query_instruction": "\n\nAnswer the question using only the documents above. Return the shortest exact answer span only, with no explanation.\nQuestion: Why is it important for the sides of the fuselage to be sloped (tumbled home)?\nAnswer:",
+    "reasoning_effort": "low",
+    "thinking_mode": "chat",
+    "tokenizer_config_path": "/mnt/tidal-alsh01/dataset/redone/checkpoints/opensource/DeepSeek-V4-Flash-0731/tokenizer_config.json",
+    "tokenizer_config_sha256": "sha256:6ac8c8dc065ed118161d02dd532749ae3f52c243deac27872134fae2f50d8547",
+    "tokenizer_path": "/mnt/tidal-alsh01/dataset/redone/checkpoints/opensource/DeepSeek-V4-Flash-0731/tokenizer.json",
+    "tokenizer_sha256": "sha256:8f9f37ca37fdc4f5fd36d5cf4d3b0e8392edb4e894fd10cc0d70b4957c8633cf"
+  },
+  "source": {
+    "chunk_hashes": [
+      "sha256:65e9a8b6f9a6b89f2c3066961ee491868215d252669ac354ed0ed2e82ed08435",
+      "sha256:db571a09a1e6e93a163bb52df95f14ff90e7293059906f852411494d12130783",
+      "sha256:4629504740b042110792e30f2a625958d3223d7cad4037d74c85844186bc8e60",
+      "sha256:f4d023132425f4840afde906bc2c12dfd76f26ff081913a1203bf3d7d55a9df5"
+    ],
+    "chunk_order": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "expected_source_chunk": 0,
+    "query_row_id": 4
+  }
+}

@@ -8,7 +8,7 @@ The DeepInfer-based development track of **RedKnot**, an open-source project for
 
 [Website](https://rednote-machine-learning.github.io/RedKnot/) · [RedKnot paper](https://arxiv.org/abs/2606.06256) · [Upstream DeepInfer](https://github.com/deepseek-ai/DeepInfer) · [Apache-2.0 license](LICENSE)
 
-**Status:** This branch starts from the complete [DeepInfer baseline at `5537415`](https://github.com/deepseek-ai/DeepInfer/commit/553741557a57df44a46fb3ab72b6aafeaf945337), including its pinned submodules. RedKnot integration is planned; the features, usage instructions, and benchmarks below describe the upstream DeepInfer baseline.
+**Status:** This branch starts from the complete [DeepInfer baseline at `5537415`](https://github.com/deepseek-ai/DeepInfer/commit/553741557a57df44a46fb3ab72b6aafeaf945337), including its pinned submodules. The [RedKnot benchmark harness](benchmarks/redknot/README.md) now migrates the SGLang release datasets and suites to frozen target-tokenizer inputs, with a native DeepSeek-V4.1-Flash baseline runner. RedKnot's optimized native execution and additional model implementations remain pending. The DeepInfer sections below describe the upstream baseline.
 
 ## Framework branches
 
@@ -19,6 +19,19 @@ The DeepInfer-based development track of **RedKnot**, an open-source project for
 | [RedKnot-vLLM](https://github.com/rednote-machine-learning/RedKnot/tree/RedKnot-vLLM) | vLLM adaptation track |
 
 RedKnot belongs to its contributors. We welcome issues, bug reports, suggestions, and pull requests across all framework branches.
+
+## Reproduce the RedKnot workloads
+
+The [benchmark guide](benchmarks/redknot/README.md) covers the 64K / 128K / 256K / 440K release suites, five LongBench-derived datasets, model support status, native TTFT and QA scoring, and validation commands. Preparation and result checks work without importing the GPU runtime.
+
+```bash
+python -m benchmarks.redknot catalog
+bash scripts/run_redknot_benchmarks.sh \
+  --model-path /path/to/DeepSeek-V4.1-Flash-1017 \
+  --output-root benchmark-output/v41-release --prepare-only
+```
+
+Remove `--prepare-only` to launch the baseline on a compatible, installed native runtime. This checkout targets NVIDIA SM100 for GPU execution; an H200/SM90 port must be selected explicitly with `--runtime-root`. Migrating the benchmark does not establish GPU performance or a RedKnot speedup.
 
 ## DeepInfer baseline
 

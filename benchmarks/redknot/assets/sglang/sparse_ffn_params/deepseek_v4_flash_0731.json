@@ -1,0 +1,39 @@
+{
+  "adaptive_assignment_topk": {
+    "allowed_buckets": [
+      3,
+      4,
+      5,
+      6
+    ],
+    "cumulative_mass": 0.5,
+    "dense_prefix_layers": 3,
+    "dense_suffix_layers": 3,
+    "enabled": true,
+    "minimum_tokens": 512,
+    "native_top_k": 6,
+    "physical_compaction": true,
+    "plan_scoped": true,
+    "renormalize_selected_weights": false
+  },
+  "format": "redknot_deepseek_v4_flash_sparse_policy_v1",
+  "generalized_row_controller": {
+    "diffuse_active_ratio": 0.25,
+    "enabled": true,
+    "medium_active_ratio": 0.2,
+    "output_blind": true,
+    "query_protection_tokens_256k": 32768,
+    "query_protection_tokens_440k": 32768,
+    "strong_active_ratio": 0.1
+  },
+  "model": "deepseek-ai/DeepSeek-V4-Flash-0731",
+  "model_contract": {
+    "native_top_k": 6,
+    "num_layers": 43,
+    "num_routed_experts": 256
+  },
+  "token_sparse_ffn": {
+    "enabled": false,
+    "reason": "The published 256K/440K reproduction uses assignment-sparse expert fanout plus Indexer-selected transformer rows. The experimental routed-token drop path is intentionally disabled."
+  }
+}

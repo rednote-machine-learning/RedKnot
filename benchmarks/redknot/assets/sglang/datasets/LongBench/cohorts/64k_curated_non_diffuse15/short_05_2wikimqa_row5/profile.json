@@ -1,0 +1,43 @@
+{
+  "answer_style": "shortest_exact_span_v1",
+  "cases": [
+    {
+      "answers_sha256": "sha256:e8253215b11bd6bc15ffce138456560f477830bccb9a3668f4b40bae21f43de3",
+      "expected_source_chunk": 0,
+      "full_input_ids_sha256": "sha256:a7f239a858c4e1dccb4323905a116844479edd211603ed1d426b0b340e23011c",
+      "online_suffix_hash": "sha256:937bf42cad5954bd63d910a2dc849d25769cfb960d72b6fa744ee6b7a1cf3017",
+      "online_suffix_tokens": 46,
+      "query_index": 0,
+      "query_row_id": 5,
+      "question_sha256": "sha256:d15d9735cf81d1a9a10329f911063931f65a1ffa87b6c86f8e5882dd8c6a22c1",
+      "text_sha256": "sha256:1248968590db9065f17cab5fa363f136afe9431f0f4ebd8ecc91845c590b1ade",
+      "total_tokens": 65582
+    }
+  ],
+  "chunk_tokens": 16384,
+  "cohort_index": 640005,
+  "data_manifest": "/mnt/tidal-alsh01/dataset/redone/RedKnot_Deepseekv4/test/srt/redknot/datasets/LongBench/cohorts/64k_curated_non_diffuse15/short_05_2wikimqa_row5/data_selection.json",
+  "data_selection_sha256": "a739684563a10c62989cba4435f15346eeee3d411b9facd8cb7acbef1fa2466c",
+  "dataset": "2wikimqa",
+  "exclude_manifests": [],
+  "format": "redknot_multidataset_profile_v2",
+  "long_output_target_tokens": 0,
+  "max_total_tokens": 65582,
+  "num_chunks": 4,
+  "num_queries": 1,
+  "offline_chunk_hashes": [
+    "sha256:42b30fb9cbc873df77bf1da943dc33ac90a63ad2b0b34b35275bab9aa29d7abe",
+    "sha256:361ec12678ed16020ebce7ee9e5a0ab8c1e482a3da9dc8b55c62cac08d8af22b",
+    "sha256:ce97e56cbb429811cd02b38decf839b4356ed1ee54071c3d37c01da8f6d968be",
+    "sha256:729e141fca938db17e47acc6da1605450dc797ab177cf43210e4daa49856a753"
+  ],
+  "output_blind": true,
+  "prompt_manifest": "/mnt/tidal-alsh01/dataset/redone/RedKnot_Deepseekv4/test/srt/redknot/datasets/LongBench/cohorts/64k_curated_non_diffuse15/short_05_2wikimqa_row5/prompt_manifest.json",
+  "prompt_manifest_sha256": "c54dcc3f74a985e514110846b187b5e28994babde26433a0c22a0aa8863bcb7c",
+  "query_row_ids": [
+    5
+  ],
+  "query_start": 65536,
+  "row_offset": 5,
+  "target_tokens": 65536
+}

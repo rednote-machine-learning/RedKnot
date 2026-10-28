@@ -1,0 +1,921 @@
+{
+  "branch": "RedKnot-SGLang",
+  "commit": "19c152a44eee0439afc85fe95ac23ce5a914c8fd",
+  "files": {
+    "LICENSE": {
+      "bytes": 11346,
+      "git_blob": "9c422689c8f5c317c7c65153b1209349ec57007e",
+      "sha256": "1495e1e757ef4d0925a2350563cf5754bb23c51701a8ec4fb3c5cdcbedae6747",
+      "source_path": "LICENSE"
+    },
+    "datasets/LongBench/PROVENANCE.json": {
+      "bytes": 1526,
+      "git_blob": "65308aca6394c2c02dde1a84c85cd503af0448ab",
+      "sha256": "1acdfc93c1c3b2372b4da103fdf9af93c127696a33f2cba6bac8dd7d21751b1a",
+      "source_path": "test/srt/redknot/datasets/LongBench/PROVENANCE.json"
+    },
+    "datasets/LongBench/cohorts/128k_curated_non_diffuse15/long_10_hotpotqa_row4/data_selection.json": {
+      "bytes": 6050,
+      "git_blob": "99f9334cd46e9c5bf0a7c5e58f79be4f97d30489",
+      "sha256": "41ecaad717a01d9d298a2e3c8c6aea6d9a1cca963168c22b9a48d9f83003d080",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/128k_curated_non_diffuse15/long_10_hotpotqa_row4/data_selection.json"
+    },
+    "datasets/LongBench/cohorts/128k_curated_non_diffuse15/long_10_hotpotqa_row4/profile.json": {
+      "bytes": 2042,
+      "git_blob": "69979f4eeba4d72349b2c3ddb4ba3c8bb81016f1",
+      "sha256": "571fb2a9a2d3f832950e980a885c2c1f63852539b25574bae02fca37bb56806d",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/128k_curated_non_diffuse15/long_10_hotpotqa_row4/profile.json"
+    },
+    "datasets/LongBench/cohorts/128k_curated_non_diffuse15/long_10_hotpotqa_row4/prompt_manifest.json": {
+      "bytes": 3533,
+      "git_blob": "26422ea3167a4bee9eee1fbe1b60d5c9cd24bb89",
+      "sha256": "e7a5368901add43c803cc0cd532dcfa5f4601ca956d2ba21516736916f3adf00",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/128k_curated_non_diffuse15/long_10_hotpotqa_row4/prompt_manifest.json"
+    },
+    "datasets/LongBench/cohorts/128k_curated_non_diffuse15/long_11_2wikimqa_row12/data_selection.json": {
+      "bytes": 8703,
+      "git_blob": "c52e7b78f5caae3188a75f29775456031a2822e8",
+      "sha256": "ab2b2843a515aa0645890ff4da602d24a12b29115eef5a447dc836de7fe1ae3b",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/128k_curated_non_diffuse15/long_11_2wikimqa_row12/data_selection.json"
+    },
+    "datasets/LongBench/cohorts/128k_curated_non_diffuse15/long_11_2wikimqa_row12/profile.json": {
+      "bytes": 2047,
+      "git_blob": "befea813b1737da60c16a0116b11d3b11acde8e0",
+      "sha256": "d824c7b08ce400c73626d6c5a4f047b4279309e3cd3f7b6560c043916a7d2b8d",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/128k_curated_non_diffuse15/long_11_2wikimqa_row12/profile.json"
+    },
+    "datasets/LongBench/cohorts/128k_curated_non_diffuse15/long_11_2wikimqa_row12/prompt_manifest.json": {
+      "bytes": 3513,
+      "git_blob": "6b9030b6355554fedb2a71429616066581f0e717",
+      "sha256": "426ed902b8d6fba894b117204a4795049711490823c9f77f2df7ccd862219b5d",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/128k_curated_non_diffuse15/long_11_2wikimqa_row12/prompt_manifest.json"
+    },
+    "datasets/LongBench/cohorts/128k_curated_non_diffuse15/long_12_musique_row3/data_selection.json": {
+      "bytes": 5714,
+      "git_blob": "0f58bd32fe8d37b0fcf198f07bd7a3e38d71adf1",
+      "sha256": "21f41ee65f1ecab8af8265f97ba43b83a08f46274b9253cf90e14348e3816211",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/128k_curated_non_diffuse15/long_12_musique_row3/data_selection.json"
+    },
+    "datasets/LongBench/cohorts/128k_curated_non_diffuse15/long_12_musique_row3/profile.json": {
+      "bytes": 2040,
+      "git_blob": "4c428f65512f53e6fd83f41230f4c9829bf3c285",
+      "sha256": "bc3992ec2fde4d97687fd50ebb4a403dab0bb19b9c2551e467dd4db2ae2803a6",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/128k_curated_non_diffuse15/long_12_musique_row3/profile.json"
+    },
+    "datasets/LongBench/cohorts/128k_curated_non_diffuse15/long_12_musique_row3/prompt_manifest.json": {
+      "bytes": 3623,
+      "git_blob": "80fdc7cd900314237edd79e99c814be9a4ec6975",
+      "sha256": "91e76590005ef7f5969903be206a52af68e4cfdcc02e4b8695c442abbfee8945",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/128k_curated_non_diffuse15/long_12_musique_row3/prompt_manifest.json"
+    },
+    "datasets/LongBench/cohorts/128k_curated_non_diffuse15/long_14_multifieldqa_en_row5/data_selection.json": {
+      "bytes": 8370,
+      "git_blob": "a59c5949c50cf43aa183ac2598a1673eeed76b2f",
+      "sha256": "517575909fd07a39a87ac9d265c39949231ca0dc2112961ef9032c413e78d727",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/128k_curated_non_diffuse15/long_14_multifieldqa_en_row5/data_selection.json"
+    },
+    "datasets/LongBench/cohorts/128k_curated_non_diffuse15/long_14_multifieldqa_en_row5/profile.json": {
+      "bytes": 2063,
+      "git_blob": "3d56abca60164f1709703d0cdb50ecbc769b0d19",
+      "sha256": "938d9ec13ad51dcdf556a1da40709bcdad1efd4d1b2ff19443621b7f82e8375d",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/128k_curated_non_diffuse15/long_14_multifieldqa_en_row5/profile.json"
+    },
+    "datasets/LongBench/cohorts/128k_curated_non_diffuse15/long_14_multifieldqa_en_row5/prompt_manifest.json": {
+      "bytes": 3552,
+      "git_blob": "9e1e7ce7cab8fe5b8cc1f14da031aaa9f2a01214",
+      "sha256": "14e7772c1eee620748164429ab708dc157d42bd051c3cf0700147a8d5cae74ff",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/128k_curated_non_diffuse15/long_14_multifieldqa_en_row5/prompt_manifest.json"
+    },
+    "datasets/LongBench/cohorts/128k_curated_non_diffuse15/short_00_hotpotqa_row0/data_selection.json": {
+      "bytes": 6046,
+      "git_blob": "295094c4d2520abb4d7a7fef487b62e5ce010fa5",
+      "sha256": "1b18ca866e9a28e22e975d5943e176583ac70b22fdeaf1c9cd58ac2a04451010",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/128k_curated_non_diffuse15/short_00_hotpotqa_row0/data_selection.json"
+    },
+    "datasets/LongBench/cohorts/128k_curated_non_diffuse15/short_00_hotpotqa_row0/profile.json": {
+      "bytes": 2026,
+      "git_blob": "b3976fd0bf89bd35a7beef52fb2930f3e53074cf",
+      "sha256": "fe9ecac5a4536732c7371e41d50fe9aaab86d797fd4449396bac7d9b3fece971",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/128k_curated_non_diffuse15/short_00_hotpotqa_row0/profile.json"
+    },
+    "datasets/LongBench/cohorts/128k_curated_non_diffuse15/short_00_hotpotqa_row0/prompt_manifest.json": {
+      "bytes": 3191,
+      "git_blob": "0170b45763386275450e97ac4904be7d7860ec8c",
+      "sha256": "cc1ae0afc75f868e8811e24586bd3e5724931074c4311740c9de1e9aef80e267",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/128k_curated_non_diffuse15/short_00_hotpotqa_row0/prompt_manifest.json"
+    },
+    "datasets/LongBench/cohorts/128k_curated_non_diffuse15/short_01_hotpotqa_row2/data_selection.json": {
+      "bytes": 6047,
+      "git_blob": "000b772a21b137b6977029bb153390151c5eaeb3",
+      "sha256": "4f3436ae65849e016e214141fc61675fecb7b56806d18b008d1107041c01cb31",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/128k_curated_non_diffuse15/short_01_hotpotqa_row2/data_selection.json"
+    },
+    "datasets/LongBench/cohorts/128k_curated_non_diffuse15/short_01_hotpotqa_row2/profile.json": {
+      "bytes": 2026,
+      "git_blob": "e261a450d83a02ea561cd1f584d5499ed2b9e2bb",
+      "sha256": "9b5fb800c828f28305f788da786bbf88e5890f657aaeaecb34d40b38190c7cea",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/128k_curated_non_diffuse15/short_01_hotpotqa_row2/profile.json"
+    },
+    "datasets/LongBench/cohorts/128k_curated_non_diffuse15/short_01_hotpotqa_row2/prompt_manifest.json": {
+      "bytes": 3211,
+      "git_blob": "19bc903b39837f14345f8b37ece816f190c4f6b6",
+      "sha256": "950a3bdec21f6d37b23b31e96c868d410bb236d53f3a2e23eb571b36171d05a6",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/128k_curated_non_diffuse15/short_01_hotpotqa_row2/prompt_manifest.json"
+    },
+    "datasets/LongBench/cohorts/128k_curated_non_diffuse15/short_02_hotpotqa_row3/data_selection.json": {
+      "bytes": 6049,
+      "git_blob": "f703a4a4a38e44f35dccfa2fe67023ae7ed74ddc",
+      "sha256": "0ac77425be01d4e89bc96a535f662caf5ad323702fa4f9c05acf0e8c9f85bb96",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/128k_curated_non_diffuse15/short_02_hotpotqa_row3/data_selection.json"
+    },
+    "datasets/LongBench/cohorts/128k_curated_non_diffuse15/short_02_hotpotqa_row3/profile.json": {
+      "bytes": 2026,
+      "git_blob": "bf7b2e8a20baf311f9d6ef74a3484877344389c6",
+      "sha256": "d5d9afc76ea7f9de522c0a35faf5bb381e82a6faad5b7264fbef85681b2ad932",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/128k_curated_non_diffuse15/short_02_hotpotqa_row3/profile.json"
+    },
+    "datasets/LongBench/cohorts/128k_curated_non_diffuse15/short_02_hotpotqa_row3/prompt_manifest.json": {
+      "bytes": 3215,
+      "git_blob": "84d48609c5d28b39967795f322666b936f88497d",
+      "sha256": "73f7e01231b80fa3ff71560915513434ccc1793709584ff1e401fe59b695839f",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/128k_curated_non_diffuse15/short_02_hotpotqa_row3/prompt_manifest.json"
+    },
+    "datasets/LongBench/cohorts/128k_curated_non_diffuse15/short_03_2wikimqa_row0/data_selection.json": {
+      "bytes": 8691,
+      "git_blob": "df90691c60f748d110c3e4490ab417aaa08324b5",
+      "sha256": "7aec6f3b539e0a7599dbbb8296fce61599fb29cd81272ddb2db3d13d6315af96",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/128k_curated_non_diffuse15/short_03_2wikimqa_row0/data_selection.json"
+    },
+    "datasets/LongBench/cohorts/128k_curated_non_diffuse15/short_03_2wikimqa_row0/profile.json": {
+      "bytes": 2026,
+      "git_blob": "1a30fbf87cc02f597df8ca87208c9f14fa93ebc3",
+      "sha256": "6d93012733ebea13416f112968b1eac878c8a802abc7bf5b508682c1c9d30b49",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/128k_curated_non_diffuse15/short_03_2wikimqa_row0/profile.json"
+    },
+    "datasets/LongBench/cohorts/128k_curated_non_diffuse15/short_03_2wikimqa_row0/prompt_manifest.json": {
+      "bytes": 3157,
+      "git_blob": "6f81ad7a3cb94459478cf3181eb252ade8d1a22b",
+      "sha256": "73cf5fd82a5dbc80b42a8e91e1b3279441a9c2354ee5d99070df5fb9c5eb9261",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/128k_curated_non_diffuse15/short_03_2wikimqa_row0/prompt_manifest.json"
+    },
+    "datasets/LongBench/cohorts/128k_curated_non_diffuse15/short_04_2wikimqa_row5/data_selection.json": {
+      "bytes": 8366,
+      "git_blob": "f2c514bec4eb41ff32019ccdb93aa44650c21924",
+      "sha256": "f9458513f58492acdd33d8f02a50056f6ffa9ad7ed1eb44a9b609d4d6e48166b",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/128k_curated_non_diffuse15/short_04_2wikimqa_row5/data_selection.json"
+    },
+    "datasets/LongBench/cohorts/128k_curated_non_diffuse15/short_04_2wikimqa_row5/profile.json": {
+      "bytes": 2026,
+      "git_blob": "4bf6d5849cb838876596fb049b0a76306e72c856",
+      "sha256": "04eae685d10cbcadbe4a379e57ea05b218a74e264ed9d472da0148e39fb3bd9b",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/128k_curated_non_diffuse15/short_04_2wikimqa_row5/profile.json"
+    },
+    "datasets/LongBench/cohorts/128k_curated_non_diffuse15/short_04_2wikimqa_row5/prompt_manifest.json": {
+      "bytes": 3171,
+      "git_blob": "71024aa2c8cb1f1daab44fe95d3f00acece34a58",
+      "sha256": "bdccd524d325853e251c18cbb64f597dfa52c43c3af8bdc8f1da472b91f26fe4",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/128k_curated_non_diffuse15/short_04_2wikimqa_row5/prompt_manifest.json"
+    },
+    "datasets/LongBench/cohorts/128k_curated_non_diffuse15/short_05_2wikimqa_row8/data_selection.json": {
+      "bytes": 8699,
+      "git_blob": "f3b5ffb4ba3452b654b5070050bba91cfe1b867d",
+      "sha256": "0e4d3aa8d01359c05aff9bd92469921d7348bdbfa36fd42d247ac69ce6b75082",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/128k_curated_non_diffuse15/short_05_2wikimqa_row8/data_selection.json"
+    },
+    "datasets/LongBench/cohorts/128k_curated_non_diffuse15/short_05_2wikimqa_row8/profile.json": {
+      "bytes": 2026,
+      "git_blob": "1d9e5ed205cdae3b4538989f93b374dcf9f84c15",
+      "sha256": "cdd7e0d8646f20fb64aa0d7e74f9a8a27d856fdb5302dc1bf5c45a1b1c905889",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/128k_curated_non_diffuse15/short_05_2wikimqa_row8/profile.json"
+    },
+    "datasets/LongBench/cohorts/128k_curated_non_diffuse15/short_05_2wikimqa_row8/prompt_manifest.json": {
+      "bytes": 3150,
+      "git_blob": "5ddd961b0c9598e738967fd59099ae813dbd9085",
+      "sha256": "968850e034d5969b60fb3c646b5466e6f3c238a46be6eb4ec94498bdba0c71a6",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/128k_curated_non_diffuse15/short_05_2wikimqa_row8/prompt_manifest.json"
+    },
+    "datasets/LongBench/cohorts/128k_curated_non_diffuse15/short_06_musique_row0/data_selection.json": {
+      "bytes": 5712,
+      "git_blob": "bbd3d9cd2214e9c7cb958850e389b6a3827d6ade",
+      "sha256": "8b14e03895b628681b204b2f6f225a9a3df44ad984a1ec4a4e894a5054760a40",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/128k_curated_non_diffuse15/short_06_musique_row0/data_selection.json"
+    },
+    "datasets/LongBench/cohorts/128k_curated_non_diffuse15/short_06_musique_row0/profile.json": {
+      "bytes": 2023,
+      "git_blob": "0402755f2ecdc91e646316a550925f5b254649fe",
+      "sha256": "b8dd84aa624e36af6b05398db0c4936e40047a3d06242a41f96321bb5f7acf55",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/128k_curated_non_diffuse15/short_06_musique_row0/profile.json"
+    },
+    "datasets/LongBench/cohorts/128k_curated_non_diffuse15/short_06_musique_row0/prompt_manifest.json": {
+      "bytes": 3181,
+      "git_blob": "24f0758c6149fde079233978b6eed0766d166800",
+      "sha256": "53be4c71cbe96ff552be5962aaab23638efeb25477141c9d156b6631e4e7a05d",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/128k_curated_non_diffuse15/short_06_musique_row0/prompt_manifest.json"
+    },
+    "datasets/LongBench/cohorts/128k_curated_non_diffuse15/short_07_musique_row2/data_selection.json": {
+      "bytes": 5716,
+      "git_blob": "c7436cfd07c5118154d88e34bfbbd5d2513eff64",
+      "sha256": "b9723eee72357d8a0f74d6ac68309f332e5803dd62a93033e1d0946ebd51b6ab",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/128k_curated_non_diffuse15/short_07_musique_row2/data_selection.json"
+    },
+    "datasets/LongBench/cohorts/128k_curated_non_diffuse15/short_07_musique_row2/profile.json": {
+      "bytes": 2023,
+      "git_blob": "78604672381b26869cf24759d2650eaf3f22b13a",
+      "sha256": "3846db39f47bb5d2d2a8d594a6d09e3c788a4d5cf4bb7882efc5e3de94d2206e",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/128k_curated_non_diffuse15/short_07_musique_row2/profile.json"
+    },
+    "datasets/LongBench/cohorts/128k_curated_non_diffuse15/short_07_musique_row2/prompt_manifest.json": {
+      "bytes": 3153,
+      "git_blob": "ca8293258b9a524b94208d50e151d47aba2e5760",
+      "sha256": "2fee6531f01cefccb153435dad6d29500bd6fe7ad6f5689d769922b9285af572",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/128k_curated_non_diffuse15/short_07_musique_row2/prompt_manifest.json"
+    },
+    "datasets/LongBench/cohorts/128k_curated_non_diffuse15/short_08_multifieldqa_en_row1/data_selection.json": {
+      "bytes": 7705,
+      "git_blob": "80a82b9f8fa53b182b8e9ac58ae5a2b0a1c1ebe8",
+      "sha256": "98a39cb479b12ffa7d0ca08d19735153667bef1e9170b2b7281df3a43b81fbc4",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/128k_curated_non_diffuse15/short_08_multifieldqa_en_row1/data_selection.json"
+    },
+    "datasets/LongBench/cohorts/128k_curated_non_diffuse15/short_08_multifieldqa_en_row1/profile.json": {
+      "bytes": 2047,
+      "git_blob": "8cb2d37b5bc1c2d1b4aa76e89bad05a320f92c54",
+      "sha256": "440f44518eff1518393d766fe2bf0cde6957f02ec843ca0fceb69e8c5fa1917b",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/128k_curated_non_diffuse15/short_08_multifieldqa_en_row1/profile.json"
+    },
+    "datasets/LongBench/cohorts/128k_curated_non_diffuse15/short_08_multifieldqa_en_row1/prompt_manifest.json": {
+      "bytes": 3165,
+      "git_blob": "08a1de2af5dbac953a1c936a85cca56363e99f5d",
+      "sha256": "83c05ed71fddd0faa0698f163461bb1a591524e36a60257fafe6df2e8ebb9505",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/128k_curated_non_diffuse15/short_08_multifieldqa_en_row1/prompt_manifest.json"
+    },
+    "datasets/LongBench/cohorts/128k_curated_non_diffuse15/short_09_multifieldqa_en_row4/data_selection.json": {
+      "bytes": 8700,
+      "git_blob": "84d5e372b30cb3bdd63a2581944cc96a10b2137b",
+      "sha256": "177363b9925909042214b0d09c90ce5560c01ed31717d3d7024b3f7f75d61c9a",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/128k_curated_non_diffuse15/short_09_multifieldqa_en_row4/data_selection.json"
+    },
+    "datasets/LongBench/cohorts/128k_curated_non_diffuse15/short_09_multifieldqa_en_row4/profile.json": {
+      "bytes": 2047,
+      "git_blob": "5f507de68865e1d7812a8768598996101fbb0968",
+      "sha256": "1c2ff84b74ca51a58cdc68cf4b29608ec17ffddaf3590c9f38963355d39cd326",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/128k_curated_non_diffuse15/short_09_multifieldqa_en_row4/profile.json"
+    },
+    "datasets/LongBench/cohorts/128k_curated_non_diffuse15/short_09_multifieldqa_en_row4/prompt_manifest.json": {
+      "bytes": 3195,
+      "git_blob": "569215328ab2079472d1a4e30fbcf7266b806aa9",
+      "sha256": "16b15e00ff41d3954163c6a9168b0426ab0d5b6f4628e0a8015c21df791f118e",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/128k_curated_non_diffuse15/short_09_multifieldqa_en_row4/prompt_manifest.json"
+    },
+    "datasets/LongBench/cohorts/128k_final_hot15_candidates/long_extra_2wikimqa_row0/data_selection.json": {
+      "bytes": 8691,
+      "git_blob": "df90691c60f748d110c3e4490ab417aaa08324b5",
+      "sha256": "7aec6f3b539e0a7599dbbb8296fce61599fb29cd81272ddb2db3d13d6315af96",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/128k_final_hot15_candidates/long_extra_2wikimqa_row0/data_selection.json"
+    },
+    "datasets/LongBench/cohorts/128k_final_hot15_candidates/long_extra_2wikimqa_row0/profile.json": {
+      "bytes": 2050,
+      "git_blob": "3faa0cbd7e8cb23cbe026032e6961ae6deca4a09",
+      "sha256": "7c4e74c86d1770d26cb51e6ee91292821d2fed20f89eec8647eed4ad23aa22da",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/128k_final_hot15_candidates/long_extra_2wikimqa_row0/profile.json"
+    },
+    "datasets/LongBench/cohorts/128k_final_hot15_candidates/long_extra_2wikimqa_row0/prompt_manifest.json": {
+      "bytes": 3515,
+      "git_blob": "03b1e5686806bd5ec91fc528963a430f1b9d8da7",
+      "sha256": "b1aa7fe52d43a48a28edd34bdabda45927f2ffcd66b5b94eea65dee10071605e",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/128k_final_hot15_candidates/long_extra_2wikimqa_row0/prompt_manifest.json"
+    },
+    "datasets/LongBench/cohorts/256k_10q/hotpotqa/data_selection.json": {
+      "bytes": 15320,
+      "git_blob": "08fcc376f48a7933d472b045a5049292c56faf71",
+      "sha256": "0f98a9b42bb4cc28c2fa588cd9da287b3feea4ad9177195270998fdf31911dd0",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/256k_10q/hotpotqa/data_selection.json"
+    },
+    "datasets/LongBench/cohorts/256k_10q/hotpotqa/profile.json": {
+      "bytes": 8239,
+      "git_blob": "1ef809b37a44c17fa6916037be5e932f846f6bcf",
+      "sha256": "1f9162019a03c6cf636ded9a95d6b92494f93deb6d91826e0ec4f2477b420c71",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/256k_10q/hotpotqa/profile.json"
+    },
+    "datasets/LongBench/cohorts/256k_10q/hotpotqa/prompt_manifest.json": {
+      "bytes": 9941,
+      "git_blob": "464d2b37ea298aef9befbcbf5de4527ba97bc72c",
+      "sha256": "61a8dc42ff16b7d55b8bfe173d170fe0cdd5e6edd20916de060414dab69f88bf",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/256k_10q/hotpotqa/prompt_manifest.json"
+    },
+    "datasets/LongBench/cohorts/256k_suite15/long_hotpotqa_2/data_selection.json": {
+      "bytes": 11522,
+      "git_blob": "8d6b413429e29ee04e3df251eceebee76c09d084",
+      "sha256": "d90e91395be38eb5d5f8167da0b906ace34e4a2cb3b201b4dadf6bd1ad8b90df",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/256k_suite15/long_hotpotqa_2/data_selection.json"
+    },
+    "datasets/LongBench/cohorts/256k_suite15/long_hotpotqa_2/profile.json": {
+      "bytes": 2986,
+      "git_blob": "f45388ab652fb795fadd5ef65b5e5d4d2f24432f",
+      "sha256": "603ee90c1870ec0ef261b0306a4310e105531d91be6452fcfe1b2c2b72be4a79",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/256k_suite15/long_hotpotqa_2/profile.json"
+    },
+    "datasets/LongBench/cohorts/256k_suite15/long_hotpotqa_2/prompt_manifest.json": {
+      "bytes": 4727,
+      "git_blob": "65edd808415b4a63a3afef0d51ed4590a91d6d0f",
+      "sha256": "ad20c62b28ad2ff00d3cdeeb02a10704ec15ba3be4ad5933fd8d987a6ca308c1",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/256k_suite15/long_hotpotqa_2/prompt_manifest.json"
+    },
+    "datasets/LongBench/cohorts/256k_suite15/long_multifieldqa_en_1/data_selection.json": {
+      "bytes": 16674,
+      "git_blob": "90a1671ecb970daf3e819510fe3abbf0134dd5be",
+      "sha256": "8108798a9097d03837e2ecbd5d5204975b93a2aa8e7091fe11acc31dcd8a662b",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/256k_suite15/long_multifieldqa_en_1/data_selection.json"
+    },
+    "datasets/LongBench/cohorts/256k_suite15/long_multifieldqa_en_1/profile.json": {
+      "bytes": 2337,
+      "git_blob": "a307cf88c8a68a3b27e8dfa364b0301b0a28ea6e",
+      "sha256": "1bb683be015bd5877e864430b27121f40b3b25a02380b576340628237ab9d4fc",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/256k_suite15/long_multifieldqa_en_1/profile.json"
+    },
+    "datasets/LongBench/cohorts/256k_suite15/long_multifieldqa_en_1/prompt_manifest.json": {
+      "bytes": 4204,
+      "git_blob": "e30dcddac2e7c1c6194412d12b0ff41695ff796f",
+      "sha256": "111b0d1edcead38760fcfb0abbe02db13b99d0febff0a7f3f222af35b022b8a3",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/256k_suite15/long_multifieldqa_en_1/prompt_manifest.json"
+    },
+    "datasets/LongBench/cohorts/256k_suite15/long_musique_2/data_selection.json": {
+      "bytes": 10854,
+      "git_blob": "49b2bb873c8b6ff0bbb0ef3303f50ebd8a588390",
+      "sha256": "234362c68ae20bd362c020a1b07c282754df9221a51d78ba952a4e8417e3b2e6",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/256k_suite15/long_musique_2/data_selection.json"
+    },
+    "datasets/LongBench/cohorts/256k_suite15/long_musique_2/profile.json": {
+      "bytes": 2984,
+      "git_blob": "5174794fbe7f57253ed531a01a4eb63a0c7bbe75",
+      "sha256": "033646ce8b8ea373bce7d240121db501c331d9f873b7e07c09b8028982a12b02",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/256k_suite15/long_musique_2/profile.json"
+    },
+    "datasets/LongBench/cohorts/256k_suite15/long_musique_2/prompt_manifest.json": {
+      "bytes": 4727,
+      "git_blob": "7b519873729cfa35b7fc23fc590248d8691a3be0",
+      "sha256": "c4998ff59731b13ac99e02d8eb2a094034f53970900de58061bf9131465e022b",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/256k_suite15/long_musique_2/prompt_manifest.json"
+    },
+    "datasets/LongBench/cohorts/440k_10q/hotpotqa/data_selection.json": {
+      "bytes": 19325,
+      "git_blob": "c69c9d45ee5bd00a66726ea2804879c98cb51701",
+      "sha256": "255b81dbad8c51d37cf66fc63fbf10972be5ff818cc1d526f2a625765d6344d1",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/440k_10q/hotpotqa/data_selection.json"
+    },
+    "datasets/LongBench/cohorts/440k_10q/hotpotqa/profile.json": {
+      "bytes": 8239,
+      "git_blob": "43a31bfba67c4d427f366aa43d4ed45036be6737",
+      "sha256": "9fc19004b147373de89bde50acded8b1f45c54d8d25ca595f2f408437a6c1535",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/440k_10q/hotpotqa/profile.json"
+    },
+    "datasets/LongBench/cohorts/440k_10q/hotpotqa/prompt_manifest.json": {
+      "bytes": 9941,
+      "git_blob": "7c068ccdbd3b364e0356886b30f1baf5cfa31c9e",
+      "sha256": "71aefb14b6b27dffb790a4971d7f4e2844a9425f203ec4cdce1dadc4b0ba13d8",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/440k_10q/hotpotqa/prompt_manifest.json"
+    },
+    "datasets/LongBench/cohorts/440k_suite15/long_hotpotqa_2/data_selection.json": {
+      "bytes": 15527,
+      "git_blob": "aa9613e6bcb71dccf878edf23695241f60a4ba15",
+      "sha256": "9e771521fbcb602f0510d0ce92c3a7305f8672150ad4e43a1e6a706b1d911901",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/440k_suite15/long_hotpotqa_2/data_selection.json"
+    },
+    "datasets/LongBench/cohorts/440k_suite15/long_hotpotqa_2/profile.json": {
+      "bytes": 2986,
+      "git_blob": "7373fd0fd346b5a482328b3053f8fd55787b8960",
+      "sha256": "4ea583631002f67ac72e4f89322b118b5a0d7a8d81aa1340e761051f0dcd3767",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/440k_suite15/long_hotpotqa_2/profile.json"
+    },
+    "datasets/LongBench/cohorts/440k_suite15/long_hotpotqa_2/prompt_manifest.json": {
+      "bytes": 4727,
+      "git_blob": "7e09d2a73c9cec78b66c9580d677f2334602c3c5",
+      "sha256": "a7d389686c57b1bb35afc529bca7b4dbca5fd98ffa6104729524224ca46b915f",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/440k_suite15/long_hotpotqa_2/prompt_manifest.json"
+    },
+    "datasets/LongBench/cohorts/440k_suite15/long_multifieldqa_en_1/data_selection.json": {
+      "bytes": 25979,
+      "git_blob": "32820ab061f2bce3222639411a5283dcff4efe0d",
+      "sha256": "ec88fb8457ec821b8eea1c7fec6d52206a798bf8c4b9b0d7d28aa4cad252da98",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/440k_suite15/long_multifieldqa_en_1/data_selection.json"
+    },
+    "datasets/LongBench/cohorts/440k_suite15/long_multifieldqa_en_1/profile.json": {
+      "bytes": 2337,
+      "git_blob": "ed55be97df16324f1d4763538bb4c3778d0c5b31",
+      "sha256": "fa2bec9a10a832d5423d08a3fcebae8accdd65b37938a4abe7fc3f9d9c0b147d",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/440k_suite15/long_multifieldqa_en_1/profile.json"
+    },
+    "datasets/LongBench/cohorts/440k_suite15/long_multifieldqa_en_1/prompt_manifest.json": {
+      "bytes": 4204,
+      "git_blob": "c6c8bea7ef3dd2f9094ab9b863f600a0c1d88c65",
+      "sha256": "de4350983f873fb012ae8cf34823b82f2d8d81a90d94a26f37f4b893760be7b7",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/440k_suite15/long_multifieldqa_en_1/prompt_manifest.json"
+    },
+    "datasets/LongBench/cohorts/440k_suite15/long_musique_2/data_selection.json": {
+      "bytes": 13535,
+      "git_blob": "300ea1682a1dc5510b9d25c3e37a4c4db82a58a9",
+      "sha256": "ec94ec2e5efd325ce35e91aeb61780bc5bd8c006d3e8c597d59d0016a871fc7e",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/440k_suite15/long_musique_2/data_selection.json"
+    },
+    "datasets/LongBench/cohorts/440k_suite15/long_musique_2/profile.json": {
+      "bytes": 2983,
+      "git_blob": "d2b71f1bb4a2069edf47ec22238c96c628802117",
+      "sha256": "9cf656a33917831a7bd379514bfdb2886cb1e475cd6fcef39df05580c20333b4",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/440k_suite15/long_musique_2/profile.json"
+    },
+    "datasets/LongBench/cohorts/440k_suite15/long_musique_2/prompt_manifest.json": {
+      "bytes": 4726,
+      "git_blob": "12ac1b3e0d29bc27e4c683c1919acd5180937b45",
+      "sha256": "5c2b6e1d92383246e900e62eddb66a296f1aaf93b4ff8f66d025cc7c5e0204b5",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/440k_suite15/long_musique_2/prompt_manifest.json"
+    },
+    "datasets/LongBench/cohorts/64k_curated_non_diffuse15/long_10_hotpotqa_row3/data_selection.json": {
+      "bytes": 4712,
+      "git_blob": "97b1ad78569a89366fdb209ca8b360e0ae933c97",
+      "sha256": "c1608d504e052da5d7e0d5a983801173fa79004cbed2d42937902745ec43a0ab",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/64k_curated_non_diffuse15/long_10_hotpotqa_row3/data_selection.json"
+    },
+    "datasets/LongBench/cohorts/64k_curated_non_diffuse15/long_10_hotpotqa_row3/profile.json": {
+      "bytes": 2035,
+      "git_blob": "40396f3093d12a0eb68d2de557bd9e81c4be39c7",
+      "sha256": "4344ebb945dfcc5fae99d7de076d7104e64b9a0d59a97237ac6e0fbdcf07d5e4",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/64k_curated_non_diffuse15/long_10_hotpotqa_row3/profile.json"
+    },
+    "datasets/LongBench/cohorts/64k_curated_non_diffuse15/long_10_hotpotqa_row3/prompt_manifest.json": {
+      "bytes": 3571,
+      "git_blob": "60f2fa2317e9c0f8fe2172745a95f890e3a9e545",
+      "sha256": "2dfb70589f6ff8810ac175bee7ad528b97da13a62f2d8b0796e78697d3cd3712",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/64k_curated_non_diffuse15/long_10_hotpotqa_row3/prompt_manifest.json"
+    },
+    "datasets/LongBench/cohorts/64k_curated_non_diffuse15/long_12_musique_row3/data_selection.json": {
+      "bytes": 4378,
+      "git_blob": "9a697a92626da3538855a521911953c65c0b8273",
+      "sha256": "fe8be1016538107c6567cb8631ff9144388ee87b22287d9b91b888e0d278297d",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/64k_curated_non_diffuse15/long_12_musique_row3/data_selection.json"
+    },
+    "datasets/LongBench/cohorts/64k_curated_non_diffuse15/long_12_musique_row3/profile.json": {
+      "bytes": 2033,
+      "git_blob": "c87b7778d26bcbf1d124188faa75d00e53bb7a3c",
+      "sha256": "f71b4400cd45d20b9b51bb59571e2db2454694391aff1b41beeb775cbd4384d2",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/64k_curated_non_diffuse15/long_12_musique_row3/profile.json"
+    },
+    "datasets/LongBench/cohorts/64k_curated_non_diffuse15/long_12_musique_row3/prompt_manifest.json": {
+      "bytes": 3621,
+      "git_blob": "5d053b01fcdbc13c277e1753235f6d055875253e",
+      "sha256": "c24766ac490fa3fbd9b110dedef38a095acb32799e58df00a6d580b6d9e24707",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/64k_curated_non_diffuse15/long_12_musique_row3/prompt_manifest.json"
+    },
+    "datasets/LongBench/cohorts/64k_curated_non_diffuse15/long_14_multifieldqa_en_row5/data_selection.json": {
+      "bytes": 4717,
+      "git_blob": "e1d67d376541e7986f2080de1a3055bcb5ca5c39",
+      "sha256": "affa596a70480d91db4df3a0260d5be4295c86fdad93f40701cb62ee5737b52d",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/64k_curated_non_diffuse15/long_14_multifieldqa_en_row5/data_selection.json"
+    },
+    "datasets/LongBench/cohorts/64k_curated_non_diffuse15/long_14_multifieldqa_en_row5/profile.json": {
+      "bytes": 2056,
+      "git_blob": "04510d844c6c4ed842003a64991b3444722dd4d4",
+      "sha256": "db650ba9193f1ae18ccab3a797b30954dd7078f29621be9205617ebc63bb1430",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/64k_curated_non_diffuse15/long_14_multifieldqa_en_row5/profile.json"
+    },
+    "datasets/LongBench/cohorts/64k_curated_non_diffuse15/long_14_multifieldqa_en_row5/prompt_manifest.json": {
+      "bytes": 3550,
+      "git_blob": "a3693906bd1ba4f1b56be8dbd89384b2d99978ab",
+      "sha256": "7fceec2687d8a61d1a23bd5745ab3e191225b9aa98d8b61b079349fe0baad603",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/64k_curated_non_diffuse15/long_14_multifieldqa_en_row5/prompt_manifest.json"
+    },
+    "datasets/LongBench/cohorts/64k_curated_non_diffuse15/short_00_hotpotqa_row0/data_selection.json": {
+      "bytes": 4379,
+      "git_blob": "893cdec5f42b6236e70bf69ac526f776f15121e2",
+      "sha256": "7507e88fe5c8a32f96adf1fe71cbd3eed04a50b054e88485079f4c4c724d88f3",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/64k_curated_non_diffuse15/short_00_hotpotqa_row0/data_selection.json"
+    },
+    "datasets/LongBench/cohorts/64k_curated_non_diffuse15/short_00_hotpotqa_row0/profile.json": {
+      "bytes": 2019,
+      "git_blob": "1d41469f518f4495ef86079a05094f41c0b0f6d5",
+      "sha256": "7427eb843641afebc42e19c9c5243569ea6db0045d6fb6690ddcfb151352ef71",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/64k_curated_non_diffuse15/short_00_hotpotqa_row0/profile.json"
+    },
+    "datasets/LongBench/cohorts/64k_curated_non_diffuse15/short_00_hotpotqa_row0/prompt_manifest.json": {
+      "bytes": 3189,
+      "git_blob": "c41b63030f2002bbb9eea8756b4e59d6d687de8a",
+      "sha256": "816eba08b4032469e53ca9e346a1459e9e83edd2e387a36cccdbd8b51ffd5f53",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/64k_curated_non_diffuse15/short_00_hotpotqa_row0/prompt_manifest.json"
+    },
+    "datasets/LongBench/cohorts/64k_curated_non_diffuse15/short_01_hotpotqa_row1/data_selection.json": {
+      "bytes": 4710,
+      "git_blob": "4b720b9c31859e8da1a9d97c5fee4794704aa684",
+      "sha256": "db85e2f471529164f85cff6e87129623d12521846ed262df62196b259a22841b",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/64k_curated_non_diffuse15/short_01_hotpotqa_row1/data_selection.json"
+    },
+    "datasets/LongBench/cohorts/64k_curated_non_diffuse15/short_01_hotpotqa_row1/profile.json": {
+      "bytes": 2019,
+      "git_blob": "b117b26b3ef3440517a86327640c0d0993012cae",
+      "sha256": "105e784472295d921c0c765f893c9915aa7daf206d98b52d02043c5b14cd0fb8",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/64k_curated_non_diffuse15/short_01_hotpotqa_row1/profile.json"
+    },
+    "datasets/LongBench/cohorts/64k_curated_non_diffuse15/short_01_hotpotqa_row1/prompt_manifest.json": {
+      "bytes": 3274,
+      "git_blob": "3e953b5c96a7b1fe265bbf8b547aeccef6804997",
+      "sha256": "23565319df43204e8c82401295772759119d00ed6b20cdff524a496892496c29",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/64k_curated_non_diffuse15/short_01_hotpotqa_row1/prompt_manifest.json"
+    },
+    "datasets/LongBench/cohorts/64k_curated_non_diffuse15/short_02_hotpotqa_row2/data_selection.json": {
+      "bytes": 4378,
+      "git_blob": "bca92dcd54cf85693e34a73426001b1fb44ecc6f",
+      "sha256": "f20f9955fa9ed3124995a6f946d6e9217003aeaa46e677122e73e8fee080a460",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/64k_curated_non_diffuse15/short_02_hotpotqa_row2/data_selection.json"
+    },
+    "datasets/LongBench/cohorts/64k_curated_non_diffuse15/short_02_hotpotqa_row2/profile.json": {
+      "bytes": 2019,
+      "git_blob": "8d6a362fb8fcde8802b52fc6a6673a665792bb25",
+      "sha256": "c546afe91f198ae061422dce67e572fe9fef1922c83cb633977fcd9d02b3d486",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/64k_curated_non_diffuse15/short_02_hotpotqa_row2/profile.json"
+    },
+    "datasets/LongBench/cohorts/64k_curated_non_diffuse15/short_02_hotpotqa_row2/prompt_manifest.json": {
+      "bytes": 3209,
+      "git_blob": "29a418b5479a203140f72e37542703da170816e7",
+      "sha256": "4259a5fa95190b4e1aed7f51f7c015f0f29d8c17d84747aa2c799c0fa10051be",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/64k_curated_non_diffuse15/short_02_hotpotqa_row2/prompt_manifest.json"
+    },
+    "datasets/LongBench/cohorts/64k_curated_non_diffuse15/short_03_2wikimqa_row0/data_selection.json": {
+      "bytes": 5367,
+      "git_blob": "ee9394b90187bdd5b97e92a3e23198dccb116b3a",
+      "sha256": "602ea4bac3c436d5c131f17af4cd8c568438bc7ed595a0a3c2a1e6e6c74ca8bb",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/64k_curated_non_diffuse15/short_03_2wikimqa_row0/data_selection.json"
+    },
+    "datasets/LongBench/cohorts/64k_curated_non_diffuse15/short_03_2wikimqa_row0/profile.json": {
+      "bytes": 2019,
+      "git_blob": "b4e732bed323a7a4747bf38c65416bc1856cfc35",
+      "sha256": "ee4216c841d12acb3631386c253fa208a65188b06573cba502988451d9b59eeb",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/64k_curated_non_diffuse15/short_03_2wikimqa_row0/profile.json"
+    },
+    "datasets/LongBench/cohorts/64k_curated_non_diffuse15/short_03_2wikimqa_row0/prompt_manifest.json": {
+      "bytes": 3155,
+      "git_blob": "55456aecce31af3411bd3ba35a38dcf8725dc73b",
+      "sha256": "b52d1fe66f10622bfcbcc7130a5b4d58ef0d6c71cfbed2b8c5b275ae9e5c0846",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/64k_curated_non_diffuse15/short_03_2wikimqa_row0/prompt_manifest.json"
+    },
+    "datasets/LongBench/cohorts/64k_curated_non_diffuse15/short_04_2wikimqa_row1/data_selection.json": {
+      "bytes": 5036,
+      "git_blob": "720c8661dd67dd3c6bbd7cedfa432d2b5ccf3a4f",
+      "sha256": "4ce821ff615b6426ef3e7fe42f82befaeea0900881f6ee1150d2751562639b0e",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/64k_curated_non_diffuse15/short_04_2wikimqa_row1/data_selection.json"
+    },
+    "datasets/LongBench/cohorts/64k_curated_non_diffuse15/short_04_2wikimqa_row1/profile.json": {
+      "bytes": 2019,
+      "git_blob": "3bde3e16e1fc803829833f50e4d75b4373ea11ec",
+      "sha256": "1361c7bb7f16edc89d39dcf78c55f03fa35f9557b70c078e9c29fc4fa47333d5",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/64k_curated_non_diffuse15/short_04_2wikimqa_row1/profile.json"
+    },
+    "datasets/LongBench/cohorts/64k_curated_non_diffuse15/short_04_2wikimqa_row1/prompt_manifest.json": {
+      "bytes": 3156,
+      "git_blob": "3a8156a8c7748abd4c3ac4de39dcff9d2a693b5e",
+      "sha256": "ac6da294c5e6c3caba74cf241b8647140e825f3d1d96f98229e8a4ebf1f40db0",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/64k_curated_non_diffuse15/short_04_2wikimqa_row1/prompt_manifest.json"
+    },
+    "datasets/LongBench/cohorts/64k_curated_non_diffuse15/short_05_2wikimqa_row5/data_selection.json": {
+      "bytes": 5704,
+      "git_blob": "fc1469a15892201cc8bbe3197ffbb5f093093370",
+      "sha256": "5ebbb87a76356f268ef9d1e02b2f08bf1262149f6d8cab2771245ce5024e66ea",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/64k_curated_non_diffuse15/short_05_2wikimqa_row5/data_selection.json"
+    },
+    "datasets/LongBench/cohorts/64k_curated_non_diffuse15/short_05_2wikimqa_row5/profile.json": {
+      "bytes": 2019,
+      "git_blob": "40c002fe8247533f688960648a4fbe8474319a59",
+      "sha256": "e27057865a445cc27f766b758701b467a7b49acf3fb3da8ee68b579e68d1f0f4",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/64k_curated_non_diffuse15/short_05_2wikimqa_row5/profile.json"
+    },
+    "datasets/LongBench/cohorts/64k_curated_non_diffuse15/short_05_2wikimqa_row5/prompt_manifest.json": {
+      "bytes": 3169,
+      "git_blob": "7e62df58586617759a0b14dc055adaa1f66e96fb",
+      "sha256": "1724e0954a503d865c4edc196a4f6aa40bea3018b18efd17c7e7449145be68cd",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/64k_curated_non_diffuse15/short_05_2wikimqa_row5/prompt_manifest.json"
+    },
+    "datasets/LongBench/cohorts/64k_curated_non_diffuse15/short_06_musique_row0/data_selection.json": {
+      "bytes": 4376,
+      "git_blob": "71a060f34aec4d5e440d686b2968ce6f4d08417e",
+      "sha256": "1bfb4f1f55ff59f0c0e574fa3345089a2b62cd82f092ef3dfb47a86c1a4bf542",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/64k_curated_non_diffuse15/short_06_musique_row0/data_selection.json"
+    },
+    "datasets/LongBench/cohorts/64k_curated_non_diffuse15/short_06_musique_row0/profile.json": {
+      "bytes": 2016,
+      "git_blob": "be06c404fbbe612c52617ff7bb7cca88d1dd3fea",
+      "sha256": "116724c6f719c38f31dcf715e9ed7aeee22e2b395da712c3f8466a8bc96c6e1e",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/64k_curated_non_diffuse15/short_06_musique_row0/profile.json"
+    },
+    "datasets/LongBench/cohorts/64k_curated_non_diffuse15/short_06_musique_row0/prompt_manifest.json": {
+      "bytes": 3179,
+      "git_blob": "ebb8749af9f99ca57e693185003081419e5c9d85",
+      "sha256": "ec4491ad16c62e1090d4d3917f1650645cbbab2aa4515ac63e8911311b893da6",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/64k_curated_non_diffuse15/short_06_musique_row0/prompt_manifest.json"
+    },
+    "datasets/LongBench/cohorts/64k_curated_non_diffuse15/short_07_musique_row2/data_selection.json": {
+      "bytes": 4377,
+      "git_blob": "ad079a72f677ffabd261a43cb4c074e45afca418",
+      "sha256": "3cde12a91650e58c50e312c8e0962332b8e4ce352f06d30d9e90a361544ee812",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/64k_curated_non_diffuse15/short_07_musique_row2/data_selection.json"
+    },
+    "datasets/LongBench/cohorts/64k_curated_non_diffuse15/short_07_musique_row2/profile.json": {
+      "bytes": 2016,
+      "git_blob": "19b3cddd4c8c8c59462d20a365b4bce6226cf102",
+      "sha256": "4b9e3345982278bbfc0c2766608f949fd0483ce02fc1f10d7724f6a2af527362",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/64k_curated_non_diffuse15/short_07_musique_row2/profile.json"
+    },
+    "datasets/LongBench/cohorts/64k_curated_non_diffuse15/short_07_musique_row2/prompt_manifest.json": {
+      "bytes": 3151,
+      "git_blob": "79f795ac13a5607ee8fc554487561ce9d401a8e0",
+      "sha256": "41466c649bd7adcb96172ea9ca4692e120e28ec5177f021e19bd4535bc8aea19",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/64k_curated_non_diffuse15/short_07_musique_row2/prompt_manifest.json"
+    },
+    "datasets/LongBench/cohorts/64k_curated_non_diffuse15/short_08_multifieldqa_en_row1/data_selection.json": {
+      "bytes": 4715,
+      "git_blob": "ea6875d2bb26d04f007f92802ac079aacb5d1415",
+      "sha256": "2cdb0573e8edd78a105a7fe22a8bb2db0d0e6f4462736db0cfbadb5358d5395b",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/64k_curated_non_diffuse15/short_08_multifieldqa_en_row1/data_selection.json"
+    },
+    "datasets/LongBench/cohorts/64k_curated_non_diffuse15/short_08_multifieldqa_en_row1/profile.json": {
+      "bytes": 2040,
+      "git_blob": "5c3ebd9324cb2a8cb8bc2e3cc2da68654c8e60dc",
+      "sha256": "b7684dc9ac8aca9175852fe429bc539549a115a969052593ab7317472ea363dd",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/64k_curated_non_diffuse15/short_08_multifieldqa_en_row1/profile.json"
+    },
+    "datasets/LongBench/cohorts/64k_curated_non_diffuse15/short_08_multifieldqa_en_row1/prompt_manifest.json": {
+      "bytes": 3163,
+      "git_blob": "6e1fbc20a980a564acac6c35dbc55dd0a7992495",
+      "sha256": "5834a05140f59fc4b3c2f12ece5f4582aeb65264ea7eabbfd31dcf008f13451c",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/64k_curated_non_diffuse15/short_08_multifieldqa_en_row1/prompt_manifest.json"
+    },
+    "datasets/LongBench/cohorts/64k_curated_non_diffuse15/short_09_multifieldqa_en_row4/data_selection.json": {
+      "bytes": 5046,
+      "git_blob": "19dab252f2bae597b79dac67e3c2d1e972503ab1",
+      "sha256": "7cacb783b235e4a7d33cd3dcfc8031c20ba2a3756b56d8d5f5d0cbeb83d9766f",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/64k_curated_non_diffuse15/short_09_multifieldqa_en_row4/data_selection.json"
+    },
+    "datasets/LongBench/cohorts/64k_curated_non_diffuse15/short_09_multifieldqa_en_row4/profile.json": {
+      "bytes": 2040,
+      "git_blob": "4db08319a194c3e9d98eb7082a73988ffaf41d92",
+      "sha256": "26fa781b7b3e0ef511268d5d002f86546f54ff196317bb909384b59e3edf13a6",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/64k_curated_non_diffuse15/short_09_multifieldqa_en_row4/profile.json"
+    },
+    "datasets/LongBench/cohorts/64k_curated_non_diffuse15/short_09_multifieldqa_en_row4/prompt_manifest.json": {
+      "bytes": 3193,
+      "git_blob": "04741b81fad925e3af294d9a9c28007f114036ca",
+      "sha256": "80781b26a6cd25d12d0317c72413dd2baad916cc3a08a4684fe81cf7dd77eb5d",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/64k_curated_non_diffuse15/short_09_multifieldqa_en_row4/prompt_manifest.json"
+    },
+    "datasets/LongBench/cohorts/64k_final_hot15_candidates/long_extra_2wikimqa_row0/data_selection.json": {
+      "bytes": 5367,
+      "git_blob": "ee9394b90187bdd5b97e92a3e23198dccb116b3a",
+      "sha256": "602ea4bac3c436d5c131f17af4cd8c568438bc7ed595a0a3c2a1e6e6c74ca8bb",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/64k_final_hot15_candidates/long_extra_2wikimqa_row0/data_selection.json"
+    },
+    "datasets/LongBench/cohorts/64k_final_hot15_candidates/long_extra_2wikimqa_row0/profile.json": {
+      "bytes": 2044,
+      "git_blob": "4af1544efff9b9b81908a8a69a5b3df144a8bafd",
+      "sha256": "439e8f145c0d444a01e8b81892f49abba75297b2f675610be60ef573fa1cdc51",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/64k_final_hot15_candidates/long_extra_2wikimqa_row0/profile.json"
+    },
+    "datasets/LongBench/cohorts/64k_final_hot15_candidates/long_extra_2wikimqa_row0/prompt_manifest.json": {
+      "bytes": 3513,
+      "git_blob": "40b5832b4f54ae1c60269a7278103a84c4b85311",
+      "sha256": "0d9881c12c117590f314d7a2ad036b9f3cfd4cea16e1cb831c77b34fc6750867",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/64k_final_hot15_candidates/long_extra_2wikimqa_row0/prompt_manifest.json"
+    },
+    "datasets/LongBench/cohorts/64k_final_hot15_candidates/long_extra_musique_row0/data_selection.json": {
+      "bytes": 4376,
+      "git_blob": "71a060f34aec4d5e440d686b2968ce6f4d08417e",
+      "sha256": "1bfb4f1f55ff59f0c0e574fa3345089a2b62cd82f092ef3dfb47a86c1a4bf542",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/64k_final_hot15_candidates/long_extra_musique_row0/data_selection.json"
+    },
+    "datasets/LongBench/cohorts/64k_final_hot15_candidates/long_extra_musique_row0/profile.json": {
+      "bytes": 2041,
+      "git_blob": "c6389538ee326e614ed0cb3cdccac28d209f77ef",
+      "sha256": "21e0a12756da4b5d2abbe2a1a95fb1e00936c05b8497d633304e1da77434cfd8",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/64k_final_hot15_candidates/long_extra_musique_row0/profile.json"
+    },
+    "datasets/LongBench/cohorts/64k_final_hot15_candidates/long_extra_musique_row0/prompt_manifest.json": {
+      "bytes": 3537,
+      "git_blob": "79933bda7b05050c28021419fd12e907da97a606",
+      "sha256": "bd36ace02530fa2b5b56d58c2b099e4601b3cb7c2491aacaea7a99903431ab71",
+      "source_path": "test/srt/redknot/datasets/LongBench/cohorts/64k_final_hot15_candidates/long_extra_musique_row0/prompt_manifest.json"
+    },
+    "datasets/LongBench/data/2wikimqa.jsonl": {
+      "bytes": 6052108,
+      "git_blob": "4973a61d19d8def6ecc20b92dba0a472e65a825f",
+      "sha256": "dda279cf93a99e1e5bfa3291fb199fd55978d10a1feb31822953cf77a1742e37",
+      "source_path": "test/srt/redknot/datasets/LongBench/data/2wikimqa.jsonl"
+    },
+    "datasets/LongBench/data/hotpotqa.jsonl": {
+      "bytes": 11483614,
+      "git_blob": "7f44e50b1a7142585db1fdca0324fd4554cd9c98",
+      "sha256": "a0005ab2a1bc2ac3a70352dccbf96cccc4e0aac6bb677f6a55180fa51b92ef6f",
+      "source_path": "test/srt/redknot/datasets/LongBench/data/hotpotqa.jsonl"
+    },
+    "datasets/LongBench/data/multifieldqa_en.jsonl": {
+      "bytes": 4483926,
+      "git_blob": "a219154fb7add8fda8fa4d194e6cf445632ee5fa",
+      "sha256": "0aac182fd317dcf6d74f8e1e0f3e61029407435346c2e0b3ff9fb45ae49c5c3f",
+      "source_path": "test/srt/redknot/datasets/LongBench/data/multifieldqa_en.jsonl"
+    },
+    "datasets/LongBench/data/musique.jsonl": {
+      "bytes": 14085077,
+      "git_blob": "fc11f706342894d29132f59810882bd99554fa98",
+      "sha256": "4ac69b91281c4ec6b21316cb7282e83fb6b4dda04fc68480bb8d8ed1e19ff7bd",
+      "source_path": "test/srt/redknot/datasets/LongBench/data/musique.jsonl"
+    },
+    "datasets/LongBench/data/triviaqa.jsonl": {
+      "bytes": 10300790,
+      "git_blob": "4c65d9b801d4f8cb1a13943f27f787098c4f412c",
+      "sha256": "ed2529de2e10b12c00f49981870c23c7c51667069cdd8d0740e1423ff337d7fa",
+      "source_path": "test/srt/redknot/datasets/LongBench/data/triviaqa.jsonl"
+    },
+    "datasets/LongBench/suites/RELEASE_SUITES.json": {
+      "bytes": 1296,
+      "git_blob": "8ec006c1105cf5e61da39e57c09c9308aeec7391",
+      "sha256": "8f3b84299f98a6704e79782a203481ca97f8d73df2706b4f5ce2c5cff636bff1",
+      "source_path": "test/srt/redknot/datasets/LongBench/suites/RELEASE_SUITES.json"
+    },
+    "datasets/LongBench/suites/release_128k_15case.jsonl": {
+      "bytes": 12360,
+      "git_blob": "481152a0c0f601c3b7bc3da2ed8efade3c1d1b78",
+      "sha256": "d1a74ffbe2d9f46ec8840559fb5189f88966ad2641b6863a04e22d8b630c38da",
+      "source_path": "test/srt/redknot/datasets/LongBench/suites/release_128k_15case.jsonl"
+    },
+    "datasets/LongBench/suites/release_128k_15case.jsonl.sha256": {
+      "bytes": 92,
+      "git_blob": "a120175c399b9011d992522d317230407484bae7",
+      "sha256": "e312c6eadf4430b96627ef471e49900829d9011214864e9d3569603d7acfc2d9",
+      "source_path": "test/srt/redknot/datasets/LongBench/suites/release_128k_15case.jsonl.sha256"
+    },
+    "datasets/LongBench/suites/release_256k_15case.jsonl": {
+      "bytes": 11160,
+      "git_blob": "f790195255c65acef42de6443b4b0729d404cbf7",
+      "sha256": "fda5444c9a1fc00c12248340f6c064ac5963b5fbbdbc60830020c029ffd8a5e7",
+      "source_path": "test/srt/redknot/datasets/LongBench/suites/release_256k_15case.jsonl"
+    },
+    "datasets/LongBench/suites/release_256k_15case.jsonl.sha256": {
+      "bytes": 92,
+      "git_blob": "a9ac4491f89aa33973e4d892cdf8f46900c66ef3",
+      "sha256": "a196cdabeb15bb70f3973c83195c00403dcbe9ee3733b3364fb3182a23be938d",
+      "source_path": "test/srt/redknot/datasets/LongBench/suites/release_256k_15case.jsonl.sha256"
+    },
+    "datasets/LongBench/suites/release_440k_15case.jsonl": {
+      "bytes": 11166,
+      "git_blob": "d873e170e8a8869e1f068e5f16c9bfed1e8dd982",
+      "sha256": "cb02d9cb0e823768b75792c7d65f6dc020caecf7a7e8b76e8963a0516f1eccf0",
+      "source_path": "test/srt/redknot/datasets/LongBench/suites/release_440k_15case.jsonl"
+    },
+    "datasets/LongBench/suites/release_440k_15case.jsonl.sha256": {
+      "bytes": 92,
+      "git_blob": "2924ba1a99d9f585f9646def9280871ae7ae5488",
+      "sha256": "7ddf7728406cba4edbc3cb923fe47d75c17f6b78060a9f69634747d041bdab75",
+      "source_path": "test/srt/redknot/datasets/LongBench/suites/release_440k_15case.jsonl.sha256"
+    },
+    "datasets/LongBench/suites/release_64k_15case.jsonl": {
+      "bytes": 12413,
+      "git_blob": "fb9ef95309cac039169877904f0ebbc4838934ae",
+      "sha256": "b255dfebb82c39aaec2dde919afcd405a422aa4c2fe051104a045ad47dcef2e1",
+      "source_path": "test/srt/redknot/datasets/LongBench/suites/release_64k_15case.jsonl"
+    },
+    "datasets/LongBench/suites/release_64k_15case.jsonl.sha256": {
+      "bytes": 91,
+      "git_blob": "35119b9cd46c20b419336bcd5827249c523da20f",
+      "sha256": "dd26e384013b139d8315f3fd84fea08e2413ae21ccd466139055594b64fcb7b1",
+      "source_path": "test/srt/redknot/datasets/LongBench/suites/release_64k_15case.jsonl.sha256"
+    },
+    "head_class/deepseek_v4_flash_0731_redknot.json": {
+      "bytes": 98828,
+      "git_blob": "fe82a5d45a5b4749b8f719f2489235d9b53138c5",
+      "sha256": "6110156cc787b7040552111c1ac15251d0c302279b21677298bee8436e0d506f",
+      "source_path": "test/srt/redknot/head_class/deepseek_v4_flash_0731_redknot.json"
+    },
+    "head_class/dsv4_extreme_local128.json": {
+      "bytes": 98182,
+      "git_blob": "759da9231a4d24dd8236ee906b235b3b8370e0c0",
+      "sha256": "958812921376bbc4b00a6ef9bb5f0e6e0ee8dee1983aa42d9c72dd9ccd15b95a",
+      "source_path": "test/srt/redknot/head_class/dsv4_extreme_local128.json"
+    },
+    "head_class/dsv4_safe_stride8.json": {
+      "bytes": 98054,
+      "git_blob": "50b193b10c2cb5f59b26ec959fecf0b4417d0671",
+      "sha256": "70f41e5c044ff8f5aca6195824d9772799887ecf13e32041cbb4d93e31e343e9",
+      "source_path": "test/srt/redknot/head_class/dsv4_safe_stride8.json"
+    },
+    "head_class/dsv4pro_indexer_topk.json": {
+      "bytes": 2650,
+      "git_blob": "13ec9d18e71305c28e13b468cb486c3d70397997",
+      "sha256": "cff9c74486be12823c7fa9c6b0eedd0a953c002513d7f40d1501b22d79119e7c",
+      "source_path": "test/srt/redknot/head_class/dsv4pro_indexer_topk.json"
+    },
+    "head_class/dsv4pro_mla_head_config_smoke.json": {
+      "bytes": 204532,
+      "git_blob": "e63c159d4fb5e62a8340b34579c1cf588c59b4cf",
+      "sha256": "3da27475cdd6b44db866f1ef5ed80241fecdb4b85fbfc1811652ee921f417956",
+      "source_path": "test/srt/redknot/head_class/dsv4pro_mla_head_config_smoke.json"
+    },
+    "head_class/llama-70B_optimal_g15_lf_ret.json": {
+      "bytes": 29057,
+      "git_blob": "2a8057fd4fbfa3922c9e75d1248542f0a3473d81",
+      "sha256": "4aa123fa29d4dcf0070b9f4bdb8bda99dafdf6f7a5438731d8c12fb5d2e4930b",
+      "source_path": "test/srt/redknot/head_class/llama-70B_optimal_g15_lf_ret.json"
+    },
+    "head_class/llama-70B_sweetspot_g10_w4096.json": {
+      "bytes": 26332,
+      "git_blob": "24007316fa79b1ffdcf9dba34dc19efb2732f9ce",
+      "sha256": "e7e96756f68e07a964f0500b075b9f2940232f226623cfb4bd6202e9c9b8a754",
+      "source_path": "test/srt/redknot/head_class/llama-70B_sweetspot_g10_w4096.json"
+    },
+    "head_class/mistral-7B_optimal_g15_lf_ret.json": {
+      "bytes": 8378,
+      "git_blob": "40f3c007a57b09cfe3c2242ae1dc2076fb7f44d0",
+      "sha256": "d880d42c059c0509ec80d60c783560b689810848a7687e802c71a09a09da0149",
+      "source_path": "test/srt/redknot/head_class/mistral-7B_optimal_g15_lf_ret.json"
+    },
+    "head_class/mistral-7B_parity_98local_w3000.json": {
+      "bytes": 8359,
+      "git_blob": "69956c948e69decc280c9a743784cd531797a1b7",
+      "sha256": "9b0a2effe8e17cef78a7a8c381733c9042c6fe37d87f32754b8a29dee7c9063c",
+      "source_path": "test/srt/redknot/head_class/mistral-7B_parity_98local_w3000.json"
+    },
+    "head_class/qwen3-32B_ablation_allglobal.json": {
+      "bytes": 16934,
+      "git_blob": "0230fb0b8a551dd1ae754414e9de0e21a6d36e62",
+      "sha256": "c50a1707452ba5566c0bd49b7eab94a9f8b8e010093069b45dc1c8d73bdd71eb",
+      "source_path": "test/srt/redknot/head_class/qwen3-32B_ablation_allglobal.json"
+    },
+    "head_class/qwen3-32B_optimal_g15_lf_ret.json": {
+      "bytes": 24128,
+      "git_blob": "3c0c0277f8bd97b74b9af1d23d8dc40041d441f7",
+      "sha256": "6d30cf94b89c8d55169aab78b5fc563bf8b640921d9ffc5185e2683927143def",
+      "source_path": "test/srt/redknot/head_class/qwen3-32B_optimal_g15_lf_ret.json"
+    },
+    "head_class/qwen3.5-35B-A3B_head_map.json": {
+      "bytes": 9233,
+      "git_blob": "68794ed554330cfdc2f0a36c784b5c4f6012bb36",
+      "sha256": "a9090019427c98456a69d672b06f1fc8080b7e7a5e278831038f57730e1e57c6",
+      "source_path": "test/srt/redknot/head_class/qwen3.5-35B-A3B_head_map.json"
+    },
+    "head_class/qwen3.5-35B-A3B_redknot.json": {
+      "bytes": 3032,
+      "git_blob": "fb612306c775125201f1adf7818aa379f4361061",
+      "sha256": "bf6bd1b0b1a71c12e710bbf8e9a31f8375f5385cde0516036d4de569c0970e81",
+      "source_path": "test/srt/redknot/head_class/qwen3.5-35B-A3B_redknot.json"
+    },
+    "head_class/qwen3.5-35B-A3B_redknot_server.json": {
+      "bytes": 1970,
+      "git_blob": "e1bf30f742438452670b83abae43b69903057069",
+      "sha256": "d6873b831cc89138e6deedd4114afd7a93ca93cc4409eb3a8603f879e51f54b8",
+      "source_path": "test/srt/redknot/head_class/qwen3.5-35B-A3B_redknot_server.json"
+    },
+    "head_class/qwen3.5-397B-A17B_redknot.json": {
+      "bytes": 2411,
+      "git_blob": "afc145e4ed212c01c5df5c9af2b755240a26520c",
+      "sha256": "028db507fbe8bd0ce0fcf5c23af65a4b314d9a0f76eaea264aeff2342f667649",
+      "source_path": "test/srt/redknot/head_class/qwen3.5-397B-A17B_redknot.json"
+    },
+    "head_class/qwen3.5-397B-A17B_redknot_server.json": {
+      "bytes": 2556,
+      "git_blob": "f21e2265a1b8ef5287c283303652f6779e47bdd9",
+      "sha256": "7559074e805edf3fba7f1bf68cdacb433764f5c8b7bc50c36c79c1b9947c7215",
+      "source_path": "test/srt/redknot/head_class/qwen3.5-397B-A17B_redknot_server.json"
+    },
+    "sparse_ffn_params/deepseek_v4_flash_0731.json": {
+      "bytes": 1092,
+      "git_blob": "f632807ea861e1ed86928e24e6bdc4aba5f49c9f",
+      "sha256": "0828a26de107abe5569beaf59272cb6f48ffdfe5136f767abb29e1d3016b8ff3",
+      "source_path": "test/srt/redknot/sparse_ffn_params/deepseek_v4_flash_0731.json"
+    },
+    "sparse_ffn_params/llama-70B.json": {
+      "bytes": 143,
+      "git_blob": "5e0b21b919ee97d74c036c7d259faa7ca0e97eb4",
+      "sha256": "5eb9289127c297a655d66e79f1fda8ecd238896b3ca9c6ab0fb1cf760d8f0267",
+      "source_path": "test/srt/redknot/sparse_ffn_params/llama-70B.json"
+    },
+    "sparse_ffn_params/mistral-7B.json": {
+      "bytes": 117,
+      "git_blob": "9a3919744634cf47c994d56309d214624f0bf34e",
+      "sha256": "a83ea7788eab75777f24b4ae7302ec032d3991ad77d33c8dc323698160921a7e",
+      "source_path": "test/srt/redknot/sparse_ffn_params/mistral-7B.json"
+    },
+    "sparse_ffn_params/qwen3-32B.json": {
+      "bytes": 118,
+      "git_blob": "84088d99e8cff2c8b6438a000f27665b827ac6b5",
+      "sha256": "d7d9a453f64c16040278dc33d8f473abeb93d594c3c73557116451b23df8f01d",
+      "source_path": "test/srt/redknot/sparse_ffn_params/qwen3-32B.json"
+    },
+    "sparse_ffn_params/qwen3.5-35B-A3B.json": {
+      "bytes": 1850,
+      "git_blob": "1fe9da0251194331bb3dfa11044eaf704f4b72eb",
+      "sha256": "92e63bc09b3e5cc500b3e9a00b38314bb27cb50d13038a224899be3894961410",
+      "source_path": "test/srt/redknot/sparse_ffn_params/qwen3.5-35B-A3B.json"
+    },
+    "sparse_ffn_params/qwen3.5-397B-A17B.json": {
+      "bytes": 1507,
+      "git_blob": "5e65b1bb0f556d9473b00d7c972b7a319b1fe60e",
+      "sha256": "5b43314793e09709f7d419113738dfbe0a0aa86f2044262e7949509596a0b485",
+      "source_path": "test/srt/redknot/sparse_ffn_params/qwen3.5-397B-A17B.json"
+    }
+  },
+  "repository": "https://github.com/rednote-machine-learning/RedKnot",
+  "schema": "redknot-sglang-source-assets-v1",
+  "sha256": "f8bd7d8e324f681cb9f96714326ff696048bc8a2f636a6cc990549e31801ac3a"
+}

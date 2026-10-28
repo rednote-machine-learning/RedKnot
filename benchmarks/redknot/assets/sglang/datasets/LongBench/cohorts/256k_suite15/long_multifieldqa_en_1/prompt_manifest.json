@@ -1,0 +1,82 @@
+{
+  "data_selection_sha256": "2fd3441ff44bb978b3b8eab493b4f4a071a4f81dd081d6923b70ee8825453810",
+  "dataset": {
+    "bytes": 4483926,
+    "name": "multifieldqa_en",
+    "row_id_base": 0,
+    "sha256": "0aac182fd317dcf6d74f8e1e0f3e61029407435346c2e0b3ff9fb45ae49c5c3f"
+  },
+  "format": "redknot_pure_mla_prompt_v1",
+  "geometry": {
+    "chunk_tokens": 32768,
+    "num_chunks": 8,
+    "online_suffix_tokens": 81,
+    "query_start": 262144,
+    "total_tokens": 262225
+  },
+  "output_blind": true,
+  "prompt": {
+    "answers_sha256": "sha256:02cb0aee3a66e128d5e2bfb2b08f83129c178d40caaff87db659aa93415e5e83",
+    "full_input_ids_sha256": "sha256:1056e54e1f63168aab5ba9c7f21d21dba1be9aa32fdc1a48fa139ac457bafc0a",
+    "offline_chunk_hashes": [
+      "sha256:be65a67e0c192d9147b1bf24086a877270d5266a8cb2b05e8f8d3b86322a3f5e",
+      "sha256:5dfe6acb65375c36a731b8552f5f5f3e84d8953beaf6f34c6c0cd9d21630afd7",
+      "sha256:c12ae663c825198331214b35848bd41368a8b1436a028b93e74d2443e845e8e6",
+      "sha256:9638513560eeadf957ef89a624078d8fcd9af13a97d25a4c3a6652630ec52865",
+      "sha256:610cd70a94508b0dfd0a9f28810ef1cd996acfee7e70d6ee1d14834e4fb4785c",
+      "sha256:7476a076ed0d51bf7705075f7e35552391a366bc46373223bbd8ddeaca20db91",
+      "sha256:20803e4a00d939e2eca3c05d52506b0cf2862dfcb0989178d12b8282b3d6eb8a",
+      "sha256:acde1ef5ea56a0295b914c24397ec72350b9cdc2ad0c88f717e901dbd0464d52"
+    ],
+    "offline_prefix_hash": "sha256:b472e50e0e793f54c4e106a44fac5640bd9c4a444e9c28b55eb6a57fb5cb817f",
+    "online_suffix_hash": "sha256:ca96259d95f9a153cf483864df51cb39e9d067aa5224105cf9ed094463f42b85",
+    "question_sha256": "sha256:1b701b0bb54e5d1f36af0abc63727ddd3c1b38a367e4c564e5cfdbbc684b9ee4",
+    "text_sha256": "sha256:eb8f0c165f15808e55507a9afdbff849b1332313788d67580a58adb2569dd3b4"
+  },
+  "prompt_manifest_sha256": "fa947e1f8d7bc2b3087f246982f91ab93db3c18cfee63761467d838345dbe127",
+  "prompt_mode": "official_rag_v1",
+  "protocol": {
+    "add_default_bos_token": true,
+    "answer_style": "direct_answer_plus_document_evidence_v1",
+    "document_delimiter": "\n\n",
+    "drop_thinking": true,
+    "encoder_path": "/mnt/tidal-alsh01/dataset/redone/checkpoints/opensource/DeepSeek-V4-Flash-0731/encoding/encoding_dsv4.py",
+    "encoder_sha256": "sha256:abc0d26120250dda0ae077dc64aa28836026e61e970854aaeb792445e6a0dde6",
+    "query_instruction": "\n\nAnswer the question using only the documents above. Put the direct answer alone on the first line. Then give one or two concise sentences explaining the supporting evidence from the documents. Do not use bullets or introduce outside facts. Keep the complete response between 25 and 35 tokens (target: about 30 tokens).\nQuestion: What is the name of the most active fan club?\nAnswer:",
+    "reasoning_effort": "low",
+    "target_output_token_range": [
+      25,
+      35
+    ],
+    "target_output_tokens": 30,
+    "thinking_mode": "chat",
+    "tokenizer_config_path": "/mnt/tidal-alsh01/dataset/redone/checkpoints/opensource/DeepSeek-V4-Flash-0731/tokenizer_config.json",
+    "tokenizer_config_sha256": "sha256:6ac8c8dc065ed118161d02dd532749ae3f52c243deac27872134fae2f50d8547",
+    "tokenizer_path": "/mnt/tidal-alsh01/dataset/redone/checkpoints/opensource/DeepSeek-V4-Flash-0731/tokenizer.json",
+    "tokenizer_sha256": "sha256:8f9f37ca37fdc4f5fd36d5cf4d3b0e8392edb4e894fd10cc0d70b4957c8633cf"
+  },
+  "source": {
+    "chunk_hashes": [
+      "sha256:b0c1442c231ea91b2938b34f3e8a3178405eec06a4c56011e9abc7b9369335fc",
+      "sha256:35d114a7072595284cbdc1b134a5b14b6255b7dc7ec87f59441f81f466d4bee1",
+      "sha256:42a905f261347e3051efd24802e3e629bf8fc74a04aff355924fc1eeb5586ccf",
+      "sha256:d9b873f520ae88d8b3b44f8497ceaa8eaab3c1064608b744a2e98a7c81635cd4",
+      "sha256:0b41e89ab65bf70fe2f98a37f96a46260601e9889c330b8bc6826d68b861fb55",
+      "sha256:4ac9a710740737e6d91ba6a7cdf637b2a4c286152dcf90a6b307967143be9b00",
+      "sha256:a4df7c0695183ed2d37d2406bd1059320b95a88ab7b8a61ba668e2f46ba4b1ff",
+      "sha256:df555da1d0bd2540ab5ec29f418066ff244a10875d0acea360635a444484a9fb"
+    ],
+    "chunk_order": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "expected_source_chunk": 0,
+    "query_row_id": 0
+  }
+}

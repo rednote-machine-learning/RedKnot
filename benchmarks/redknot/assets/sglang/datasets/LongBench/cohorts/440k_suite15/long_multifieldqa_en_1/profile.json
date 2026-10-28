@@ -1,0 +1,47 @@
+{
+  "answer_style": "direct_answer_plus_document_evidence_v1",
+  "cases": [
+    {
+      "answers_sha256": "sha256:02cb0aee3a66e128d5e2bfb2b08f83129c178d40caaff87db659aa93415e5e83",
+      "expected_source_chunk": 0,
+      "full_input_ids_sha256": "sha256:65797ef6a37eed653a70c970587ba54e9194d4a7378721a29ec0f28d56ed1b14",
+      "online_suffix_hash": "sha256:a33683d7a932c2ec05b40f27a9748eb83b5e7184099b44aaf73c211078deb6b5",
+      "online_suffix_tokens": 71,
+      "query_index": 0,
+      "query_row_id": 0,
+      "question_sha256": "sha256:1b701b0bb54e5d1f36af0abc63727ddd3c1b38a367e4c564e5cfdbbc684b9ee4",
+      "text_sha256": "sha256:5032a1726514e712a9146913f889aea161f0b8fe49996d368d72194146a27981",
+      "total_tokens": 450631
+    }
+  ],
+  "chunk_tokens": 56320,
+  "cohort_index": 44003,
+  "data_manifest": "/mnt/tidal-alsh01/dataset/redone/RedKnot_Deepseekv4/test/srt/redknot/datasets/LongBench/cohorts/440k_suite15/long_multifieldqa_en_1/data_selection.json",
+  "data_selection_sha256": "274dcb1973b1c7988fd2a6af7cead48d2877120cbc774dc3d38264daf1c6c472",
+  "dataset": "multifieldqa_en",
+  "exclude_manifests": [],
+  "format": "redknot_multidataset_profile_v2",
+  "long_output_target_tokens": 30,
+  "max_total_tokens": 450631,
+  "num_chunks": 8,
+  "num_queries": 1,
+  "offline_chunk_hashes": [
+    "sha256:5bf9bad74aa6b61d63be9f7f87d1ed6bac61c8f174481a6144152eb80c407414",
+    "sha256:dca38a0b1ad3fe5c3aefe40035eb503d331a8337f33ed633b8a12b700eccbc53",
+    "sha256:14cc52f36334820e2213d72dcb81357167a65364671d540813b895e93f263ddc",
+    "sha256:7530442c8532aad6ee08b1606d45253809fbc47de0c3997f9cc051d4480c4d57",
+    "sha256:bd9d569a4dd2caf00e7f74f1f84d5372c90aac807c0880f008f16bb1e3e28298",
+    "sha256:7cc8818c926fc0db38bf9c831e8cb75dca0f6cabdee5fef978f02966b3aa64bf",
+    "sha256:01b629663663a36ae8a836c5e616d67197419484613b990c9906d6ba55da73bd",
+    "sha256:1c660d1ac064971eb06d7a42a6fe2fe5c01ec43432532584d5acbbde29be524b"
+  ],
+  "output_blind": true,
+  "prompt_manifest": "/mnt/tidal-alsh01/dataset/redone/RedKnot_Deepseekv4/test/srt/redknot/datasets/LongBench/cohorts/440k_suite15/long_multifieldqa_en_1/prompt_manifest.json",
+  "prompt_manifest_sha256": "d735b8415118b7f47834dd61211bd095a741e93e51e2bbafaaa5a0af60e032ce",
+  "query_row_ids": [
+    0
+  ],
+  "query_start": 450560,
+  "row_offset": 0,
+  "target_tokens": 450560
+}

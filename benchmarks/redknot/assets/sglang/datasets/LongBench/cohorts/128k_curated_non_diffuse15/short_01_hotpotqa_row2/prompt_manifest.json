@@ -1,0 +1,64 @@
+{
+  "data_selection_sha256": "920965f26f417b85e13dc0d177926232dad559f914d3a685f2c9bfa141224b8f",
+  "dataset": {
+    "bytes": 11483614,
+    "name": "hotpotqa",
+    "row_id_base": 0,
+    "sha256": "a0005ab2a1bc2ac3a70352dccbf96cccc4e0aac6bb677f6a55180fa51b92ef6f"
+  },
+  "format": "redknot_pure_mla_prompt_v1",
+  "geometry": {
+    "chunk_tokens": 32768,
+    "num_chunks": 4,
+    "online_suffix_tokens": 52,
+    "query_start": 131072,
+    "total_tokens": 131124
+  },
+  "output_blind": true,
+  "prompt": {
+    "answers_sha256": "sha256:e2c33dbfe4a9b9b061f884a4adcfbb05ddf37bc1d529106c3ba0e9fa508a0107",
+    "full_input_ids_sha256": "sha256:9dcb41786bd75924f415c2c9708126caa3e88238977eb5b27ced4801dfd28e13",
+    "offline_chunk_hashes": [
+      "sha256:b356498900e8268eb25594725cfe1c561c9d1cc6a2fb8c32e25b5ecace95ad48",
+      "sha256:71ae5a561e7d5263de5b85dd0824b40afdf7637c0d540111c7269f36507632fe",
+      "sha256:29e6f854add213f25923d55ae42bc33fb3d3ec7fb569ce3687260e871526f5ce",
+      "sha256:acb9da154a2269e4ebf2ad503f65442d66af13bc883613e3595b3be6a02b816e"
+    ],
+    "offline_prefix_hash": "sha256:3df68e1645215d999e49851d87e347bda76b451ac11c5a35f3138afa7f83ec4b",
+    "online_suffix_hash": "sha256:3a8f77a0e1f5bc818d071a10a29ecd82b865c5a18e978d049421d5215db5fc04",
+    "question_sha256": "sha256:b1859f51c6c43ff30d8dbf22031c247b78071a8fbe57f881b4aa4982c10930bd",
+    "text_sha256": "sha256:d5b7f31920b752c5e8375a98cef16b8b8eae80fb0b7a7c9586e272a6d7ea646e"
+  },
+  "prompt_manifest_sha256": "b865a31c6ce31a3af41d83ccf348be810d89b341a9922207332eaa8e4097f710",
+  "prompt_mode": "official_rag_v1",
+  "protocol": {
+    "add_default_bos_token": true,
+    "document_delimiter": "\n\n",
+    "drop_thinking": true,
+    "encoder_path": "/mnt/tidal-alsh01/dataset/redone/checkpoints/opensource/DeepSeek-V4-Flash-0731/encoding/encoding_dsv4.py",
+    "encoder_sha256": "sha256:abc0d26120250dda0ae077dc64aa28836026e61e970854aaeb792445e6a0dde6",
+    "query_instruction": "\n\nAnswer the question using only the documents above. Return the shortest exact answer span only, with no explanation.\nQuestion: Prior to playing for Michigan State, Keith Nichol played football for a school located in what city?\nAnswer:",
+    "reasoning_effort": "low",
+    "thinking_mode": "chat",
+    "tokenizer_config_path": "/mnt/tidal-alsh01/dataset/redone/checkpoints/opensource/DeepSeek-V4-Flash-0731/tokenizer_config.json",
+    "tokenizer_config_sha256": "sha256:6ac8c8dc065ed118161d02dd532749ae3f52c243deac27872134fae2f50d8547",
+    "tokenizer_path": "/mnt/tidal-alsh01/dataset/redone/checkpoints/opensource/DeepSeek-V4-Flash-0731/tokenizer.json",
+    "tokenizer_sha256": "sha256:8f9f37ca37fdc4f5fd36d5cf4d3b0e8392edb4e894fd10cc0d70b4957c8633cf"
+  },
+  "source": {
+    "chunk_hashes": [
+      "sha256:c77b16a9d0fd593453a3600f9dc29b13fa280e16ced7ad12b75153e4ba7e1f98",
+      "sha256:b83740b272ec42645b01a7a60b6ce0be49b8f34d1a9996fbc84c4d49222cc303",
+      "sha256:5518922feceba26b4f7291ebbc69f04614b5d2e348dfa4dff3e57b622517ca02",
+      "sha256:630eeec0c17f79b0fc7a421c81550e94a34af3ebd0d1df00ab63943a3d3b978f"
+    ],
+    "chunk_order": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "expected_source_chunk": 0,
+    "query_row_id": 2
+  }
+}

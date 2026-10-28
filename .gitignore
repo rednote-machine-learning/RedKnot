@@ -95,3 +95,6 @@ dmypy.json
 # symlinks (already covered by *.so above) and is ignored explicitly so that non-.so files
 # cannot slip in later
 /deepinfer/_so/
+
+# Generated frozen manifests and measured benchmark outputs (use an external directory)
+/benchmark-output/

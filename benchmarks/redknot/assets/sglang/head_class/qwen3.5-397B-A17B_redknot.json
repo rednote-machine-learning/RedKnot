@@ -1,0 +1,43 @@
+{
+  "model": "Qwen3.5-397B-A17B",
+  "model_type": "qwen3_5_moe",
+  "method": "full_attention_head_class",
+  "rationale": "Qwen3.5-397B-A17B is a hybrid MoE model: 60 layers, of which 15 are full_attention (every 4th, full_attention_interval=4 -> idx 3/7/.../59) and 45 are linear_attention (GatedDeltaNet). RedKnot full-attention head-class sparsity is applied ONLY to the full layers. Shallow full layers carry critical early features, so we keep the FIRST HALF+1 full layers DENSE (exact) and sparsify only the DEEP half. Sweet spot from the 397B sweep: keeping the first 9 of 15 full layers dense + head-class (frac_global=0.4, window=2048) on the deep 6 is lossless (dF1=0) and maximizes compute saving. Note frac_global=0.4 pairs with window=2048 (window=4096 dropped F1 at this frac_global; frac_global=0.8 instead needs window=4096).",
+  "num_layers": 60,
+  "full_attention_interval": 4,
+  "full_attention_layers": [3, 7, 11, 15, 19, 23, 27, 31, 35, 39, 43, 47, 51, 55, 59],
+  "num_full_layers": 15,
+  "dense_full_layers_rule": "ceil(num_full_layers/2)+1 = 9",
+  "dense_full_layers": 9,
+  "sparse_full_layers": [39, 43, 47, 51, 55, 59],
+  "num_kv_heads": 2,
+  "num_q_heads": 32,
+  "head_dim": 256,
+  "frac_global": 0.4,
+  "window": 2048,
+  "sink_size": 4,
+  "summary": {
+    "full_layers_total": 15,
+    "full_layers_dense": 9,
+    "full_layers_sparse": 6,
+    "global_pct_on_sparse_layers": "40%",
+    "local_pct_on_sparse_layers": "60%",
+    "note": "Sweet spot selected on the 397B FP8 triviaqa sweep (lossless dF1=0, total compute save ~46%)."
+  },
+  "sweet_spot": {
+    "frac_global": 0.4,
+    "window": 2048,
+    "dense_full_layers": 9,
+    "moe_deep_start_layer": 24,
+    "moe_mass_thresh": 0.7,
+    "baseline_f1": 0.667,
+    "redknot_f1": 0.667,
+    "delta_f1": 0.0,
+    "total_compute_save_32k": 0.518,
+    "ttft_speedup_32k": 2.07,
+    "selection": "frac_global=0.4, window=2048, deep_moe_start=24, mass_thresh=0.7. Selected on the 397B reduced sweep (lossless dF1=0, max compute save). Verified on the FP8 model at 32K context (N=5, triviaqa): RedKnot outputs matched the STANDARD baseline (lossless) with 51.8% total compute saving and 2.07x theoretical TTFT speedup. mass_thresh=0.7 consistently saved more MoE compute without accuracy loss; deep_moe_start=24 slightly beat 40."
+  },
+  "benchmark_datasets": [
+    {"dataset": "triviaqa", "context": 32000, "n_chunk": 4, "chunk": 8000}
+  ]
+}

@@ -1,0 +1,266 @@
+from __future__ import annotations
+
+import copy
+import json
+import os
+import subprocess
+import sys
+import tempfile
+import unittest
+from pathlib import Path
+from types import SimpleNamespace
+from typing import Any
+from unittest.mock import patch
+
+from benchmarks.redknot.contract import SCHEMA, digest, file_digest, seal, tokenizer_identity, write_json
+from benchmarks.redknot.runner import _loaded_module_identity, _select_devices, aggregate_ranks, preflight_model, run_benchmark
+
+
+def make_case(sample_id: str, tokens: list[int]) -> dict:
+    references = ["Mercury"]
+    return {
+        "sample_id": sample_id,
+        "dataset": "hotpotqa",
+        "input_ids": tokens,
+        "input_ids_sha256": digest(tokens),
+        "references": references,
+        "references_sha256": digest(references),
+        "max_new_tokens": 2,
+        "scored": True,
+        "ignore_eos": False,
+    }
+
+
+def make_manifest(checkpoint: Path) -> dict:
+    return seal(
+        {
+            "schema": SCHEMA,
+            "model": {
+                "profile": "deepseek-v4.1-flash",
+                "model_id": "deepseek-ai/DeepSeek-V4.1-Flash-1017",
+                "tokenizer": tokenizer_identity(checkpoint),
+            },
+            "suite": {"name": "unit-test"},
+            "warmup": [make_case("warmup", [1, 2])],
+            "cases": [make_case("case", [3, 4])],
+        }
+    )
+
+
+def rank_result(rank: int, manifest: dict, iterations: int) -> dict:
+    phases = []
+    for iteration in range(iterations):
+        records = []
+        for case in manifest["cases"]:
+            records.append(
+                {
+                    **{
+                        key: case[key]
+                        for key in ("sample_id", "dataset", "input_ids_sha256", "references", "max_new_tokens", "scored", "ignore_eos")
+                    },
+                    "iteration": iteration,
+                    "dp_rank": rank,
+                    "output_token_ids": [31, 32],
+                    "text": "Mercury",
+                    "ttft_s": 0.5,
+                    "latency_s": 1.0,
+                    "finished": True,
+                    "finish_reason": "length",
+                }
+            )
+        phases.append({"iteration": iteration, "elapsed_s": 2.0 + rank, "completed_requests": len(records), "requests": records})
+    return {
+        "rank": rank,
+        "status": "complete",
+        "phases": phases,
+        "runtime_versions": {"torch": "test-only", "cuda": "test-only", "deepinfer": "test-only"},
+        "native_engine": {"module": "unit-test-fixture", "module_sha256": "b" * 64},
+    }
+
+
+class FakeProcess:
+    def __init__(self, *, args: tuple, fail: bool = False, **kwargs: Any) -> None:
+        self.rank, self.manifest, self.spec = args
+        self.fail = fail
+        self.pid = None
+        self.exitcode = None
+
+    def start(self) -> None:
+        directory = Path(self.spec["output_dir"])
+        if self.fail:
+            write_json(directory / f"rank-{self.rank}.failure.json", {"status": "failed", "error": "test failure"})
+            self.exitcode = 1
+        else:
+            write_json(directory / f"rank-{self.rank}.json", rank_result(self.rank, self.manifest, self.spec["iterations"]))
+            self.exitcode = 0
+
+    def join(self, timeout: float | None = None) -> None:
+        pass
+
+
+class FakeContext:
+    def __init__(self, *, fail: bool = False) -> None:
+        self.fail = fail
+
+    def Process(self, **kwargs: Any) -> FakeProcess:
+        return FakeProcess(fail=self.fail, **kwargs)
+
+
+class RunnerTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self.temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temporary.cleanup)
+        self.root = Path(self.temporary.name)
+        self.checkpoint = self.root / "model"
+        self.checkpoint.mkdir()
+        (self.checkpoint / "tokenizer.json").write_text('{"unit_test":true}')
+        self.config = {"architectures": ["DeepseekV41ForCausalLM"], "vocab_size": 64, "max_position_embeddings": 128}
+        (self.checkpoint / "config.json").write_text(json.dumps(self.config))
+        self.manifest = make_manifest(self.checkpoint)
+        self.hardware = {
+            "hostname": "unit-test",
+            "gpus": [{"index": index, "compute_capability": "10.0", "name": "fake-test-device"} for index in range(8)],
+        }
+
+    def execute(self, *, fail: bool = False, environment: dict[str, str] | None = None, **kwargs: Any) -> Path:
+        with (
+            patch.dict(os.environ, environment or {}, clear=True),
+            patch("benchmarks.redknot.runner._hardware_inventory", return_value=copy.deepcopy(self.hardware)),
+            patch("benchmarks.redknot.runner.source_identity", return_value={"commit": "a" * 40, "dirty": False}),
+            patch("benchmarks.redknot.runner._free_master_port", return_value=25000),
+            patch("benchmarks.redknot.runner.multiprocessing.get_context", return_value=FakeContext(fail=fail)),
+        ):
+            return run_benchmark(self.manifest, self.checkpoint, self.root / "run", ep=2, cp=1, dp=2, iterations=2, **kwargs)
+
+    def test_preflight_checks_tokenizer_architecture_and_context(self) -> None:
+        self.assertEqual(preflight_model(self.manifest, self.checkpoint)["required_context"], 4)
+        for changes, message in (
+            ({"architectures": ["Qwen3ForCausalLM"]}, "supports only"),
+            ({"vocab_size": 3}, "outside"),
+            ({"max_position_embeddings": 3}, "exceeding"),
+        ):
+            (self.checkpoint / "config.json").write_text(json.dumps({**self.config, **changes}))
+            with self.subTest(changes=changes), self.assertRaisesRegex(ValueError, message):
+                preflight_model(self.manifest, self.checkpoint)
+        (self.checkpoint / "config.json").write_text(json.dumps(self.config))
+        (self.checkpoint / "tokenizer.json").write_text("changed")
+        with self.assertRaisesRegex(ValueError, "fingerprint"):
+            preflight_model(self.manifest, self.checkpoint)
+
+    def test_configuration_only_profile_cannot_run_under_a_supported_checkpoint(self) -> None:
+        for changes, message in (
+            ({"profile": "qwen3-32b", "model_id": "Qwen/Qwen3-32B"}, "configuration-only"),
+            ({"model_id": "Qwen/Qwen3-32B"}, "does not match"),
+        ):
+            forged = seal({**self.manifest, "model": {**self.manifest["model"], **changes}})
+            with self.subTest(changes=changes), self.assertRaisesRegex(ValueError, message):
+                preflight_model(forged, self.checkpoint)
+
+    def test_global_qps_uses_slowest_rank_per_phase(self) -> None:
+        path = self.execute()
+        report = json.loads(path.read_text())
+        self.assertEqual(report["status"], "complete")
+        self.assertEqual(report["mode"], "baseline")
+        self.assertEqual(report["elapsed_s"], 6.0)
+        self.assertEqual(report["completed_requests"], 4)
+        self.assertAlmostEqual(report["summary"]["completed_requests_per_s"], 4 / 6)
+        self.assertEqual(report["metadata"]["settings"]["replication"], "full_cohort_per_dp_rank")
+        self.assertTrue(report["comparison_eligible"])
+        self.assertFalse(report["activation"]["redknot_enabled"])
+
+    def test_cold_smoke_is_explicit_and_not_comparison_eligible(self) -> None:
+        report = json.loads(self.execute(warmup_iterations=0).read_text())
+        self.assertEqual(report["metadata"]["warmup"]["state"], "cold")
+        self.assertFalse(report["metadata"]["warmup"]["complete"])
+        self.assertFalse(report["comparison_eligible"])
+
+    def test_baseline_disables_inherited_artificial_expert_routing(self) -> None:
+        inherited = {"DEEPINFER_FORCE_LOAD_BALANCE": "1", "DEEPINFER_FORCE_IMBALANCE_RATIO": "1.8"}
+        path = self.execute(environment=inherited)
+        report = json.loads(path.read_text())
+        launch = json.loads((path.parent / "launch.json").read_text())
+        for key in inherited:
+            self.assertEqual(launch["environment"][key], "0")
+            self.assertEqual(report["metadata"]["settings"]["environment"][key], "0")
+
+    def test_rank_failure_writes_failure_not_success(self) -> None:
+        with self.assertRaisesRegex(RuntimeError, "worker failed"):
+            self.execute(fail=True)
+        self.assertFalse((self.root / "run" / "report.json").exists())
+        self.assertEqual(json.loads((self.root / "run" / "failure.json").read_text())["status"], "failed")
+
+    def test_engine_binary_identity_hashes_loaded_extension_and_package_children(self) -> None:
+        binary = self.root / "engine.so"
+        binary.write_bytes(b"unit-test binary fixture")
+        module = SimpleNamespace(__name__="fixture.engine", __file__=str(binary))
+        identity = _loaded_module_identity(module)
+        self.assertEqual(identity["kind"], "extension")
+        self.assertEqual(identity["loaded_extensions"][module.__name__]["sha256"], file_digest(binary))
+        wrapper = self.root / "__init__.py"
+        wrapper.write_text("# unit-test package wrapper\n")
+        package = SimpleNamespace(__name__="fixture.engine", __file__=str(wrapper), __path__=[str(self.root)])
+        with patch.dict(sys.modules, {"fixture.engine._native": module}):
+            identity = _loaded_module_identity(package)
+        self.assertEqual(identity["kind"], "package")
+        self.assertEqual(identity["loaded_extensions"]["fixture.engine._native"]["sha256"], file_digest(binary))
+        self.assertEqual(identity["module_sha256"], file_digest(wrapper))
+
+    def test_inconsistent_engine_binaries_never_produce_success(self) -> None:
+        original = rank_result
+
+        def differing_binary(rank: int, manifest: dict, iterations: int) -> dict:
+            result = original(rank, manifest, iterations)
+            result["native_engine"]["module_sha256"] = str(rank) * 64
+            return result
+
+        with patch(f"{__name__}.rank_result", side_effect=differing_binary), self.assertRaisesRegex(RuntimeError, "binary identities"):
+            self.execute()
+        self.assertFalse((self.root / "run" / "report.json").exists())
+
+    def test_warmup_and_parameters_fail_before_hardware(self) -> None:
+        self.manifest = seal({**self.manifest, "warmup": []})
+        with patch("benchmarks.redknot.runner._hardware_inventory") as hardware:
+            with self.assertRaisesRegex(ValueError, "warmup"):
+                run_benchmark(self.manifest, self.checkpoint, self.root / "run")
+            hardware.assert_not_called()
+        with self.assertRaisesRegex(ValueError, "divisible"):
+            run_benchmark(self.manifest, self.checkpoint, self.root / "run", ep=3, cp=2, dp=1)
+
+    def test_output_directory_is_never_overwritten(self) -> None:
+        self.execute()
+        with self.assertRaises(FileExistsError):
+            self.execute()
+
+    def test_aggregate_rejects_missing_duplicate_and_nonfinite_results(self) -> None:
+        original = [rank_result(rank, self.manifest, 2) for rank in range(2)]
+        mutations = [
+            lambda rows: rows.pop(),
+            lambda rows: rows[1].update(rank=0),
+            lambda rows: rows[0]["phases"].pop(),
+            lambda rows: rows[0]["phases"][0]["requests"].clear(),
+            lambda rows: rows[0]["phases"][0].update(elapsed_s=float("nan")),
+            lambda rows: rows[0]["phases"][0]["requests"][0].update(finished=False),
+        ]
+        for mutate in mutations:
+            rows = copy.deepcopy(original)
+            mutate(rows)
+            with self.subTest(mutate=mutate), self.assertRaises(RuntimeError):
+                aggregate_ranks(rows, self.manifest, iterations=2, dp_size=2)
+
+    def test_device_selection_preserves_contiguous_user_block(self) -> None:
+        self.assertEqual(_select_devices(self.hardware, 2, {"CUDA_VISIBLE_DEVICES": "4,5,6,7"}), [4, 5])
+        for environment in ({"CUDA_VISIBLE_DEVICES": "0,2"}, {"CUDA_VISIBLE_DEVICES": "0,0"}, {"CUDA_VISIBLE_DEVICES": "GPU-uuid"}):
+            with self.subTest(environment=environment), self.assertRaises(ValueError):
+                _select_devices(self.hardware, 2, environment)
+
+    def test_imports_do_not_load_accelerator_libraries(self) -> None:
+        command = [
+            sys.executable,
+            "-c",
+            "import sys; import benchmarks.redknot.native, benchmarks.redknot.runner; assert not {'torch', 'deepinfer', 'numpy'} & set(sys.modules)",
+        ]
+        subprocess.run(command, check=True, cwd=Path(__file__).resolve().parents[2])
+
+
+if __name__ == "__main__":
+    unittest.main()

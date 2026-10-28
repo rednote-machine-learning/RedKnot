@@ -1,0 +1,64 @@
+{
+  "data_selection_sha256": "ad6851ab0ef8b696406802f9160db219bf7794846091d320c75fa0bccfd66ed1",
+  "dataset": {
+    "bytes": 4483926,
+    "name": "multifieldqa_en",
+    "row_id_base": 0,
+    "sha256": "0aac182fd317dcf6d74f8e1e0f3e61029407435346c2e0b3ff9fb45ae49c5c3f"
+  },
+  "format": "redknot_pure_mla_prompt_v1",
+  "geometry": {
+    "chunk_tokens": 32768,
+    "num_chunks": 4,
+    "online_suffix_tokens": 41,
+    "query_start": 131072,
+    "total_tokens": 131113
+  },
+  "output_blind": true,
+  "prompt": {
+    "answers_sha256": "sha256:1db2f8488d7d72cd4ed24b13ff4016c2c4626e0a60c92c2c885b75e924e4c3d5",
+    "full_input_ids_sha256": "sha256:c2ca4eec720ec881e7ea467168c0d6eaae5e24d7e2eea9edae1cd23da7f9575e",
+    "offline_chunk_hashes": [
+      "sha256:fe628d797cb586dc3bf95d87ad515c7326110a967b3b340db0d8dcd24d5e2bbc",
+      "sha256:1e0f5ceb300b7a066295be021b51b8f6447c80e1eef3853109d809b49b028138",
+      "sha256:c12ae663c825198331214b35848bd41368a8b1436a028b93e74d2443e845e8e6",
+      "sha256:9638513560eeadf957ef89a624078d8fcd9af13a97d25a4c3a6652630ec52865"
+    ],
+    "offline_prefix_hash": "sha256:30f1a628b37415b7666697855ef9c3a16dff2551e84fcd9f4a876ca25b6519e7",
+    "online_suffix_hash": "sha256:3dfdf0c6ff3426f4d0f23bc56d92e40709b150de4827b2de578f97a4dcf6c17c",
+    "question_sha256": "sha256:36666846383588e4ba64844e0eeef1ec6af45411d5d2f012b46749b88dd863d2",
+    "text_sha256": "sha256:f003a28cf5a31c3acd0fa492f5df2bef110127adb2919f227c8a947c4649a962"
+  },
+  "prompt_manifest_sha256": "5fe5ca4fb5281080fb43d60564c6f89e90c4466e2af120d6a6307a8871a1ae8e",
+  "prompt_mode": "official_rag_v1",
+  "protocol": {
+    "add_default_bos_token": true,
+    "document_delimiter": "\n\n",
+    "drop_thinking": true,
+    "encoder_path": "/mnt/tidal-alsh01/dataset/redone/checkpoints/opensource/DeepSeek-V4-Flash-0731/encoding/encoding_dsv4.py",
+    "encoder_sha256": "sha256:abc0d26120250dda0ae077dc64aa28836026e61e970854aaeb792445e6a0dde6",
+    "query_instruction": "\n\nAnswer the question using only the documents above. Return the shortest exact answer span only, with no explanation.\nQuestion: Is the ISR necessary for transgene reactivation?\nAnswer:",
+    "reasoning_effort": "low",
+    "thinking_mode": "chat",
+    "tokenizer_config_path": "/mnt/tidal-alsh01/dataset/redone/checkpoints/opensource/DeepSeek-V4-Flash-0731/tokenizer_config.json",
+    "tokenizer_config_sha256": "sha256:6ac8c8dc065ed118161d02dd532749ae3f52c243deac27872134fae2f50d8547",
+    "tokenizer_path": "/mnt/tidal-alsh01/dataset/redone/checkpoints/opensource/DeepSeek-V4-Flash-0731/tokenizer.json",
+    "tokenizer_sha256": "sha256:8f9f37ca37fdc4f5fd36d5cf4d3b0e8392edb4e894fd10cc0d70b4957c8633cf"
+  },
+  "source": {
+    "chunk_hashes": [
+      "sha256:2058388d0a030e50b8724f2849113396f63d8302d4946eef4175c1820c06fdfa",
+      "sha256:35d114a7072595284cbdc1b134a5b14b6255b7dc7ec87f59441f81f466d4bee1",
+      "sha256:42a905f261347e3051efd24802e3e629bf8fc74a04aff355924fc1eeb5586ccf",
+      "sha256:d9b873f520ae88d8b3b44f8497ceaa8eaab3c1064608b744a2e98a7c81635cd4"
+    ],
+    "chunk_order": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "expected_source_chunk": 0,
+    "query_row_id": 1
+  }
+}

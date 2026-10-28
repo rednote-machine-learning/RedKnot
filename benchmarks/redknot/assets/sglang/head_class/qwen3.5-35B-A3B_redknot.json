@@ -1,0 +1,41 @@
+{
+  "model": "Qwen3.5-35B-A3B",
+  "model_type": "qwen3_5_moe",
+  "method": "full_attention_head_class",
+  "rationale": "Qwen3.5-35B-A3B is a hybrid MoE model: 40 layers, of which 10 are full_attention (every 4th, idx 3/7/11/15/19/23/27/31/35/39) and 30 are linear_attention (GatedDeltaNet). RedKnot full-attention head-class sparsity is applied ONLY to the full layers. Shallow full layers carry critical early features, so we keep the FIRST HALF+1 full layers DENSE (exact) and sparsify only the DEEP half. Verified: keeping the first 6 of 10 full layers dense + head-class (frac_global=0.4, window=4096) on the deep 4 is lossless on the 35B (dF1=0 full-only; combined with linear windowing dF1~-0.10).",
+  "num_layers": 40,
+  "full_attention_layers": [3, 7, 11, 15, 19, 23, 27, 31, 35, 39],
+  "num_full_layers": 10,
+  "dense_full_layers_rule": "half (aggressive sweet spot B)",
+  "dense_full_layers": 5,
+  "sparse_full_layers": [23, 27, 31, 35, 39],
+  "num_kv_heads": 2,
+  "num_q_heads": 16,
+  "head_dim": 256,
+  "frac_global": 0.4,
+  "window": 4096,
+  "sink_size": 4,
+  "summary": {
+    "full_layers_total": 10,
+    "full_layers_dense": 6,
+    "full_layers_sparse": 4,
+    "per_sparse_layer_attn_flops_save": "45%",
+    "full_attn_flops_save_overall": "22%",
+    "global_pct_on_sparse_layers": "40%",
+    "local_pct_on_sparse_layers": "60%"
+  },
+  "notes": "dense_full_layers = ceil(num_full_layers/2)+1 = 6. Sparse layers use frac_global=0.4 (40% kv-heads global / full attention) + window=4096 (60% kv-heads local sliding window). Linear-attention sparsity is configured separately in sparse_ffn_params/qwen3.5-35B-A3B.json (per-head token window with decayed-prefix reuse).",
+  "benchmark_datasets": [
+    {"dataset": "triviaqa", "context": 16000, "n_chunk": 2, "chunk": 8000, "std_f1": 1.0, "rk_f1": 1.0, "std_ttft": 1.84, "rk_ttft": 1.25, "speedup": 1.5, "total_flops_save": 0.384, "linear_windowed_heads": 0.59, "note": "best measured TTFT sweet spot under torch fallback"},
+    {"dataset": "multifieldqa_en", "context": 32000, "n_chunk": 4, "chunk": 8000, "std_f1": 1.0, "rk_f1": 1.0, "std_ttft": 2.50, "rk_ttft": 2.10, "speedup": 1.2, "total_flops_save": 0.420, "linear_windowed_heads": 0.66, "note": "best 32K measured TTFT among scanned datasets"},
+    {"dataset": "triviaqa", "context": 64000, "n_chunk": 8, "chunk": 8000, "std_f1": 1.0, "rk_f1": 1.0, "std_ttft": 3.22, "rk_ttft": 4.95, "speedup": 0.7, "total_flops_save": 0.447, "linear_windowed_heads": 0.65, "note": "64K accuracy-preserving stress case; measured TTFT is not yet positive without FLA fast path"}
+  ],
+  "sweet_spot": {
+    "linear_safety": 2.0,
+    "linear_decay_quantile": 0.95,
+    "linear_dense_prefix_layers": 5,
+    "moe_deep_start_layer": 8,
+    "moe_mass_thresh": 0.7,
+    "selection": "safety=2.0, deep_start=8, mass_thresh=0.7 preserved F1 on selected triviaqa/multifieldqa_en scans and raised total FLOPs save to 38-45%; more aggressive than the prior default, but hotpotqa@32K is excluded because this setting dropped that sample."
+  }
+}
