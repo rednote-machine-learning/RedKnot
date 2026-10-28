@@ -1,0 +1,184 @@
+{
+  "benchmark_commit": "4aca481696bd0bbd5cbc929b6892888c7762818a",
+  "completed_measured_requests": 8,
+  "date": "2026-10-28",
+  "hardware": {
+    "compute_capabilities": [
+      "8.9"
+    ],
+    "driver_reported_names": [
+      "NVIDIA L20X"
+    ],
+    "drivers": [
+      "570.148.08"
+    ],
+    "gpu_count": 8
+  },
+  "input_tokens": 65585,
+  "lifecycle": {
+    "cleanup_error": null,
+    "holder_restored": true,
+    "worker_exit": 0
+  },
+  "limitations": [
+    "One HotpotQA question repeated on eight DP ranks; these are not eight independent quality samples.",
+    "One warmup and one measured iteration establish functional execution, not stable performance or full-suite QA accuracy.",
+    "Kernel compilation was observed during warmup; compilation-cache steadiness was not qualified.",
+    "This used an external modified SM90 runtime based on PR148 commit 731508b; the clean default upstream checkout still targets SM100.",
+    "No RedKnot optimized execution, controlled throughput comparison, or speedup was measured."
+  ],
+  "manifest_sha256": "2b560dc8a1d7d95b881ac256d75d51104a572312e5af96bdee56561b2ae8fc2f",
+  "measurement_boundary": "native_engine_enqueue_to_native_token_observation",
+  "model_id": "deepseek-ai/DeepSeek-V4.1-Flash-1017",
+  "observations": {
+    "completed_requests": 8,
+    "completed_requests_per_s": 0.06162333898160401,
+    "datasets": {
+      "hotpotqa": {
+        "answer_em": 1.0,
+        "answer_token_f1": 1.0,
+        "scored_observations": 8,
+        "unique_scored_samples": 1,
+        "unscored_observations": 0
+      }
+    },
+    "elapsed_s": 129.82094336673617,
+    "fixed_output_qps_eligible": false,
+    "latency_s": {
+      "count": 8,
+      "mean": 129.68782485742122,
+      "p50": 129.68724881485105,
+      "p95": 129.69139679446818
+    },
+    "output_tokens": 40,
+    "output_tokens_per_s": 0.3081166949080201,
+    "percentile_method": "linear interpolation at (n - 1) * q; Hyndman-Fan type 7",
+    "quality": {
+      "answer_em": 1.0,
+      "answer_token_f1": 1.0,
+      "scored_observations": 8,
+      "unique_scored_samples": 1,
+      "unscored_observations": 0
+    },
+    "quality_aggregation": "mean over scored request observations; repetitions are not independent samples",
+    "quality_scale": "fraction_0_to_1",
+    "throughput_semantics": "all completed requests divided by synchronized global elapsed time",
+    "ttft_s": {
+      "count": 8,
+      "mean": 129.05698148021474,
+      "p50": 129.05697223730385,
+      "p95": 129.05701268631964
+    },
+    "unique_samples": 1
+  },
+  "outputs": [
+    {
+      "dp_rank": 0,
+      "finish_reason": "stop",
+      "output_token_count": 5,
+      "text": "Miller v. California"
+    },
+    {
+      "dp_rank": 1,
+      "finish_reason": "stop",
+      "output_token_count": 5,
+      "text": "Miller v. California"
+    },
+    {
+      "dp_rank": 2,
+      "finish_reason": "stop",
+      "output_token_count": 5,
+      "text": "Miller v. California"
+    },
+    {
+      "dp_rank": 3,
+      "finish_reason": "stop",
+      "output_token_count": 5,
+      "text": "Miller v. California"
+    },
+    {
+      "dp_rank": 4,
+      "finish_reason": "stop",
+      "output_token_count": 5,
+      "text": "Miller v. California"
+    },
+    {
+      "dp_rank": 5,
+      "finish_reason": "stop",
+      "output_token_count": 5,
+      "text": "Miller v. California"
+    },
+    {
+      "dp_rank": 6,
+      "finish_reason": "stop",
+      "output_token_count": 5,
+      "text": "Miller v. California"
+    },
+    {
+      "dp_rank": 7,
+      "finish_reason": "stop",
+      "output_token_count": 5,
+      "text": "Miller v. California"
+    }
+  ],
+  "report_sha256": "4eb59d3f971125fe278ffd7a73247126e5a69e2e54c062fe6e730df851cad516",
+  "runtime": {
+    "benchmark_harness_sha256": {
+      "__init__.py": "02a874316e6dd7d50fb97607522b22cec0cb54017b9072043f55ff9aed058ca2",
+      "__main__.py": "5e042c70a062e81f2b46f59d0739ade80281ba667077c1ca323a17bf003d1810",
+      "catalog.py": "a189f13f81ca9d2c9ea39123c469b5438cfec75a93bd2b1cb88e1187df8fe4f2",
+      "compare.py": "2e765eedbde61a0ecee1355cf373403cb09172475863b1c26312594365828232",
+      "contract.py": "3b1e3c868d6fdcd6a0ec460c9c3bf9d55405bf9a7b872d7275363e1f07f711a8",
+      "metrics.py": "6b94e9c4c03eb51ac8c5763efd2fcdcfa14df6366294b043675b0d385c8d0505",
+      "native.py": "b0619468c4c4bec992e8aa0bb2e753ecb1d85b8d8037a440f9589e04b27e5193",
+      "prepare.py": "5bdb3f672d65903712e342348424a34a2ee7c56f312a2b9d7ca82ed2f4bb98ca",
+      "prompts.py": "35f13ec7f0fdc0f1edc90a3574285dfa41f3411b6ee36303896e7244c6711bb3",
+      "runner.py": "8deaab14b387f7af27cb5ef45c1ce648bd5b925cfe8e64e1879199dfc0f1ab39"
+    },
+    "changes_sha256": "3d5d307e5f4e08ffd142ab727596385f1e773483c75b9abb88f3515fdf7d18ba",
+    "commit": "731508b4282cee87f526a492c6bad8cabcc2f35c",
+    "dirty": true,
+    "engine_module_sha256": "d26371d63216350ef500799aefd3c5032b93b266a12aff45809c67e209ba0aaf",
+    "requires_external_modified_sm90_checkout": true,
+    "versions": {
+      "cuda": "13.2",
+      "deepinfer": "0.1.0",
+      "torch": "2.13.0+cu132"
+    }
+  },
+  "sampling": {
+    "ignore_eos": "per_case",
+    "max_new_tokens": "per_case",
+    "seed": 0,
+    "seq_seed_method": "seed_plus_first_64_bits_of_sample_id_digest",
+    "temperature": 0.0,
+    "top_k": -1,
+    "top_p": 1.0
+  },
+  "schema": "redknot-deepinfer-native-smoke-validation-v1",
+  "settings": {
+    "batch_invariant": false,
+    "cp_size": 1,
+    "dp_size": 8,
+    "ep_size": 8,
+    "iterations": 1,
+    "max_model_len": 65594,
+    "max_num_batched_tokens": 8192,
+    "max_num_seqs": 1,
+    "memory_utilization": 0.85,
+    "replication": "full_cohort_per_dp_rank",
+    "supervised_process_group": true
+  },
+  "sha256": "43e6e8ae6376f7bcdbeb8073c2a65ba5a060a5cab30cc3ac06ea5ad111514ae9",
+  "source_sample": "case:64k:short_00_hotpotqa_row0",
+  "status": "passed_functional_smoke",
+  "target_input_ids_sha256": "fe9c49a2ea5e617e54361fc53c2d0366421645df76077b069c21e26dd095bc5c",
+  "tokenizer_fingerprint": "c457dbea1115c3d544e6310557c074d7649e7f07f1b1654d3a92dffde6a88be2",
+  "unique_measured_samples": 1,
+  "warmup": {
+    "cases_per_rank": 1,
+    "complete": true,
+    "iterations": 1,
+    "state": "warm"
+  }
+}
