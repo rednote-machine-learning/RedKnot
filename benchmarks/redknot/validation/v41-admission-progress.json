@@ -1,0 +1,146 @@
+{
+  "benchmark_commit": "5d5a8960bd673d1657b4c517f00cc9c44493095d",
+  "ci": {
+    "conclusion": "success",
+    "cpu_tests_passed": 96,
+    "ruff_check": "passed",
+    "ruff_format_check": "passed",
+    "shell_syntax_check": "passed",
+    "url": "https://github.com/rednote-machine-learning/RedKnot/actions/runs/40666868713"
+  },
+  "complete_report_generated": false,
+  "date": "2026-10-28",
+  "full_suite_passed": false,
+  "lifecycle": {
+    "cleanup_error": null,
+    "cleanup_warning": "Ownership check declined to signal an unauthenticated process-group member.",
+    "cleanup_warning_count": 1,
+    "holder_restored": true,
+    "resource_tracker_warnings_observed": true,
+    "stop_reason": "user pause via SIGTERM",
+    "supervisor_status": "failed"
+  },
+  "limitations": [
+    "Progress events establish partial execution only; they do not contain answer text, token IDs or structured finish reasons.",
+    "Natural EOS was allowed by the short-answer configuration; these logs do not prove how each request actually terminated.",
+    "No new EM/F1, TTFT percentiles, throughput or complete-suite qualification can be derived from the absent final report.",
+    "Ten cases repeated across eight ranks are ten cases, not 80 independent questions or ten measured iterations.",
+    "The remaining fixed-output cases and later campaign jobs were not completed; GPU experiments remain paused.",
+    "This is native baseline evidence, not an optimized RedKnot implementation or speedup measurement."
+  ],
+  "manifest_sha256": "7dbbbfec6ee34fb4e91b0c10e635f62763250826ac073050f2ec52a8199ea57f",
+  "new_quality_or_performance_results_published": false,
+  "observed_progress": {
+    "completed_datasets": {
+      "2wikimqa": 3,
+      "hotpotqa": 3,
+      "multifieldqa_en": 2,
+      "musique": 2
+    },
+    "completed_sample_ids": [
+      "case:64k:short_00_hotpotqa_row0",
+      "case:64k:short_01_hotpotqa_row1",
+      "case:64k:short_02_hotpotqa_row2",
+      "case:64k:short_03_2wikimqa_row0",
+      "case:64k:short_04_2wikimqa_row1",
+      "case:64k:short_05_2wikimqa_row5",
+      "case:64k:short_06_musique_row0",
+      "case:64k:short_07_musique_row2",
+      "case:64k:short_08_multifieldqa_en_row1",
+      "case:64k:short_09_multifieldqa_en_row4"
+    ],
+    "distinct_completed_cases": 10,
+    "fixed_output_completed_cases": 0,
+    "measured_completion_events_total": 80,
+    "rank_count": 8,
+    "rank_evidence": [
+      {
+        "dp_rank": 0,
+        "log_sha256": "fe5ebb70d3dc72be3f5d3e38c5689e33cb28b7dcfffc179ff29a1489d038e971",
+        "measured_completion_events": 10,
+        "measured_sample_order_matches_first_ten_cases": true,
+        "warmup_completion_events": 3
+      },
+      {
+        "dp_rank": 1,
+        "log_sha256": "398b1488710585e296859d78605810ca4269355981dce3416f6f5e4f1c420256",
+        "measured_completion_events": 10,
+        "measured_sample_order_matches_first_ten_cases": true,
+        "warmup_completion_events": 3
+      },
+      {
+        "dp_rank": 2,
+        "log_sha256": "9d92b69110767d924b4955893542bd37bdb083fae04748bb62d90b0459723a8c",
+        "measured_completion_events": 10,
+        "measured_sample_order_matches_first_ten_cases": true,
+        "warmup_completion_events": 3
+      },
+      {
+        "dp_rank": 3,
+        "log_sha256": "025217f3bd9a5cb39792f5bcfb630ab280682aeafb7f3742c97c5239ef73c8e6",
+        "measured_completion_events": 10,
+        "measured_sample_order_matches_first_ten_cases": true,
+        "warmup_completion_events": 3
+      },
+      {
+        "dp_rank": 4,
+        "log_sha256": "8b4557cc191b008564bcf5d1c902e0544b06d6a3028e9c434eb24e306f9244ab",
+        "measured_completion_events": 10,
+        "measured_sample_order_matches_first_ten_cases": true,
+        "warmup_completion_events": 3
+      },
+      {
+        "dp_rank": 5,
+        "log_sha256": "a8432c67db639ee4b2de73f53d85c5126c2ec23ea7218440761b166e686a2d43",
+        "measured_completion_events": 10,
+        "measured_sample_order_matches_first_ten_cases": true,
+        "warmup_completion_events": 3
+      },
+      {
+        "dp_rank": 6,
+        "log_sha256": "c6b11f554b42d51876ccb733e7f9a502fa5d630346d50fa89add63bb99be8b25",
+        "measured_completion_events": 10,
+        "measured_sample_order_matches_first_ten_cases": true,
+        "warmup_completion_events": 3
+      },
+      {
+        "dp_rank": 7,
+        "log_sha256": "f7e27a07aa82ff774714237693aa4671c6cca7f5d4deae1f5e74a384f3ea6c97",
+        "measured_completion_events": 10,
+        "measured_sample_order_matches_first_ten_cases": true,
+        "warmup_completion_events": 3
+      }
+    ],
+    "remaining_case_count_without_completion_evidence": 5,
+    "warmup_completion_events_total": 24
+  },
+  "planned_settings": {
+    "admission_batch_size_per_rank": 1,
+    "batch_invariant": false,
+    "cases_per_iteration_per_rank": 15,
+    "cp_size": 1,
+    "dp_size": 8,
+    "ep_size": 8,
+    "global_inflight_request_upper_bound": 8,
+    "max_num_batched_tokens": 8192,
+    "measurement_iterations": 1,
+    "memory_utilization": 0.85,
+    "model_profile": "deepseek-v4.1-flash",
+    "native_timeout_s": 3500,
+    "suite": "64k",
+    "supervised_process_group": true,
+    "warmup_iterations": 3
+  },
+  "private_log_archive_sha256": "0ea84463be7f94363d047ab3e7e2213701c10f6effd82b99760a23b483a2b4fb",
+  "runtime": {
+    "changes_sha256": "3d5d307e5f4e08ffd142ab727596385f1e773483c75b9abb88f3515fdf7d18ba",
+    "commit": "731508b4282cee87f526a492c6bad8cabcc2f35c",
+    "engine_sha256": "d26371d63216350ef500799aefd3c5032b93b266a12aff45809c67e209ba0aaf",
+    "requires_external_modified_sm90_runtime": true
+  },
+  "schema": "redknot-native-admission-progress-v1",
+  "sha256": "5782baeb5d1235cbdc8cdd0021cb68f8be728720b8689062740f8b30a8f16dff",
+  "source_archive_sha256": "e380ac12dda3f7c9158c71444f5636ac8ef67725047f6f15a1cf3ec66ec542e1",
+  "status": "interrupted_by_user_pause_partial_execution_evidence",
+  "structured_rank_results_generated": false
+}

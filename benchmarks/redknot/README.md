@@ -110,6 +110,21 @@ bash scripts/run_redknot_benchmarks.sh \
 
 Add `--prepare-only` for CPU preparation, `--suites "64k 128k"` for selected lengths, or `--runtime-root` for an explicitly installed alternative backend. Set `PYTHON_BIN` if the environment uses a different interpreter.
 
+For the bounded 64K configuration used in the expanded SM90 check, first activate the compatible port's complete, validated environment described above, then use a new output directory:
+
+```bash
+bash scripts/run_redknot_benchmarks.sh \
+  --model-path /path/to/DeepSeek-V4.1-Flash-1017 \
+  --runtime-root /path/to/qualified-SM90-DeepInfer \
+  --output-root benchmark-output/v41-64k-sequential \
+  --suites "64k" --ep 8 --cp 1 \
+  --admission-batch-size 1 --max-num-batched-tokens 8192 \
+  --batch-invariant 0 --warmup-iterations 3 --iterations 1 \
+  --timeout-seconds 3500
+```
+
+This requests all 15 release cases with a maximum of one active request **per DP rank**, up to eight globally. On a shared host, launch through its lifecycle supervisor and add `--supervised-process-group`; that flag does not create a supervisor. Only a complete `report.json` accepted by `summarize` establishes a completed run. Progress logs from an interrupted run are diagnostic evidence and do not qualify the full suite. The compatible external runtime and its build/dependency environment remain prerequisites.
+
 ## Scores and comparable reports
 
 Short answers use English normalized exact match and token F1, independently maximized across accepted references, reported on a 0–1 scale. Long fixed-output showcases do not contribute to QA scores. The report includes per-dataset aggregates, unique cases, repeated observations, native TTFT/latency p50 and p95, and observed throughput. Percentiles use Hyndman–Fan type 7 interpolation.
@@ -158,3 +173,7 @@ The same check then started a fresh native process using the existing external r
 | Observed completed requests/s | 0.061623 | 0.099104 |
 
 **The input and answer reproduced; the original performance values did not remain stable.** TTFT p50 differed by about 38% despite matching recorded controls. The cause was not isolated, and compilation-cache/machine steadiness was not qualified. These are two observations of the same baseline, not a RedKnot acceleration comparison. Full 60-case GPU results, native support for the other five model profiles, and an optimized RedKnot execution path remain unverified or pending.
+
+The sequential admission implementation at [`5d5a896`](https://github.com/rednote-machine-learning/RedKnot/commit/5d5a8960bd673d1657b4c517f00cc9c44493095d) passed **96 CPU tests**, Ruff checks and shell syntax validation in [CI](https://github.com/rednote-machine-learning/RedKnot/actions/runs/40666868713). The [expanded 64K progress record](validation/v41-admission-progress.json) documents the later GPU run, which was interrupted at the user's request. Each of eight ranks logged three completed warmup phases and completion of the first ten short-answer cases in manifest order: HotpotQA 3, 2WikiMQA 3, MuSiQue 2, and MultiFieldQA-en 2. These are 80 measured completion events for ten cases, not 80 independent questions or ten measured iterations.
+
+The remaining five fixed-30 showcase cases had no completion events. No complete `report.json` or structured rank results were generated, so this partial run supplies **no new QA accuracy, TTFT percentiles, QPS or full-suite pass**. Its supervisor recorded the SIGTERM interruption and restored the holder; the archived diagnostics also retain an ownership-check cleanup warning and resource-tracker warnings. These partial logs are recorded separately from the successful single-question smoke/replay reports. Further GPU experiments remain paused.

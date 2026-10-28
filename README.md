@@ -35,6 +35,8 @@ Remove `--prepare-only` to launch the baseline on a compatible, installed native
 
 The [independent reproduction check](benchmarks/redknot/validation/v41-reproduction-check.json) rebuilt all frozen V4.1 inputs and reproduced the existing single-question native smoke's output in the external SM90 environment. Its timing differed substantially between runs; full-suite performance, additional native models, and clean-public SM90 reproduction remain pending. See the [validation scope and observations](benchmarks/redknot/README.md#validation-and-remaining-work).
 
+Sequential admission (`--admission-batch-size 1`) bounds active requests per rank for larger cohorts and has passed [96 CPU tests and CI](https://github.com/rednote-machine-learning/RedKnot/actions/runs/40666868713). An expanded 64K run recorded completion of ten short-answer cases on all eight DP ranks before a user-requested pause; it did not produce a complete result report. The [partial execution record](benchmarks/redknot/validation/v41-admission-progress.json) states that scope explicitly, and the [benchmark guide](benchmarks/redknot/README.md#run-the-native-baseline) includes the bounded reproduction command.
+
 ## DeepInfer baseline
 
 DeepInfer is the high-performance inference framework that powers DeepSeek's large-scale production services. This open-source release provides offline inference with the core features needed for serving at scale.
