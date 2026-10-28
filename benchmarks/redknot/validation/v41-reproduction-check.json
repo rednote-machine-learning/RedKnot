@@ -1,0 +1,315 @@
+{
+  "audited_commit": "18936fe663988e74d3d9df517d6ec90e7fa352fb",
+  "conclusion": "Inputs and the existing single-question native baseline output reproduced; stable performance and full-suite/multi-model/RedKnot speedup reproduction remain unverified.",
+  "cpu_tests": {
+    "command": "python -m unittest discover -s tests/redknot -q",
+    "count": 85,
+    "exit_code": 0
+  },
+  "date": "2026-10-28",
+  "input_reproduction": {
+    "all_published_input_records_reproduced": true,
+    "date": "2026-10-28",
+    "gpu_inference_performed": false,
+    "matrix_cases": 10,
+    "python": "3.12.3 (main, Nov  6 2025, 13:44:16) [GCC 13.3.0]",
+    "records": [
+      {
+        "all_target_token_hashes_identical": true,
+        "cases": 15,
+        "kind": "migrated_sglang_release",
+        "manifest_sha256": "93f23f0109ae90f13ef9f27abc05dc3285f817e83e988ad7df69afa055225658",
+        "suite": "128k",
+        "warmup": 1,
+        "whole_manifest_identical": true
+      },
+      {
+        "all_target_token_hashes_identical": true,
+        "cases": 15,
+        "kind": "migrated_sglang_release",
+        "manifest_sha256": "5743cb4c5e84f8a5033d1861d8b1e874a6c0ea1a4524339c7176d920fd407cc7",
+        "suite": "256k",
+        "warmup": 1,
+        "whole_manifest_identical": true
+      },
+      {
+        "all_target_token_hashes_identical": true,
+        "cases": 15,
+        "kind": "migrated_sglang_release",
+        "manifest_sha256": "6ab122df4a0de89954ba0a6aa15db73bb404ceed44341bba5361c2ba4362d0a8",
+        "suite": "440k",
+        "warmup": 1,
+        "whole_manifest_identical": true
+      },
+      {
+        "all_target_token_hashes_identical": true,
+        "cases": 15,
+        "kind": "migrated_sglang_release",
+        "manifest_sha256": "7dbbbfec6ee34fb4e91b0c10e635f62763250826ac073050f2ec52a8199ea57f",
+        "suite": "64k",
+        "warmup": 1,
+        "whole_manifest_identical": true
+      },
+      {
+        "all_target_token_hashes_identical": true,
+        "cases": 10,
+        "kind": "output_blind_dataset_matrix",
+        "manifest_sha256": "d18bcfcdd2b52dcbc30667b741a578785cf38a34a7359ea31bda95cf167ae266",
+        "suite": "64k",
+        "warmup": 1,
+        "whole_manifest_identical": true
+      }
+    ],
+    "release_cases": 60,
+    "schema": "redknot-clean-source-input-reproduction-v1",
+    "sha256": "706de0e5591623f2ac9dc7654df5b25a010286500d68610cc178b908e2588364",
+    "smoke_manifest_identical": true,
+    "smoke_manifest_sha256": "2b560dc8a1d7d95b881ac256d75d51104a572312e5af96bdee56561b2ae8fc2f",
+    "source_archive_sha256": "d94784e98edd78adfa3b4a20511f7547fb1cb2cadf137e3a6e411f79211de117",
+    "source_commit": "18936fe663988e74d3d9df517d6ec90e7fa352fb",
+    "source_export": "git archive; no previous generated input files",
+    "warmups": 5
+  },
+  "native_replay": {
+    "agreement": {
+      "all_paired_output_tokens_text_finish_and_scores": true,
+      "manifest": true,
+      "metadata_controls": {
+        "hardware": true,
+        "measurement_boundary": true,
+        "model": true,
+        "runtime": true,
+        "sampling": true,
+        "settings": true,
+        "tokenizer": true,
+        "warmup": true
+      },
+      "observation_cohort": true,
+      "runtime_checks": {
+        "benchmark_harness": true,
+        "commit": true,
+        "engine_binary_content": true,
+        "recorded_runtime_source": true,
+        "runtime_versions": true
+      },
+      "warmup_and_measured_inputs": true
+    },
+    "both_sealed_baseline_reports_revalidated": true,
+    "comparison_sha256": "057a71c498e7cfd2d4008722a9c05ea74447887dae815e01fe8c014957cff494",
+    "configuration_drift": [],
+    "inputs": [
+      {
+        "execution_contract_equal": true,
+        "input_ids_sha256": {
+          "reference": "fd4ae529582bf9bfe2cd37018d8b20fc643855db5f9c5f2a071c38d964b71906",
+          "replay": "fd4ae529582bf9bfe2cd37018d8b20fc643855db5f9c5f2a071c38d964b71906"
+        },
+        "input_tokens": {
+          "reference": 65586,
+          "replay": 65586
+        },
+        "present_in_both": true,
+        "role": "warmup",
+        "sample_id": "warmup:64k:heldout-hotpotqa-row199"
+      },
+      {
+        "execution_contract_equal": true,
+        "input_ids_sha256": {
+          "reference": "fe9c49a2ea5e617e54361fc53c2d0366421645df76077b069c21e26dd095bc5c",
+          "replay": "fe9c49a2ea5e617e54361fc53c2d0366421645df76077b069c21e26dd095bc5c"
+        },
+        "input_tokens": {
+          "reference": 65585,
+          "replay": 65585
+        },
+        "present_in_both": true,
+        "role": "cases",
+        "sample_id": "case:64k:short_00_hotpotqa_row0"
+      }
+    ],
+    "lifecycle": {
+      "holder_restored": true,
+      "worker_exit": 0
+    },
+    "output": {
+      "all_dp_ranks": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "finish_reason": "stop",
+      "finished": true,
+      "output_token_ids": [
+        82582,
+        374,
+        16,
+        8836,
+        1
+      ],
+      "output_tokens_sha256": "45853ee20b86cf18f99b0d9e99aa9c0cc9519f8a87fb8462ec21f7978e21925e",
+      "score": {
+        "answer_em": 1.0,
+        "answer_token_f1": 1.0
+      },
+      "text": "Miller v. California"
+    },
+    "post_run_runtime": {
+      "changes_sha256": "3d5d307e5f4e08ffd142ab727596385f1e773483c75b9abb88f3515fdf7d18ba",
+      "commit": "731508b4282cee87f526a492c6bad8cabcc2f35c",
+      "engine_sha256": "d26371d63216350ef500799aefd3c5032b93b266a12aff45809c67e209ba0aaf",
+      "source_and_engine_match_before_run": true
+    },
+    "reference_report_sha256": "4eb59d3f971125fe278ffd7a73247126e5a69e2e54c062fe6e730df851cad516",
+    "replay_report_sha256": "21c54d46ab12782fbc134b36365c445186fe05789c866812da2de2b04b7b1a09",
+    "replay_summary": {
+      "completed_requests": 8,
+      "completed_requests_per_s": 0.09910376963634344,
+      "datasets": {
+        "hotpotqa": {
+          "answer_em": 1.0,
+          "answer_token_f1": 1.0,
+          "scored_observations": 8,
+          "unique_scored_samples": 1,
+          "unscored_observations": 0
+        }
+      },
+      "elapsed_s": 80.7234682328999,
+      "fixed_output_qps_eligible": false,
+      "latency_s": {
+        "count": 8,
+        "mean": 80.59387440187857,
+        "p50": 80.5934417117387,
+        "p95": 80.59625487308949
+      },
+      "output_tokens": 40,
+      "output_tokens_per_s": 0.4955188481817172,
+      "percentile_method": "linear interpolation at (n - 1) * q; Hyndman-Fan type 7",
+      "quality": {
+        "answer_em": 1.0,
+        "answer_token_f1": 1.0,
+        "scored_observations": 8,
+        "unique_scored_samples": 1,
+        "unscored_observations": 0
+      },
+      "quality_aggregation": "mean over scored request observations; repetitions are not independent samples",
+      "quality_scale": "fraction_0_to_1",
+      "throughput_semantics": "all completed requests divided by synchronized global elapsed time",
+      "ttft_s": {
+        "count": 8,
+        "mean": 79.9660612642765,
+        "p50": 79.96605491451919,
+        "p95": 79.96611094530672
+      },
+      "unique_samples": 1
+    },
+    "sample_scope": {
+      "interpretation": "DP ranks and repeated iterations are observations of the same frozen questions, not additional independent questions.",
+      "reference_observations": 8,
+      "reference_unique_samples": 1,
+      "replay_observations": 8,
+      "replay_unique_samples": 1,
+      "replication": "full_cohort_per_dp_rank"
+    },
+    "timing": {
+      "deltas": {
+        "completed_requests_per_s": {
+          "change_percent": 60.821810817372636,
+          "reference": 0.06162333898160401,
+          "replay": 0.09910376963634344,
+          "replay_minus_reference": 0.03748043065473943
+        },
+        "elapsed_s": {
+          "change_percent": -37.819379416415835,
+          "reference": 129.82094336673617,
+          "replay": 80.7234682328999,
+          "replay_minus_reference": -49.09747513383627
+        },
+        "latency_s": {
+          "mean": {
+            "change_percent": -37.85548142974604,
+            "reference": 129.68782485742122,
+            "replay": 80.59387440187857,
+            "replay_minus_reference": -49.093950455542654
+          },
+          "p50": {
+            "change_percent": -37.855539038538375,
+            "reference": 129.68724881485105,
+            "replay": 80.5934417117387,
+            "replay_minus_reference": -49.09380710311234
+          },
+          "p95": {
+            "change_percent": -37.855357513947894,
+            "reference": 129.69139679446818,
+            "replay": 80.59625487308949,
+            "replay_minus_reference": -49.09514192137868
+          }
+        },
+        "output_tokens_per_s": {
+          "change_percent": 60.821810817372615,
+          "reference": 0.3081166949080201,
+          "replay": 0.4955188481817172,
+          "replay_minus_reference": 0.18740215327369714
+        },
+        "ttft_s": {
+          "mean": {
+            "change_percent": -38.03817480688883,
+            "reference": 129.05698148021474,
+            "replay": 79.9660612642765,
+            "replay_minus_reference": -49.09092021593824
+          },
+          "p50": {
+            "change_percent": -38.03817528937422,
+            "reference": 129.05697223730385,
+            "replay": 79.96605491451919,
+            "replay_minus_reference": -49.09091732278466
+          },
+          "p95": {
+            "change_percent": -38.03815129390228,
+            "reference": 129.05701268631964,
+            "replay": 79.96611094530672,
+            "replay_minus_reference": -49.090901741012914
+          }
+        }
+      },
+      "identical_observed_output_work": true,
+      "interpretation": "Observed same-baseline run variation; not RedKnot speedup or a statistical performance claim.",
+      "recorded_controls_equal": true
+    },
+    "timing_cause": "Not isolated; identical recorded settings do not qualify compilation-cache or machine performance steadiness."
+  },
+  "public_reproduction_limits": {
+    "complete_external_patch_and_build_package_published": false,
+    "configuration_only_profiles": [
+      "deepseek-v4-flash-0731",
+      "mistral-7b",
+      "qwen3-32b",
+      "qwen3.5-35b-a3b",
+      "llama-3.3-70b"
+    ],
+    "default_runtime": "SM100; CPU hardware guard rejects the observed host inventory",
+    "external_sm90_runtime": "Modified PR148 checkout; 34 changed source/test files, including 30 absent from and four different in the audited public commit",
+    "full_release_gpu_results_verified": false,
+    "native_model_profiles": [
+      "deepseek-v4.1-flash"
+    ],
+    "redknot_optimized_native_path_implemented": false,
+    "redknot_speedup_measured": false,
+    "weight_provenance": "Configuration and index hashes plus shard sizes/mtime; full weight content was not hashed"
+  },
+  "schema": "redknot-benchmark-reproduction-verification-v1",
+  "sha256": "72e1587ce91ed46a0c6f8c030d2b7dfc57b34fde006796ffbe46589c91135761",
+  "source_assets": {
+    "all_git_blobs_match_source_commit": true,
+    "all_sha256_valid": true,
+    "bytes": 47656661,
+    "files": 152,
+    "inventory_sha256": "f8bd7d8e324f681cb9f96714326ff696048bc8a2f636a6cc990549e31801ac3a",
+    "source_commit": "19c152a44eee0439afc85fe95ac23ce5a914c8fd",
+    "unique_cohort_profiles": 38
+  }
+}

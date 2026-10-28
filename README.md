@@ -33,6 +33,8 @@ bash scripts/run_redknot_benchmarks.sh \
 
 Remove `--prepare-only` to launch the baseline on a compatible, installed native runtime. This checkout targets NVIDIA SM100 for GPU execution; an H200/SM90 port must be selected explicitly with `--runtime-root`. Migrating the benchmark does not establish GPU performance or a RedKnot speedup.
 
+The [independent reproduction check](benchmarks/redknot/validation/v41-reproduction-check.json) rebuilt all frozen V4.1 inputs and reproduced the existing single-question native smoke's output in the external SM90 environment. Its timing differed substantially between runs; full-suite performance, additional native models, and clean-public SM90 reproduction remain pending. See the [validation scope and observations](benchmarks/redknot/README.md#validation-and-remaining-work).
+
 ## DeepInfer baseline
 
 DeepInfer is the high-performance inference framework that powers DeepSeek's large-scale production services. This open-source release provides offline inference with the core features needed for serving at scale.
