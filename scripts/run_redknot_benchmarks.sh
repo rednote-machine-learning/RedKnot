@@ -13,6 +13,9 @@ Usage: bash scripts/run_redknot_benchmarks.sh --model-path DIR --output-root NEW
   --cp N                  Context parallel size (default: 1)
   --iterations N          Measured iterations per suite (default: 10)
   --warmup-iterations N   Independent warmup iterations (default: 3)
+  --batch-invariant 0|1   Explicit native kernel mode (default: 1)
+  --max-num-batched-tokens N  Native prefill batch budget (default: 32768)
+  --supervised-process-group  Retain an external lifecycle supervisor's group
   --trust-remote-code     Permit the selected tokenizer's custom Python code
 
 Run from a prepared DeepInfer environment. Set PYTHON_BIN to select its interpreter.
@@ -28,10 +31,13 @@ ep=8
 cp=1
 iterations=10
 warmup_iterations=3
+batch_invariant=1
+max_batched_tokens=32768
+supervisor_args=()
 tokenizer_args=()
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --model-path|--output-root|--runtime-root|--suites|--ep|--cp|--iterations|--warmup-iterations)
+    --model-path|--output-root|--runtime-root|--suites|--ep|--cp|--iterations|--warmup-iterations|--batch-invariant|--max-num-batched-tokens)
       [[ $# -ge 2 ]] || { printf 'Missing value for %s\n' "$1" >&2; exit 2; } ;;
   esac
   case "$1" in
@@ -43,6 +49,9 @@ while [[ $# -gt 0 ]]; do
     --cp) cp="$2"; shift 2 ;;
     --iterations) iterations="$2"; shift 2 ;;
     --warmup-iterations) warmup_iterations="$2"; shift 2 ;;
+    --batch-invariant) batch_invariant="$2"; shift 2 ;;
+    --max-num-batched-tokens) max_batched_tokens="$2"; shift 2 ;;
+    --supervised-process-group) supervisor_args+=(--supervised-process-group); shift ;;
     --prepare-only) prepare_only=1; shift ;;
     --trust-remote-code) tokenizer_args+=(--trust-remote-code); shift ;;
     --help|-h) usage; exit 0 ;;
@@ -58,6 +67,7 @@ for suite in $suites; do
   esac
 done
 [[ "$suite_count" -gt 0 ]] || { printf 'At least one suite is required\n' >&2; exit 2; }
+[[ "$batch_invariant" == 0 || "$batch_invariant" == 1 ]] || { printf 'batch-invariant must be 0 or 1\n' >&2; exit 2; }
 [[ ! -e "$output_root" ]] || { printf 'Output already exists: %s\n' "$output_root" >&2; exit 2; }
 model_path="$(cd "$model_path" && pwd)"
 mkdir -p "$output_root"
@@ -79,6 +89,8 @@ for suite in $suites; do
     "$python_bin" -m benchmarks.redknot run \
       --manifest "$output_root/$suite.manifest.json" --model-path "$model_path" \
       --ep "$ep" --cp "$cp" --iterations "$iterations" --warmup-iterations "$warmup_iterations" \
+      --batch-invariant "$batch_invariant" --max-num-batched-tokens "$max_batched_tokens" \
+      ${supervisor_args[@]+"${supervisor_args[@]}"} \
       ${runtime_args[@]+"${runtime_args[@]}"} --output-dir "$output_root/$suite-results"
   fi
 done

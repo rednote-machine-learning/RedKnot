@@ -1,13 +1,17 @@
 from __future__ import annotations
 
+import io
 import json
 import os
 import subprocess
 import sys
 import tempfile
 import unittest
+from contextlib import redirect_stdout
 from pathlib import Path
+from unittest.mock import patch
 
+from benchmarks.redknot.__main__ import main
 from benchmarks.redknot.contract import seal, write_json
 from benchmarks.redknot.metrics import summarize_requests
 from tests.redknot.test_compare import manifest_fixture, run_fixture
@@ -76,6 +80,35 @@ class CliTests(unittest.TestCase):
         result = self.invoke("summarize", path, "--manifest", self.manifest_path)
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(json.loads(result.stdout), report["summary"])
+
+    def test_run_passes_explicit_batch_invariance_and_default(self) -> None:
+        arguments = [
+            "run",
+            "--manifest",
+            str(self.manifest_path),
+            "--model-path",
+            str(self.root / "model"),
+            "--output-dir",
+            str(self.root / "output"),
+        ]
+        for options, expected in (([], True), (["--batch-invariant", "0"], False), (["--batch-invariant", "1"], True)):
+            with (
+                self.subTest(options=options),
+                patch("benchmarks.redknot.runner.run_benchmark", return_value=self.root / "report.json") as run,
+                redirect_stdout(io.StringIO()),
+            ):
+                self.assertEqual(main(arguments + options), 0)
+                self.assertIs(run.call_args.kwargs["batch_invariant"], expected)
+                self.assertIs(run.call_args.kwargs["supervised_process_group"], False)
+        with (
+            patch("benchmarks.redknot.runner.run_benchmark", return_value=self.root / "report.json") as run,
+            redirect_stdout(io.StringIO()),
+        ):
+            self.assertEqual(main(arguments + ["--supervised-process-group"]), 0)
+            self.assertIs(run.call_args.kwargs["supervised_process_group"], True)
+        invalid = self.invoke(*arguments, "--batch-invariant", "2")
+        self.assertEqual(invalid.returncode, 2)
+        self.assertIn("invalid choice", invalid.stderr)
 
 
 class WrapperTests(unittest.TestCase):

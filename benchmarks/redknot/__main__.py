@@ -49,6 +49,14 @@ def parser() -> argparse.ArgumentParser:
     run.add_argument("--iterations", type=int, default=10)
     run.add_argument("--max-num-batched-tokens", type=int, default=32768)
     run.add_argument("--memory-utilization", type=float, default=0.85)
+    run.add_argument(
+        "--batch-invariant", type=int, choices=(0, 1), default=1, help="explicit kernel mode; qualified SM90 ports may require 0"
+    )
+    run.add_argument(
+        "--supervised-process-group",
+        action="store_true",
+        help="retain an external lifecycle supervisor's process group; it owns descendant cleanup",
+    )
     run.add_argument("--seed", type=int, default=0)
 
     summary = commands.add_parser("summarize", help="summarize completed requests with English QA EM/F1 and native latency")
@@ -121,6 +129,8 @@ def main(argv: list[str] | None = None) -> int:
                 iterations=args.iterations,
                 max_num_batched_tokens=args.max_num_batched_tokens,
                 memory_utilization=args.memory_utilization,
+                batch_invariant=bool(args.batch_invariant),
+                supervised_process_group=args.supervised_process_group,
                 seed=args.seed,
                 runtime_root=str(args.runtime_root) if args.runtime_root else None,
             )

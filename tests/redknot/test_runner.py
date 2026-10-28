@@ -3,6 +3,7 @@ from __future__ import annotations
 import copy
 import json
 import os
+import signal
 import subprocess
 import sys
 import tempfile
@@ -10,10 +11,18 @@ import unittest
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Any
-from unittest.mock import patch
+from unittest.mock import Mock, call, patch
 
 from benchmarks.redknot.contract import SCHEMA, digest, file_digest, seal, tokenizer_identity, write_json
-from benchmarks.redknot.runner import _loaded_module_identity, _select_devices, aggregate_ranks, preflight_model, run_benchmark
+from benchmarks.redknot.runner import (
+    _configure_process_group,
+    _loaded_module_identity,
+    _select_devices,
+    _stop_workers,
+    aggregate_ranks,
+    preflight_model,
+    run_benchmark,
+)
 
 
 def make_case(sample_id: str, tokens: list[int]) -> dict:
@@ -111,6 +120,11 @@ class RunnerTests(unittest.TestCase):
         self.temporary = tempfile.TemporaryDirectory()
         self.addCleanup(self.temporary.cleanup)
         self.root = Path(self.temporary.name)
+        self.runtime = self.root / "runtime"
+        for filename in ("examples/_config.py", "deepinfer/engine/llm_engine.py"):
+            path = self.runtime / filename
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text("# CPU-only runtime layout fixture; never imported.\n")
         self.checkpoint = self.root / "model"
         self.checkpoint.mkdir()
         (self.checkpoint / "tokenizer.json").write_text('{"unit_test":true}')
@@ -125,6 +139,7 @@ class RunnerTests(unittest.TestCase):
     def execute(self, *, fail: bool = False, environment: dict[str, str] | None = None, **kwargs: Any) -> Path:
         with (
             patch.dict(os.environ, environment or {}, clear=True),
+            patch("benchmarks.redknot.runner.REPO_ROOT", self.runtime),
             patch("benchmarks.redknot.runner._hardware_inventory", return_value=copy.deepcopy(self.hardware)),
             patch("benchmarks.redknot.runner.source_identity", return_value={"commit": "a" * 40, "dirty": False}),
             patch("benchmarks.redknot.runner._free_master_port", return_value=25000),
@@ -182,6 +197,62 @@ class RunnerTests(unittest.TestCase):
         for key in inherited:
             self.assertEqual(launch["environment"][key], "0")
             self.assertEqual(report["metadata"]["settings"]["environment"][key], "0")
+
+    def test_explicit_sm90_kernel_setting_preserves_eager_and_prefill_environment(self) -> None:
+        inherited = {
+            "DEEPINFER_BATCH_INVARIANT": "1",
+            "DEEPINFER_ENFORCE_EAGER": "1",
+            "DEEPINFER_DFLASH_ENFORCE_EAGER": "1",
+            "DEEPINFER_PREFILL_ATTEMPT_INTERVAL": "1",
+            "DEEPINFER_PREFILL_ANY_ATTEMPT_INTERVAL": "1",
+        }
+        path = self.execute(environment=inherited, batch_invariant=False)
+        report = json.loads(path.read_text())
+        launch = json.loads((path.parent / "launch.json").read_text())
+        self.assertIs(report["metadata"]["settings"]["batch_invariant"], False)
+        self.assertIs(launch["batch_invariant"], False)
+        self.assertEqual(launch["max_num_seqs"], 1)
+        for key, value in {**inherited, "DEEPINFER_BATCH_INVARIANT": "0"}.items():
+            self.assertEqual(launch["environment"][key], value)
+            self.assertEqual(report["metadata"]["settings"]["environment"][key], value)
+
+    def test_default_batch_invariance_overrides_inherited_environment(self) -> None:
+        report = json.loads(self.execute(environment={"DEEPINFER_BATCH_INVARIANT": "0"}).read_text())
+        self.assertIs(report["metadata"]["settings"]["batch_invariant"], True)
+        self.assertEqual(report["metadata"]["settings"]["environment"]["DEEPINFER_BATCH_INVARIANT"], "1")
+        with self.assertRaisesRegex(ValueError, "batch_invariant must be boolean"):
+            run_benchmark(self.manifest, self.checkpoint, self.root / "invalid", batch_invariant=1)
+
+    def test_supervision_marker_allowed_only_in_explicit_supervised_mode(self) -> None:
+        marker = "unit-test-authenticated-lifecycle-marker"
+        with self.assertRaisesRegex(ValueError, "RedKnot environment"):
+            self.execute(environment={"REDKNOT_GLM_RUN_ID": marker})
+        path = self.execute(environment={"REDKNOT_GLM_RUN_ID": marker}, supervised_process_group=True)
+        report = json.loads(path.read_text())
+        self.assertIs(report["metadata"]["settings"]["supervised_process_group"], True)
+        self.assertEqual(report["metadata"]["settings"]["process_group_owner"], "external")
+        self.assertNotIn(marker, path.read_text())
+        self.assertNotIn(marker, (path.parent / "launch.json").read_text())
+        for key in ("REDKNOT_GLM_RUN_ID_SUFFIX", "DEEPINFER_REDKNOT_ENABLED"):
+            with self.subTest(key=key), self.assertRaisesRegex(ValueError, "RedKnot environment"):
+                self.execute(environment={key: "1"}, supervised_process_group=True)
+
+    def test_process_group_setup_and_cleanup_respect_supervisor_ownership(self) -> None:
+        for supervised in (False, True):
+            process = SimpleNamespace(pid=12345, is_alive=Mock(return_value=True), terminate=Mock(), kill=Mock(), join=Mock())
+            with self.subTest(supervised=supervised), patch("os.setsid") as setsid, patch("os.killpg") as killpg:
+                _configure_process_group(supervised_process_group=supervised)
+                _stop_workers([SimpleNamespace(pid=None), process], supervised_process_group=supervised)
+                if supervised:
+                    setsid.assert_not_called()
+                    killpg.assert_not_called()
+                    process.terminate.assert_called_once_with()
+                    process.kill.assert_called_once_with()
+                else:
+                    setsid.assert_called_once_with()
+                    self.assertEqual(killpg.call_args_list, [call(12345, signal.SIGTERM), call(12345, signal.SIGKILL)])
+                    process.terminate.assert_not_called()
+                    process.kill.assert_not_called()
 
     def test_rank_failure_writes_failure_not_success(self) -> None:
         with self.assertRaisesRegex(RuntimeError, "worker failed"):

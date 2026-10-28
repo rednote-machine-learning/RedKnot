@@ -82,11 +82,15 @@ python -m benchmarks.redknot summarize \
 
 By default DP size is `max(ep // cp, 1)`. **Each DP rank runs the entire cohort**, rather than sharding a single copy of its cases. Thus EP=8, CP=1 gives 8 DP ranks; a 15-case suite with 10 measured iterations has 1,200 measured request observations and 15 unique cases. The report separates these counts. The launcher requires a contiguous numeric GPU block and validates device availability. It fixes greedy sampling and a deterministic per-case seed, disables speculative decoding and expert rearrangement, and records effective runtime settings.
 
+`--batch-invariant 0` explicitly selects kernels without batch-invariant mode when required by a qualified SM90 port (default: `1`). Port-specific environment settings such as `DEEPINFER_ENFORCE_EAGER=1`, `DEEPINFER_DFLASH_ENFORCE_EAGER=1`, `DEEPINFER_PREFILL_ATTEMPT_INTERVAL=1`, and `DEEPINFER_PREFILL_ANY_ATTEMPT_INTERVAL=1` must be set before starting the runner; they are captured in its launch and report. Use the port's complete dependency environment and validated settings. An external runtime alone does not supply those dependencies.
+
+For a shared GPU host with a lifecycle supervisor, use `--supervised-process-group` only under that supervisor. All rank descendants then remain in its process group, and it owns final descendant cleanup and resource restoration. The runner still terminates its direct ranks on failure. In this mode, the exact `REDKNOT_GLM_RUN_ID` key is recognized as a lifecycle ownership marker, not an optimized-kernel setting; other active RedKnot overrides remain rejected. Standalone launches use the runner's own rank process groups by default.
+
 Each phase starts after rank synchronization and CPU input conversion. TTFT runs from native request admission to the first token observed by the engine API; latency ends at the observed final token. Phase duration includes queueing, execution, and final draining. Global phase duration is the slowest DP rank's duration; global throughput divides all completed requests by the sum of these synchronized phase durations. Token decoding and disk output occur outside this timing window. This is **not the original SGLang HTTP streaming TTFT boundary**, so their published speedups cannot be carried over.
 
 Output includes the frozen manifest, launch settings, rank logs, rank request records, and the sealed `report.json`. A failed rank stops this launch's other worker processes and produces failure diagnostics instead of a success report. Existing output directories and manifest files are never overwritten. `--warmup-iterations 0` is an explicitly cold smoke run and is ineligible for comparison.
 
-The report also records the loaded native engine module/extension file hashes and verifies agreement across DP ranks. Source identity alone does not identify compiled artifacts; this record covers the observed engine modules, not every dynamically compiled GPU kernel.
+The report also records benchmark Python file hashes and the loaded native engine module/extension file hashes, verifying the latter agree across DP ranks. Source identity alone does not identify compiled artifacts; this record covers the observed engine modules, not every dynamically compiled GPU kernel.
 
 To prepare and run all four suites sequentially:
 

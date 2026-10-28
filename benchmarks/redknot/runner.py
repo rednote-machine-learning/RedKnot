@@ -39,7 +39,6 @@ BASELINE_ENV = {
     "DEEPINFER_REARRANGE_AFTER_PREFILL_IN_NORMAL_ENGINE": "0",
     "DEEPINFER_OVERRIDE_NUM_EXTRA_EXPERTS": "0",
     "DEEPINFER_YOCO_PREFILL_TRUNCATION_MODE": "off",
-    "DEEPINFER_BATCH_INVARIANT": "1",
     "DEEPINFER_FORCE_LOAD_BALANCE": "0",
     "DEEPINFER_FORCE_IMBALANCE_RATIO": "0",
 }
@@ -247,13 +246,18 @@ class _NativeEngineBridge:
         return getattr(self.engine, name)
 
 
+def _configure_process_group(*, supervised_process_group: bool) -> None:
+    # A lifecycle supervisor must retain every descendant in its owned group.
+    if not supervised_process_group and hasattr(os, "setsid"):
+        os.setsid()
+
+
 def _rank_worker(rank: int, manifest: dict, spec: dict) -> None:
     """Spawn target; everything accelerator-dependent is imported in this child."""
     directory = Path(spec["output_dir"])
     llm = None
     try:
-        if hasattr(os, "setsid"):
-            os.setsid()
+        _configure_process_group(supervised_process_group=spec["supervised_process_group"])
         with (directory / f"rank-{rank}.log").open("x", encoding="utf-8") as log:
             os.dup2(log.fileno(), 1)
             os.dup2(log.fileno(), 2)
@@ -276,7 +280,7 @@ def _rank_worker(rank: int, manifest: dict, spec: dict) -> None:
                 data_parallel_size=spec["dp"],
                 max_num_batched_tokens=spec["max_num_batched_tokens"],
                 max_model_len=spec["max_model_len"],
-                max_num_seqs=max(len(manifest["warmup"]), len(manifest["cases"])),
+                max_num_seqs=spec["max_num_seqs"],
                 gpu_memory_utilization=spec["memory_utilization"],
                 seed=spec["seed"],
                 lookahead_tokens=0,
@@ -370,9 +374,14 @@ def _rank_worker(rank: int, manifest: dict, spec: dict) -> None:
         raise
 
 
-def _stop_workers(processes: list[Any]) -> None:
+def _stop_workers(processes: list[Any], *, supervised_process_group: bool = False) -> None:
+    """Stop owned ranks; an external supervisor owns descendant group cleanup."""
     for process in processes:
         if process.pid is None:
+            continue
+        if supervised_process_group:
+            if process.is_alive():
+                process.terminate()
             continue
         try:
             os.killpg(process.pid, signal.SIGTERM)
@@ -386,11 +395,15 @@ def _stop_workers(processes: list[Any]) -> None:
     for process in processes:
         if process.pid is None:
             continue
-        try:
-            os.killpg(process.pid, signal.SIGKILL)
-        except ProcessLookupError:
+        if supervised_process_group:
             if process.is_alive():
                 process.kill()
+        else:
+            try:
+                os.killpg(process.pid, signal.SIGKILL)
+            except ProcessLookupError:
+                if process.is_alive():
+                    process.kill()
         process.join(timeout=1)
 
 
@@ -445,6 +458,8 @@ def run_benchmark(
     iterations: int = 10,
     max_num_batched_tokens: int = 32768,
     memory_utilization: float = 0.85,
+    batch_invariant: bool = True,
+    supervised_process_group: bool = False,
     seed: int = 0,
     runtime_root: str | Path | None = None,
     timeout_s: float = 7200,
@@ -460,6 +475,10 @@ def run_benchmark(
         _positive_int(value, name)
     _positive_int(warmup_iterations, "warmup_iterations", allow_zero=True)
     _positive_int(seed, "seed", allow_zero=True)
+    if type(batch_invariant) is not bool:
+        raise ValueError("batch_invariant must be boolean")
+    if type(supervised_process_group) is not bool:
+        raise ValueError("supervised_process_group must be boolean")
     dp = max(ep // cp, 1) if dp is None else _positive_int(dp, "dp")
     if dp * cp % ep:
         raise ValueError("dp × cp must be divisible by ep")
@@ -474,7 +493,9 @@ def run_benchmark(
     enabled_redknot = {
         key: value
         for key, value in os.environ.items()
-        if "REDKNOT" in key.upper() and value.lower() not in {"", "0", "false", "off", "none"}
+        if "REDKNOT" in key.upper()
+        and value.lower() not in {"", "0", "false", "off", "none"}
+        and not (supervised_process_group and key == "REDKNOT_GLM_RUN_ID")
     }
     if enabled_redknot:
         raise ValueError(f"baseline refuses active RedKnot environment overrides: {sorted(enabled_redknot)}")
@@ -482,6 +503,7 @@ def run_benchmark(
     if not (root / "examples" / "_config.py").is_file() or not (root / "deepinfer" / "engine" / "llm_engine.py").is_file():
         raise ValueError("runtime_root must contain native DeepInfer and examples/_config.py")
     runtime = source_identity(root)
+    runtime["benchmark_harness_sha256"] = {path.name: file_digest(path) for path in sorted(Path(__file__).parent.glob("*.py"))}
     runtime["explicit_runtime_override"] = root != REPO_ROOT
     runtime["hardware_support"] = "caller_selected_runtime_unvalidated" if root != REPO_ROOT else "upstream_nvidia_sm100"
     hardware = _hardware_inventory()
@@ -492,20 +514,24 @@ def run_benchmark(
             "this checkout's native runtime targets SM100; SM90/H200 requires a separately validated port via --runtime-root"
         )
     hardware["selected_device_indices"] = devices
+    effective_environment = {key: value for key, value in os.environ.items() if key.startswith("DEEPINFER_")}
+    effective_environment.update(BASELINE_ENV)
+    effective_environment.update(
+        {
+            "DEEPINFER_BATCH_INVARIANT": str(int(batch_invariant)),
+            "DEEPINFER_ACCELERATOR": "nvidia",
+            "DEEPINFER_SAMPLER_FORCE_TOPK": "4096",
+            "DEEPINFER_EXPERT_COUNT_WINDOW_SIZE": "3",
+        }
+    )
     environment = {
-        **BASELINE_ENV,
+        **effective_environment,
         "RANK": "0",
         "WORLD_SIZE": "1",
         "MASTER_ADDR": "127.0.0.1",
         "MASTER_PORT": str(_free_master_port()),
         "DEVICE_OFFSET": str(devices[0]),
-        "DEEPINFER_ACCELERATOR": "nvidia",
     }
-    effective_environment = {key: value for key, value in os.environ.items() if key.startswith("DEEPINFER_")}
-    effective_environment.update(BASELINE_ENV)
-    effective_environment.update(
-        {"DEEPINFER_ACCELERATOR": "nvidia", "DEEPINFER_SAMPLER_FORCE_TOPK": "4096", "DEEPINFER_EXPERT_COUNT_WINDOW_SIZE": "3"}
-    )
     directory = Path(output_dir).expanduser().resolve()
     directory.mkdir(parents=True, exist_ok=False)
     spec = {
@@ -519,7 +545,10 @@ def run_benchmark(
         "iterations": iterations,
         "max_num_batched_tokens": max_num_batched_tokens,
         "max_model_len": checkpoint["required_context"],
+        "max_num_seqs": max(len(manifest["warmup"]), len(manifest["cases"])),
         "memory_utilization": float(memory_utilization),
+        "batch_invariant": batch_invariant,
+        "supervised_process_group": supervised_process_group,
         "seed": seed,
         "environment": environment,
     }
@@ -580,7 +609,11 @@ def run_benchmark(
                     "replication": "full_cohort_per_dp_rank",
                     "max_num_batched_tokens": max_num_batched_tokens,
                     "max_model_len": checkpoint["required_context"],
+                    "max_num_seqs": spec["max_num_seqs"],
                     "memory_utilization": float(memory_utilization),
+                    "batch_invariant": batch_invariant,
+                    "supervised_process_group": supervised_process_group,
+                    "process_group_owner": "external" if supervised_process_group else "runner",
                     "environment": effective_environment,
                 },
                 "sampling": {
@@ -614,7 +647,7 @@ def run_benchmark(
         validate_run(report, manifest, mode="baseline", require_warmup=warmup_iterations > 0)
         return write_json(directory / "report.json", report)
     except BaseException as exc:
-        _stop_workers(processes)
+        _stop_workers(processes, supervised_process_group=supervised_process_group)
         failure_path = directory / "failure.json"
         if not failure_path.exists():
             write_json(
