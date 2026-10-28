@@ -27,7 +27,7 @@ from typing import Any
 
 from .catalog import get_model_profile
 from .contract import digest, file_digest, seal, tokenizer_identity, validate_manifest, write_json
-from .native import BOUNDARY, run_phase
+from .native import ADMISSION_POLICY, BOUNDARY, run_admission_phase
 
 RUN_SCHEMA = "redknot-deepinfer-benchmark-run-v1"
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -332,13 +332,33 @@ def _rank_worker(rank: int, manifest: dict, spec: dict) -> None:
                     "finish_reason": str(RequestOutput.get_finish_reason(raw)),
                 }
 
-            for _ in range(spec["warmup_iterations"]):
-                run_phase(bridge, manifest["warmup"], sampling_factory=sampling, output_reader=read_output)
+            def progress(role: str, iteration: int, batch: Any) -> None:
+                print(
+                    json.dumps({"event": "redknot_batch_complete", "phase": role, "iteration": iteration, "dp_rank": rank, **batch}),
+                    flush=True,
+                )
+
+            for iteration in range(spec["warmup_iterations"]):
+                run_admission_phase(
+                    bridge,
+                    manifest["warmup"],
+                    sampling_factory=sampling,
+                    output_reader=read_output,
+                    admission_batch_size=spec.get("admission_batch_size"),
+                    progress_callback=lambda batch: progress("warmup", iteration, batch),
+                )
                 barrier()
 
             phases = []
             for iteration in range(spec["iterations"]):
-                phase = run_phase(bridge, manifest["cases"], sampling_factory=sampling, output_reader=read_output)
+                phase = run_admission_phase(
+                    bridge,
+                    manifest["cases"],
+                    sampling_factory=sampling,
+                    output_reader=read_output,
+                    admission_batch_size=spec.get("admission_batch_size"),
+                    progress_callback=lambda batch: progress("measurement", iteration, batch),
+                )
                 barrier()
                 cases_by_id = {case["sample_id"]: case for case in manifest["cases"]}
                 for record in phase["requests"]:
@@ -413,11 +433,26 @@ def _stop_workers(processes: list[Any], *, supervised_process_group: bool = Fals
         process.join(timeout=1)
 
 
-def aggregate_ranks(rank_results: list[dict], manifest: dict, *, iterations: int, dp_size: int) -> tuple[list[dict], list[dict]]:
+def aggregate_ranks(
+    rank_results: list[dict],
+    manifest: dict,
+    *,
+    iterations: int,
+    dp_size: int,
+    admission_batch_size: int | None = None,
+) -> tuple[list[dict], list[dict]]:
     """Validate complete rank/iteration coverage before producing a report."""
     if len(rank_results) != dp_size or {result.get("rank") for result in rank_results} != set(range(dp_size)):
         raise RuntimeError("missing or duplicate DP rank results")
     expected_ids = {case["sample_id"] for case in manifest["cases"]}
+    ordered_ids = [case["sample_id"] for case in manifest["cases"]]
+    if admission_batch_size is not None:
+        _positive_int(admission_batch_size, "admission_batch_size")
+    expected_batches = (
+        [ordered_ids[start : start + admission_batch_size] for start in range(0, len(ordered_ids), admission_batch_size)]
+        if admission_batch_size is not None
+        else None
+    )
     phase_map: dict[tuple[int, int], dict] = {}
     for result in rank_results:
         if result.get("status") != "complete" or len(result.get("phases", [])) != iterations:
@@ -434,19 +469,54 @@ def aggregate_ranks(rank_results: list[dict], manifest: dict, *, iterations: int
                 raise RuntimeError("rank result omitted or duplicated a manifest sample")
             if phase.get("completed_requests") != len(expected_ids) or not all(record.get("finished") is True for record in requests):
                 raise RuntimeError("rank result contains incomplete requests")
+            if expected_batches is None:
+                if "batches" in phase or any("batch_index" in record for record in requests):
+                    raise RuntimeError("undeclared admission batches in rank result")
+            else:
+                batches = phase.get("batches")
+                if not isinstance(batches, list) or len(batches) != len(expected_batches):
+                    raise RuntimeError("rank result omitted an admission batch")
+                for batch_index, (batch, sample_ids) in enumerate(zip(batches, expected_batches, strict=True)):
+                    if not isinstance(batch, dict) or type(batch.get("batch_index")) is not int or batch["batch_index"] != batch_index:
+                        raise RuntimeError("rank admission batches are out of order")
+                    if batch.get("sample_ids") != sample_ids or batch.get("completed_requests") != len(sample_ids):
+                        raise RuntimeError("rank admission batch coverage differs from manifest order")
+                    elapsed = batch.get("elapsed_s")
+                    if type(elapsed) not in (int, float) or not math.isfinite(elapsed) or elapsed <= 0:
+                        raise RuntimeError("invalid rank admission batch duration")
+                    selected = [record for record in requests if record.get("batch_index") == batch_index]
+                    if [record.get("sample_id") for record in selected] != sample_ids:
+                        raise RuntimeError("rank request order differs from admission batches")
+                    for record in selected:
+                        latency = record.get("latency_s")
+                        if type(latency) not in (int, float) or not math.isfinite(latency) or not 0 < latency <= elapsed + 1e-8:
+                            raise RuntimeError("request latency exceeds its rank admission batch")
+                if not math.isclose(duration, sum(batch["elapsed_s"] for batch in batches), rel_tol=1e-8, abs_tol=1e-8):
+                    raise RuntimeError("rank phase duration differs from its admission batch sum")
             phase_map[key] = phase
     phases, requests = [], []
     for iteration in range(iterations):
         rank_phases = [phase_map[rank, iteration] for rank in range(dp_size)]
         durations = [phase["elapsed_s"] for phase in rank_phases]
-        phases.append(
-            {
-                "iteration": iteration,
-                "elapsed_s": max(durations),
-                "rank_elapsed_s": durations,
-                "completed_requests": len(expected_ids) * dp_size,
-            }
-        )
+        phase = {
+            "iteration": iteration,
+            "elapsed_s": max(durations),
+            "rank_elapsed_s": durations,
+            "completed_requests": len(expected_ids) * dp_size,
+        }
+        if expected_batches is not None:
+            phase["batches"] = [
+                {
+                    "batch_index": batch_index,
+                    "sample_ids": sample_ids,
+                    "rank_elapsed_s": [item["batches"][batch_index]["elapsed_s"] for item in rank_phases],
+                    "elapsed_s": max(item["batches"][batch_index]["elapsed_s"] for item in rank_phases),
+                    "completed_requests": len(sample_ids) * dp_size,
+                }
+                for batch_index, sample_ids in enumerate(expected_batches)
+            ]
+            phase["elapsed_s"] = sum(batch["elapsed_s"] for batch in phase["batches"])
+        phases.append(phase)
         for rank_phase in rank_phases:
             requests.extend(rank_phase["requests"])
     return phases, requests
@@ -463,6 +533,7 @@ def run_benchmark(
     warmup_iterations: int = 3,
     iterations: int = 10,
     max_num_batched_tokens: int = 32768,
+    admission_batch_size: int | None = None,
     memory_utilization: float = 0.85,
     batch_invariant: bool = True,
     supervised_process_group: bool = False,
@@ -481,6 +552,8 @@ def run_benchmark(
         _positive_int(value, name)
     _positive_int(warmup_iterations, "warmup_iterations", allow_zero=True)
     _positive_int(seed, "seed", allow_zero=True)
+    if admission_batch_size is not None:
+        _positive_int(admission_batch_size, "admission_batch_size")
     if type(batch_invariant) is not bool:
         raise ValueError("batch_invariant must be boolean")
     if type(supervised_process_group) is not bool:
@@ -558,6 +631,11 @@ def run_benchmark(
         "seed": seed,
         "environment": environment,
     }
+    if admission_batch_size is not None:
+        spec.update(admission_batch_size=admission_batch_size, admission_policy=ADMISSION_POLICY)
+        active_warmup_count = len(manifest["warmup"]) if warmup_iterations else 0
+        spec["max_num_seqs"] = min(admission_batch_size, max(active_warmup_count, len(manifest["cases"])))
+    spec["timeout_seconds"] = float(timeout_s)
     write_json(directory / "manifest.json", manifest)
     write_json(directory / "launch.json", spec)
     context = multiprocessing.get_context("spawn")
@@ -587,7 +665,13 @@ def run_benchmark(
         if not native_engines[0] or any(engine != native_engines[0] for engine in native_engines):
             raise RuntimeError("ranks reported missing or inconsistent native engine binary identities")
         runtime["native_engine"] = native_engines[0]
-        phases, requests = aggregate_ranks(rank_results, manifest, iterations=iterations, dp_size=dp)
+        phases, requests = aggregate_ranks(
+            rank_results,
+            manifest,
+            iterations=iterations,
+            dp_size=dp,
+            admission_batch_size=admission_batch_size,
+        )
         elapsed_s = sum(phase["elapsed_s"] for phase in phases)
         report = {
             "schema": RUN_SCHEMA,
@@ -646,6 +730,8 @@ def run_benchmark(
         }
         from .metrics import summarize_requests
 
+        if admission_batch_size is not None:
+            report["metadata"]["settings"].update(admission_batch_size=admission_batch_size, admission_policy=ADMISSION_POLICY)
         report["summary"] = summarize_requests(requests, elapsed_s=elapsed_s)
         from .compare import validate_run
 

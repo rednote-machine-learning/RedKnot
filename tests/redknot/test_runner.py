@@ -88,6 +88,28 @@ def rank_result(rank: int, manifest: dict, iterations: int) -> dict:
     }
 
 
+def batched_rank_result(rank: int, manifest: dict, iterations: int, batch_size: int) -> dict:
+    result = rank_result(rank, manifest, iterations)
+    ids = [case["sample_id"] for case in manifest["cases"]]
+    for phase in result["phases"]:
+        phase["batches"] = []
+        for batch_index, start in enumerate(range(0, len(ids), batch_size)):
+            sample_ids = ids[start : start + batch_size]
+            phase["batches"].append(
+                {
+                    "batch_index": batch_index,
+                    "sample_ids": sample_ids,
+                    "elapsed_s": 2.0 + 3.0 * ((batch_index + rank) % 2),
+                    "completed_requests": len(sample_ids),
+                }
+            )
+            for record in phase["requests"]:
+                if record["sample_id"] in sample_ids:
+                    record["batch_index"] = batch_index
+        phase["elapsed_s"] = sum(batch["elapsed_s"] for batch in phase["batches"])
+    return result
+
+
 class FakeProcess:
     def __init__(self, *, args: tuple, fail: bool = False, **kwargs: Any) -> None:
         self.rank, self.manifest, self.spec = args
@@ -101,7 +123,12 @@ class FakeProcess:
             write_json(directory / f"rank-{self.rank}.failure.json", {"status": "failed", "error": "test failure"})
             self.exitcode = 1
         else:
-            write_json(directory / f"rank-{self.rank}.json", rank_result(self.rank, self.manifest, self.spec["iterations"]))
+            result = (
+                batched_rank_result(self.rank, self.manifest, self.spec["iterations"], self.spec["admission_batch_size"])
+                if "admission_batch_size" in self.spec
+                else rank_result(self.rank, self.manifest, self.spec["iterations"])
+            )
+            write_json(directory / f"rank-{self.rank}.json", result)
             self.exitcode = 0
 
     def join(self, timeout: float | None = None) -> None:
@@ -350,6 +377,74 @@ class RunnerTests(unittest.TestCase):
         self.execute()
         with self.assertRaises(FileExistsError):
             self.execute()
+
+    def test_admission_batches_bound_engine_and_preserve_every_rank_cohort(self) -> None:
+        self.manifest = seal({**self.manifest, "cases": [*self.manifest["cases"], make_case("second", [5, 6])]})
+        path = self.execute(admission_batch_size=1, timeout_s=20000)
+        result = json.loads(path.read_text())
+        settings = result["metadata"]["settings"]
+        self.assertEqual(settings["max_num_seqs"], 1)
+        self.assertEqual(settings["admission_batch_size"], 1)
+        self.assertEqual(settings["replication"], "full_cohort_per_dp_rank")
+        self.assertEqual(result["completed_requests"], 8)
+        self.assertEqual(result["elapsed_s"], 20.0)
+        self.assertEqual(result["phases"][0]["rank_elapsed_s"], [7.0, 7.0])
+        self.assertEqual(result["phases"][0]["elapsed_s"], 10.0)
+        launch = json.loads((path.parent / "launch.json").read_text())
+        self.assertEqual(launch["timeout_seconds"], 20000)
+        self.assertEqual(launch["max_num_seqs"], 1)
+
+    def test_admission_aggregate_rejects_missing_reordered_and_mislabeled_batches(self) -> None:
+        manifest = seal({**self.manifest, "cases": [*self.manifest["cases"], make_case("second", [5, 6])]})
+        originals = [batched_rank_result(rank, manifest, 1, 1) for rank in range(2)]
+        mutations = [
+            lambda rows: rows[0]["phases"][0]["batches"].pop(),
+            lambda rows: rows[0]["phases"][0]["batches"].reverse(),
+            lambda rows: rows[0]["phases"][0]["batches"][0].update(sample_ids=["second"]),
+            lambda rows: rows[0]["phases"][0]["requests"][0].update(batch_index=1),
+            lambda rows: rows[0]["phases"][0]["requests"][0].update(latency_s=3.0),
+            lambda rows: rows[0]["phases"][0].update(elapsed_s=99.0),
+        ]
+        for mutate in mutations:
+            results = copy.deepcopy(originals)
+            mutate(results)
+            with self.subTest(mutate=mutate), self.assertRaises(RuntimeError):
+                aggregate_ranks(results, manifest, iterations=1, dp_size=2, admission_batch_size=1)
+        with self.assertRaisesRegex(RuntimeError, "undeclared"):
+            aggregate_ranks(originals, manifest, iterations=1, dp_size=2)
+
+    def test_invalid_admission_bound_fails_before_hardware(self) -> None:
+        for size in (0, -1, True, 1.5):
+            with patch("benchmarks.redknot.runner._hardware_inventory") as hardware, self.assertRaisesRegex(ValueError, "admission"):
+                run_benchmark(self.manifest, self.checkpoint, self.root / "run", admission_batch_size=size)
+            hardware.assert_not_called()
+
+    def test_admission_limit_uses_actual_warmup_batches_and_skips_cold_warmup(self) -> None:
+        self.manifest = seal({**self.manifest, "warmup": [make_case(f"warmup-{i}", [10 + i]) for i in range(3)]})
+        path = self.execute(admission_batch_size=2)
+        self.assertEqual(json.loads(path.read_text())["metadata"]["settings"]["max_num_seqs"], 2)
+        # Use a new directory; output files must never be overwritten.
+        with (
+            patch.dict(os.environ, {}, clear=True),
+            patch("benchmarks.redknot.runner.REPO_ROOT", self.runtime),
+            patch("benchmarks.redknot.runner._hardware_inventory", return_value=copy.deepcopy(self.hardware)),
+            patch("benchmarks.redknot.runner.source_identity", return_value={"commit": "a" * 40, "dirty": False}),
+            patch("benchmarks.redknot.runner._free_master_port", return_value=25000),
+            patch("benchmarks.redknot.runner.multiprocessing.get_context", return_value=FakeContext()),
+        ):
+            cold_path = run_benchmark(
+                self.manifest,
+                self.checkpoint,
+                self.root / "cold-run",
+                ep=2,
+                dp=2,
+                iterations=1,
+                warmup_iterations=0,
+                admission_batch_size=2,
+            )
+        cold = json.loads(cold_path.read_text())
+        self.assertEqual(cold["metadata"]["settings"]["max_num_seqs"], 1)
+        self.assertFalse(cold["comparison_eligible"])
 
     def test_aggregate_rejects_missing_duplicate_and_nonfinite_results(self) -> None:
         original = [rank_result(rank, self.manifest, 2) for rank in range(2)]

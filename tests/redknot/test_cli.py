@@ -100,12 +100,18 @@ class CliTests(unittest.TestCase):
                 self.assertEqual(main(arguments + options), 0)
                 self.assertIs(run.call_args.kwargs["batch_invariant"], expected)
                 self.assertIs(run.call_args.kwargs["supervised_process_group"], False)
+                self.assertIsNone(run.call_args.kwargs["admission_batch_size"])
+                self.assertEqual(run.call_args.kwargs["timeout_s"], 7200)
         with (
             patch("benchmarks.redknot.runner.run_benchmark", return_value=self.root / "report.json") as run,
             redirect_stdout(io.StringIO()),
         ):
-            self.assertEqual(main(arguments + ["--supervised-process-group"]), 0)
+            self.assertEqual(
+                main(arguments + ["--supervised-process-group", "--admission-batch-size", "1", "--timeout-seconds", "20000"]), 0
+            )
             self.assertIs(run.call_args.kwargs["supervised_process_group"], True)
+            self.assertEqual(run.call_args.kwargs["admission_batch_size"], 1)
+            self.assertEqual(run.call_args.kwargs["timeout_s"], 20000)
         invalid = self.invoke(*arguments, "--batch-invariant", "2")
         self.assertEqual(invalid.returncode, 2)
         self.assertIn("invalid choice", invalid.stderr)
@@ -164,6 +170,17 @@ class WrapperTests(unittest.TestCase):
                 self.assertEqual(result.returncode, 2)
                 self.assertFalse(self.log.exists())
                 self.assertFalse(output.exists())
+
+    def test_wrapper_passes_admission_bound_and_deadline_only_to_run(self) -> None:
+        result = self.invoke(self.root / "batched-output", "--suites", "64k", "--admission-batch-size", "2", "--timeout-seconds", "20000")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        calls = [json.loads(line) for line in self.log.read_text().splitlines()]
+        self.assertEqual(len(calls), 3)
+        for call in calls[:2]:
+            self.assertNotIn("--admission-batch-size", call)
+            self.assertNotIn("--timeout-seconds", call)
+        self.assertEqual(calls[2][calls[2].index("--admission-batch-size") + 1], "2")
+        self.assertEqual(calls[2][calls[2].index("--timeout-seconds") + 1], "20000")
 
 
 if __name__ == "__main__":

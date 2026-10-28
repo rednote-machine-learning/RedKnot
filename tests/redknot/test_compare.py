@@ -6,6 +6,7 @@ import unittest
 from benchmarks.redknot.compare import RUN_SCHEMA, compare_runs, validate_run
 from benchmarks.redknot.contract import BOUNDARY, SCHEMA, digest, seal
 from benchmarks.redknot.metrics import summarize_requests
+from benchmarks.redknot.native import ADMISSION_POLICY
 
 
 def make_case(sample_id: str, tokens: list[int], *, scored: bool = True) -> dict:
@@ -82,6 +83,30 @@ def run_fixture(manifest: dict, mode: str = "baseline") -> dict:
     if mode == "redknot":
         report["activation"]["configuration_sha256"] = "b" * 64
     report["summary"] = summarize_requests(records, elapsed_s=report["elapsed_s"])
+    return report
+
+
+def batched_run_fixture(manifest: dict, mode: str = "baseline") -> dict:
+    report = run_fixture(manifest, mode)
+    scale = 1.0 if mode == "baseline" else 0.5
+    report["metadata"]["settings"].update(admission_batch_size=1, admission_policy=ADMISSION_POLICY, max_num_seqs=1)
+    for phase in report["phases"]:
+        phase.update(elapsed_s=10 * scale, rank_elapsed_s=[7 * scale, 7 * scale])
+        phase["batches"] = [
+            {
+                "batch_index": index,
+                "sample_ids": [case["sample_id"]],
+                "elapsed_s": 5 * scale,
+                "rank_elapsed_s": [2 * scale, 5 * scale] if index == 0 else [5 * scale, 2 * scale],
+                "completed_requests": 2,
+            }
+            for index, case in enumerate(manifest["cases"])
+        ]
+    batch_by_id = {case["sample_id"]: index for index, case in enumerate(manifest["cases"])}
+    for request in report["requests"]:
+        request["batch_index"] = batch_by_id[request["sample_id"]]
+    report["elapsed_s"] = 20 * scale
+    report["summary"] = summarize_requests(report["requests"], elapsed_s=report["elapsed_s"])
     return report
 
 
@@ -181,6 +206,45 @@ class CompareTests(unittest.TestCase):
         self.assertEqual(validate_run(cold, self.manifest, mode="baseline", require_warmup=False)["completed_requests"], 8)
         with self.assertRaisesRegex(ValueError, "warmup"):
             compare_runs(cold, self.redknot, self.manifest)
+
+    def test_batched_reports_validate_and_compare_with_sum_of_batch_maxima(self) -> None:
+        baseline = batched_run_fixture(self.manifest)
+        redknot = batched_run_fixture(self.manifest, "redknot")
+        result = compare_runs(seal(baseline), seal(redknot), self.manifest)
+        self.assertEqual(result["baseline"]["elapsed_s"], 20.0)
+        self.assertEqual(result["baseline"]["completed_requests_per_s"], 0.4)
+        self.assertEqual(result["ttft_median_paired_speedup"], 2.0)
+
+    def test_batched_report_rejects_max_of_sums_and_batch_tampering(self) -> None:
+        original = batched_run_fixture(self.manifest)
+        mutations = [
+            lambda run: run["phases"][0].update(elapsed_s=7.0),
+            lambda run: run["phases"][0]["batches"].pop(),
+            lambda run: run["phases"][0]["batches"].reverse(),
+            lambda run: run["phases"][0]["batches"][0].update(sample_ids=["long"]),
+            lambda run: run["phases"][0]["batches"][0].update(elapsed_s=7.0),
+            lambda run: run["phases"][0]["batches"][0].update(completed_requests=1),
+            lambda run: run["phases"][0].update(rank_elapsed_s=[6.0, 7.0]),
+            lambda run: run["requests"][0].update(latency_s=2.5),
+            lambda run: run["requests"][0].update(batch_index=1),
+            lambda run: run["requests"][0].pop("batch_index"),
+            lambda run: run["metadata"]["settings"].update(admission_policy="arbitrary-order"),
+            lambda run: run["metadata"]["settings"].update(max_num_seqs=2),
+            lambda run: run["metadata"]["settings"].pop("admission_batch_size"),
+        ]
+        for mutate in mutations:
+            report = copy.deepcopy(original)
+            mutate(report)
+            with self.subTest(mutate=mutate), self.assertRaises(ValueError):
+                validate_run(report, self.manifest, mode="baseline")
+
+    def test_legacy_and_explicit_batch_reports_cannot_be_compared(self) -> None:
+        batched = batched_run_fixture(self.manifest, "redknot")
+        with self.assertRaisesRegex(ValueError, "comparison settings"):
+            compare_runs(self.baseline, batched, self.manifest)
+        self.baseline["requests"][0]["batch_index"] = 0
+        with self.assertRaisesRegex(ValueError, "undeclared"):
+            validate_run(self.baseline, self.manifest, mode="baseline")
 
 
 if __name__ == "__main__":

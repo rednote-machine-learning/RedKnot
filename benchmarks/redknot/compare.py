@@ -18,6 +18,7 @@ from typing import Any
 
 from .contract import BOUNDARY, digest, read_manifest, seal, validate_manifest, write_json
 from .metrics import finite_number, summarize_requests
+from .native import ADMISSION_POLICY
 
 RUN_SCHEMA = "redknot-deepinfer-benchmark-run-v1"
 MATCH_METADATA = ("model", "tokenizer", "runtime", "settings", "hardware", "sampling", "warmup", "measurement_boundary")
@@ -76,6 +77,15 @@ def validate_run(report: dict, manifest: dict, *, mode: str, require_warmup: boo
     iterations, dp_size = settings.get("iterations"), settings.get("dp_size")
     _require(type(iterations) is int and iterations > 0 and type(dp_size) is int and dp_size > 0, "invalid iteration/DP count")
     _require(settings.get("replication") == "full_cohort_per_dp_rank", "unknown workload replication policy")
+    admission_batch_size = settings.get("admission_batch_size")
+    expected_batches = None
+    if "admission_batch_size" in settings:
+        _require(type(admission_batch_size) is int and admission_batch_size > 0, "invalid admission batch size")
+        _require(settings.get("admission_policy") == ADMISSION_POLICY, "unknown admission batch policy")
+        ordered_ids = [case["sample_id"] for case in manifest["cases"]]
+        expected_batches = [ordered_ids[start : start + admission_batch_size] for start in range(0, len(ordered_ids), admission_batch_size)]
+    else:
+        _require("admission_policy" not in settings, "admission policy requires a batch size")
     warmup = metadata["warmup"]
     _require(isinstance(warmup, dict), "warmup policy is missing")
     _require(type(warmup.get("iterations")) is int and warmup["iterations"] >= 0, "invalid warmup count")
@@ -89,6 +99,13 @@ def validate_run(report: dict, manifest: dict, *, mode: str, require_warmup: boo
     )
     if warmup["iterations"]:
         _require(warmup["cases_per_rank"] > 0, "warmup requires calibration cases")
+    if admission_batch_size is not None:
+        active_warmup_count = len(manifest["warmup"]) if warmup["iterations"] else 0
+        _require(
+            type(settings.get("max_num_seqs")) is int
+            and settings["max_num_seqs"] == min(admission_batch_size, max(active_warmup_count, len(manifest["cases"]))),
+            "max_num_seqs differs from the declared admission batch bound",
+        )
     activation = report.get("activation")
     _require(isinstance(activation, dict) and activation.get("verified") is True, "missing verified activation attestation")
     _require(activation.get("redknot_enabled") is (mode == "redknot"), "mode and execution activation disagree")
@@ -101,7 +118,7 @@ def validate_run(report: dict, manifest: dict, *, mode: str, require_warmup: boo
         )
     phases = report.get("phases")
     _require(isinstance(phases, list) and len(phases) == iterations, "missing measured phases")
-    phase_map, elapsed_total = {}, 0.0
+    phase_map, batch_map, elapsed_total = {}, {}, 0.0
     expected_per_phase = len(manifest["cases"]) * dp_size
     for phase in phases:
         _require(isinstance(phase, dict), "invalid phase")
@@ -111,7 +128,34 @@ def validate_run(report: dict, manifest: dict, *, mode: str, require_warmup: boo
         _require(isinstance(rank_elapsed, list) and len(rank_elapsed) == dp_size, "missing rank durations")
         rank_elapsed = [finite_number(value, "rank elapsed_s", positive=True) for value in rank_elapsed]
         duration = finite_number(phase.get("elapsed_s"), "phase elapsed_s", positive=True)
-        _same_number(duration, max(rank_elapsed), "synchronized global phase duration")
+        if expected_batches is None:
+            _require("batches" not in phase, "undeclared admission batches")
+            _same_number(duration, max(rank_elapsed), "synchronized global phase duration")
+        else:
+            batches = phase.get("batches")
+            _require(isinstance(batches, list) and len(batches) == len(expected_batches), "missing admission batches")
+            rank_totals, global_total = [0.0] * dp_size, 0.0
+            for batch_index, (batch, sample_ids) in enumerate(zip(batches, expected_batches, strict=True)):
+                _require(isinstance(batch, dict), "invalid admission batch")
+                _require(
+                    type(batch.get("batch_index")) is int and batch["batch_index"] == batch_index, "admission batches are out of order"
+                )
+                _same(batch.get("sample_ids"), sample_ids, "admission batch manifest order/coverage")
+                batch_rank_elapsed = batch.get("rank_elapsed_s")
+                _require(isinstance(batch_rank_elapsed, list) and len(batch_rank_elapsed) == dp_size, "missing batch rank durations")
+                batch_rank_elapsed = [finite_number(value, "batch rank elapsed_s", positive=True) for value in batch_rank_elapsed]
+                batch_duration = finite_number(batch.get("elapsed_s"), "batch elapsed_s", positive=True)
+                _same_number(batch_duration, max(batch_rank_elapsed), "synchronized global batch duration")
+                _require(
+                    type(batch.get("completed_requests")) is int and batch["completed_requests"] == len(sample_ids) * dp_size,
+                    "partial admission batch",
+                )
+                batch_map[iteration, batch_index] = batch_rank_elapsed
+                rank_totals = [total + elapsed for total, elapsed in zip(rank_totals, batch_rank_elapsed, strict=True)]
+                global_total += batch_duration
+            for rank, total in enumerate(rank_totals):
+                _same_number(rank_elapsed[rank], total, "rank admission batch duration sum")
+            _same_number(duration, global_total, "global sum of synchronized batch durations")
         _require(type(phase.get("completed_requests")) is int and phase["completed_requests"] == expected_per_phase, "partial phase")
         phase_map[iteration] = rank_elapsed
         elapsed_total += duration
@@ -137,7 +181,14 @@ def validate_run(report: dict, manifest: dict, *, mode: str, require_warmup: boo
         for field in ("dataset", "input_ids_sha256", "references", "max_new_tokens", "scored", "ignore_eos"):
             _same(record.get(field), case[field], f"request {sample_id} {field}")
         latency = finite_number(record.get("latency_s"), "request latency", positive=True)
-        _require(latency <= phase_map[iteration][rank] + 1e-8, "request latency exceeds its rank's phase")
+        if expected_batches is None:
+            _require("batch_index" not in record, "undeclared request admission batch")
+            _require(latency <= phase_map[iteration][rank] + 1e-8, "request latency exceeds its rank's phase")
+        else:
+            batch_index = record.get("batch_index")
+            _require(type(batch_index) is int and 0 <= batch_index < len(expected_batches), "invalid request admission batch")
+            _require(sample_id in expected_batches[batch_index], "request belongs to another admission batch")
+            _require(latency <= batch_map[iteration, batch_index][rank] + 1e-8, "request latency exceeds its rank's admission batch")
     expected = {(iteration, rank, sample_id) for iteration in range(iterations) for rank in range(dp_size) for sample_id in cases}
     _require(identities == expected, "incomplete iteration/rank cohort")
     summary = summarize_requests(requests, elapsed_s=elapsed_total)

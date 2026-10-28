@@ -4,7 +4,7 @@ import copy
 import unittest
 from typing import Any
 
-from benchmarks.redknot.native import BOUNDARY, run_phase
+from benchmarks.redknot.native import BOUNDARY, run_admission_phase, run_phase
 
 
 def case(sample_id: str = "sample", *, ignore_eos: bool = False, budget: int = 2) -> dict:
@@ -86,6 +86,79 @@ def run(engine: FakeEngine, cases: list[dict] | None = None, *, clock: Any = Non
 
 
 class NativePhaseTests(unittest.TestCase):
+    def test_admission_batches_drain_before_next_admission(self) -> None:
+        class LimitedEngine:
+            def __init__(self) -> None:
+                self.pending: list[dict] = []
+                self.inflight: list[dict] = []
+                self.peak = 0
+                self.admitted = 0
+                self.flushes = 0
+                self.barriers = 0
+
+            def before_phase(self) -> None:
+                assert not self.pending and not self.inflight
+                self.barriers += 1
+
+            def add_request(self, **kwargs: Any) -> object:
+                assert not self.inflight
+                self.pending.append(kwargs)
+                self.admitted += 1
+                self.peak = max(self.peak, len(self.pending))
+                assert self.peak <= 2
+                return object()
+
+            def has_unfinished_requests(self) -> bool:
+                return bool(self.pending)
+
+            def step(self) -> list:
+                self.inflight, self.pending = self.pending, []
+                return []
+
+            def flush_inflight_reqs(self) -> list[dict]:
+                self.flushes += 1
+                outputs = [
+                    {"request_id": item["request_id"], "token_id": 5, "finished": True, "finish_reason": "stop"} for item in self.inflight
+                ]
+                self.inflight = []
+                return outputs
+
+        engine = LimitedEngine()
+        progress = []
+        result = run_admission_phase(
+            engine,
+            [case(str(i)) for i in range(5)],
+            admission_batch_size=2,
+            sampling_factory=lambda item: {},
+            output_reader=dict,
+            clock=Clock(),
+            progress_callback=progress.append,
+        )
+        self.assertEqual(engine.peak, 2)
+        self.assertEqual(engine.admitted, 5)
+        self.assertEqual(engine.flushes, 3)
+        self.assertEqual(engine.barriers, 3)
+        self.assertEqual([batch["sample_ids"] for batch in result["batches"]], [["0", "1"], ["2", "3"], ["4"]])
+        self.assertEqual([item["batch_index"] for item in result["requests"]], [0, 0, 1, 1, 2])
+        self.assertEqual(result["elapsed_s"], sum(batch["elapsed_s"] for batch in result["batches"]))
+        self.assertEqual(progress, result["batches"])
+        self.assertFalse(any("input_ids" in batch for batch in progress))
+
+    def test_admission_default_preserves_legacy_phase(self) -> None:
+        expected = run(FakeEngine([[(0, 10, True, "stop")]]))
+        actual = run_admission_phase(
+            FakeEngine([[(0, 10, True, "stop")]]), [case()], sampling_factory=lambda item: {}, output_reader=dict, clock=Clock()
+        )
+        self.assertEqual(expected, actual)
+        self.assertNotIn("batches", actual)
+
+    def test_admission_rejects_duplicate_ids_and_invalid_size_before_engine(self) -> None:
+        for size, selected in ((0, [case()]), (True, [case()]), (1, [case(), case()])):
+            engine = FakeEngine([])
+            with self.subTest(size=size), self.assertRaises(ValueError):
+                run_admission_phase(engine, selected, admission_batch_size=size, sampling_factory=lambda item: {}, output_reader=dict)
+            self.assertFalse(engine.requests)
+
     def test_ttft_stops_at_first_output_and_flush_keeps_last_token(self) -> None:
         engine = FakeEngine([[(0, 10, False, "")]], [(0, 11, True, "length")])
         result = run(engine)

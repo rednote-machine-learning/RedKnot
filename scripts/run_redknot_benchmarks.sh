@@ -15,6 +15,8 @@ Usage: bash scripts/run_redknot_benchmarks.sh --model-path DIR --output-root NEW
   --warmup-iterations N   Independent warmup iterations (default: 3)
   --batch-invariant 0|1   Explicit native kernel mode (default: 1)
   --max-num-batched-tokens N  Native prefill batch budget (default: 32768)
+  --admission-batch-size N  Drain fixed manifest-order request batches (default: entire cohort)
+  --timeout-seconds N     Whole native run deadline per suite (default: 7200)
   --supervised-process-group  Retain an external lifecycle supervisor's group
   --trust-remote-code     Permit the selected tokenizer's custom Python code
 
@@ -33,11 +35,13 @@ iterations=10
 warmup_iterations=3
 batch_invariant=1
 max_batched_tokens=32768
+admission_args=()
+timeout_seconds=7200
 supervisor_args=()
 tokenizer_args=()
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --model-path|--output-root|--runtime-root|--suites|--ep|--cp|--iterations|--warmup-iterations|--batch-invariant|--max-num-batched-tokens)
+    --model-path|--output-root|--runtime-root|--suites|--ep|--cp|--iterations|--warmup-iterations|--batch-invariant|--max-num-batched-tokens|--admission-batch-size|--timeout-seconds)
       [[ $# -ge 2 ]] || { printf 'Missing value for %s\n' "$1" >&2; exit 2; } ;;
   esac
   case "$1" in
@@ -51,6 +55,8 @@ while [[ $# -gt 0 ]]; do
     --warmup-iterations) warmup_iterations="$2"; shift 2 ;;
     --batch-invariant) batch_invariant="$2"; shift 2 ;;
     --max-num-batched-tokens) max_batched_tokens="$2"; shift 2 ;;
+    --admission-batch-size) admission_args=(--admission-batch-size "$2"); shift 2 ;;
+    --timeout-seconds) timeout_seconds="$2"; shift 2 ;;
     --supervised-process-group) supervisor_args+=(--supervised-process-group); shift ;;
     --prepare-only) prepare_only=1; shift ;;
     --trust-remote-code) tokenizer_args+=(--trust-remote-code); shift ;;
@@ -90,6 +96,7 @@ for suite in $suites; do
       --manifest "$output_root/$suite.manifest.json" --model-path "$model_path" \
       --ep "$ep" --cp "$cp" --iterations "$iterations" --warmup-iterations "$warmup_iterations" \
       --batch-invariant "$batch_invariant" --max-num-batched-tokens "$max_batched_tokens" \
+      --timeout-seconds "$timeout_seconds" ${admission_args[@]+"${admission_args[@]}"} \
       ${supervisor_args[@]+"${supervisor_args[@]}"} \
       ${runtime_args[@]+"${runtime_args[@]}"} --output-dir "$output_root/$suite-results"
   fi

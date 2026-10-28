@@ -16,7 +16,58 @@ from contextlib import suppress
 from typing import Any
 
 BOUNDARY = "native_engine_enqueue_to_native_token_observation"
+ADMISSION_POLICY = "manifest_order_sequential_batches_v1"
 _PHASE_IDS = itertools.count()
+
+
+def run_admission_phase(
+    engine: Any,
+    cases: Sequence[Mapping[str, Any]],
+    *,
+    admission_batch_size: int | None = None,
+    sampling_factory: Callable[[Mapping[str, Any]], Any],
+    output_reader: Callable[[Any], Mapping[str, Any]],
+    clock: Callable[[], float] = time.perf_counter,
+    progress_callback: Callable[[Mapping[str, Any]], None] | None = None,
+) -> dict:
+    """Drain each fixed, ordered batch before admitting the next batch.
+
+    Each run_phase synchronizes ranks after CPU input preparation and before
+    admission. Local elapsed_s is the sum of local batch durations; the runner
+    must sum the cross-rank maximum separately for each batch, not take the
+    maximum of these local sums. None retains the original single-phase path.
+    """
+    if admission_batch_size is None:
+        return run_phase(engine, cases, sampling_factory=sampling_factory, output_reader=output_reader, clock=clock)
+    if type(admission_batch_size) is not int or admission_batch_size < 1:
+        raise ValueError("admission_batch_size must be a positive integer")
+    if not isinstance(cases, (list, tuple)) or not cases:
+        raise ValueError("a phase requires a nonempty case sequence")
+    sample_ids = [item.get("sample_id") if isinstance(item, Mapping) else None for item in cases]
+    if not all(isinstance(sample_id, str) and sample_id for sample_id in sample_ids) or len(set(sample_ids)) != len(sample_ids):
+        raise ValueError("sample IDs must be nonempty and unique across admission batches")
+    batches, requests = [], []
+    for batch_index, start in enumerate(range(0, len(cases), admission_batch_size)):
+        selected = cases[start : start + admission_batch_size]
+        phase = run_phase(engine, selected, sampling_factory=sampling_factory, output_reader=output_reader, clock=clock)
+        batches.append(
+            {
+                "batch_index": batch_index,
+                "sample_ids": [case["sample_id"] for case in selected],
+                "elapsed_s": phase["elapsed_s"],
+                "completed_requests": phase["completed_requests"],
+            }
+        )
+        requests.extend({**record, "batch_index": batch_index} for record in phase["requests"])
+        if progress_callback is not None:
+            progress_callback(dict(batches[-1]))
+    return {
+        "measurement_boundary": BOUNDARY,
+        "elapsed_s": sum(batch["elapsed_s"] for batch in batches),
+        "requests": requests,
+        "completed_requests": len(requests),
+        "batches": batches,
+    }
 
 
 def run_phase(
