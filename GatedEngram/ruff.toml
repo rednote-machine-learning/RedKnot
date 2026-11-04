@@ -1,0 +1,8 @@
+# Keep the repository's formatting and correctness checks. This isolated
+# research package preserves dynamically typed native callback interfaces from
+# its CPU-tested implementation; broad annotation-only rewrites are deferred.
+# No correctness, import, or formatting rule is disabled here.
+extend = "../pyproject.toml"
+
+[lint]
+extend-ignore = ["ANN001", "ANN002", "ANN003", "ANN201", "ANN204", "ANN205", "ANN206"]
