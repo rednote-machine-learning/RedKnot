@@ -1,0 +1,1336 @@
+{
+  "schema": "s2-openhands-framework-pins-v1",
+  "sources": {
+    "benchmarks": {
+      "url": "https://github.com/OpenHands/benchmarks.git",
+      "commit": "60b3548cea8b41276ac0d44ea36a01b82936bbe4",
+      "tree": "261f9ed805ba039bb84b13540de3f54f520c1c33",
+      "tracked_worktree_clean": true
+    },
+    "sdk": {
+      "url": "https://github.com/OpenHands/software-agent-sdk.git",
+      "commit": "43376f1868ffd702746080714a59c16d3f69ec12",
+      "tree": "1bd8151b1cf4a25f60d7c941b5bc3bbd6ba0f699",
+      "tracked_worktree_clean": true
+    },
+    "extensions": {
+      "url": "https://github.com/OpenHands/extensions.git",
+      "commit": "4f91a480f74732b2653fdd6f1357637e5575bf91",
+      "tree": "8f556c48d17bfdbb27f3e27d5ec06fa9a161c8cd",
+      "tracked_worktree_clean": true
+    }
+  },
+  "source_files": [
+    {
+      "path": "framework/benchmarks/pyproject.toml",
+      "sha256": "a8dbdde5f1fce64150e9ece1086fd0db8cbde6fbf0d4bf862c160368c99b860a",
+      "bytes": 5846
+    },
+    {
+      "path": "framework/benchmarks/uv.lock",
+      "sha256": "c962f78205a3abcdec49bb10cba77a8502c47a5a1219532963e26292cf029130",
+      "bytes": 1007441
+    },
+    {
+      "path": "framework/benchmarks/vendor/software-agent-sdk/pyproject.toml",
+      "sha256": "9353acafea0b3118b68e2e1d1c92fc3d427972a664fd1864c50e29ec27fe6c99",
+      "bytes": 3850
+    },
+    {
+      "path": "framework/benchmarks/vendor/software-agent-sdk/uv.lock",
+      "sha256": "0d95ab892336778991e3bb19f74e6e5ba2fbbf3fcf2468b43b29188cb026068e",
+      "bytes": 1005625
+    },
+    {
+      "path": "framework/benchmarks/benchmarks/swebench/run_infer.py",
+      "sha256": "6cd1e84bf8b6d659993c8ce22372bb1140ffb05bb37f3cf821fd9b7b58e27caa",
+      "bytes": 23469
+    },
+    {
+      "path": "framework/benchmarks/benchmarks/swebench/prompts/default.j2",
+      "sha256": "b9e8b36d19f670f9eae26dc4f2322a1aef6309e7f0110b4c654c80aee4af2053",
+      "bytes": 3880
+    },
+    {
+      "path": "framework/benchmarks/benchmarks/utils/args_parser.py",
+      "sha256": "82fbab6ea7f1a621be6c7adba2a53ab958fd475a102c463b4d1ec3ff7aeeb2cb",
+      "bytes": 6424
+    },
+    {
+      "path": "framework/benchmarks/benchmarks/utils/agent_context.py",
+      "sha256": "ac9b339c9bd286fb401341371ac5998fb232147659ce171680e08e768eef7cb0",
+      "bytes": 440
+    },
+    {
+      "path": "framework/benchmarks/benchmarks/utils/dataset.py",
+      "sha256": "96cd33e60d3d1a86a1011500e6c261267b9dd23e4108c6a4239e6d5d279de5d0",
+      "bytes": 4335
+    },
+    {
+      "path": "framework/benchmarks/benchmarks/swebench/config.py",
+      "sha256": "ef3ed921de48714f6bdf4312e4f30d9bbfd924b385c8e7c15119380222634fbf",
+      "bytes": 904
+    },
+    {
+      "path": "framework/benchmarks/vendor/software-agent-sdk/openhands-sdk/openhands/sdk/skills/skill.py",
+      "sha256": "d6a564949560aeb302f99bb4837443be6cc8f6b6f9addf60cfd2b5ba0496d808",
+      "bytes": 50079
+    },
+    {
+      "path": "framework/benchmarks/vendor/software-agent-sdk/openhands-sdk/openhands/sdk/skills/utils.py",
+      "sha256": "f2f89c1cfcdf6dac1f9df8d3078d72d9229af602c8f071c92a15b782c9b87cbd",
+      "bytes": 16408
+    },
+    {
+      "path": "framework/benchmarks/vendor/software-agent-sdk/openhands-workspace/openhands/workspace/apptainer/workspace.py",
+      "sha256": "bdd6cf3437e89c49c0c64f97920864a336d90f061da3a1f7b8c5c73b848bc470",
+      "bytes": 15327
+    }
+  ],
+  "host_python_requires": ">=3.12",
+  "sdk_version": "1.27.0",
+  "sdk_python_requires": ">=3.12",
+  "dependency_install": [
+    "uv",
+    "sync",
+    "--frozen"
+  ],
+  "dependency_notes": [
+    "Upstream local Apptainer source-minimal image recipe installs managed Python3.13 inside the container; host benchmark requires>=3.12.",
+    "Actual full SDK imports/container launch are not validated by this offline AST/template dry run."
+  ],
+  "runtime_contract": {
+    "agent_type": "default",
+    "tool_preset": "default",
+    "enable_delegation": true,
+    "delegation_mechanism": "official TaskToolSet, model decides whether/how to delegate; no forced roles",
+    "enable_browser": false,
+    "enable_condenser": true,
+    "condenser_max_size": 240,
+    "condenser_keep_first": 2,
+    "max_iterations": 500,
+    "max_retries": 3,
+    "num_workers": 1,
+    "n_limit": 0,
+    "critic": "official default, inspect actual runtime configuration before admission",
+    "prompt_file": "framework/benchmarks/benchmarks/swebench/prompts/default.j2",
+    "dataset_file": "dataset/agent_visible/tasks20.jsonl",
+    "selected_ids_file": "dataset/selected_instances.txt",
+    "llm_config": "root-owned Full/S2 endpoint configuration; identical model/decoding/tool budgets required",
+    "environment": {
+      "EXTENSIONS_REF": "4f91a480f74732b2653fdd6f1357637e5575bf91"
+    },
+    "workspace": "isolated official Docker or Apptainer, pending actual server CPU qualification; LocalWorkspace prohibited",
+    "container_gpu": false
+  },
+  "public_skills": {
+    "repository": {
+      "url": "https://github.com/OpenHands/extensions.git",
+      "commit": "4f91a480f74732b2653fdd6f1357637e5575bf91",
+      "tree": "8f556c48d17bfdbb27f3e27d5ec06fa9a161c8cd",
+      "tracked_worktree_clean": true
+    },
+    "default_marketplace_path": "marketplaces/default.json",
+    "default_marketplace_exists": false,
+    "actual_official_fallback": "scan skills/SKILL.md directories plus legacy standalone md; child reference md excluded",
+    "discovered_files": [
+      {
+        "path": "framework/extensions/skills/add-javadoc/SKILL.md",
+        "sha256": "93422a18b7d6a98ed4800c800c9d2a4842dc465454253038d9cc091bd5bd45e1",
+        "bytes": 1166,
+        "declared_name": "add-javadoc",
+        "frontmatter_keys": [
+          "compatibility",
+          "description",
+          "license",
+          "name",
+          "triggers"
+        ],
+        "declared_triggers": [
+          "javadoc",
+          "java documentation",
+          "document java"
+        ],
+        "disable_model_invocation": null
+      },
+      {
+        "path": "framework/extensions/skills/add-skill/SKILL.md",
+        "sha256": "dfe7467e03adfcbca1cb2dd6db40d552a57584ad13c0abed311f82d25e5bd88c",
+        "bytes": 2243,
+        "declared_name": "add-skill",
+        "frontmatter_keys": [
+          "description",
+          "name"
+        ],
+        "declared_triggers": null,
+        "disable_model_invocation": null
+      },
+      {
+        "path": "framework/extensions/skills/agent-canvas-environment/SKILL.md",
+        "sha256": "40562401fb3e07a921f4a1451cc44a4ed6441239c18a4f334791fa6a953f103c",
+        "bytes": 9959,
+        "declared_name": "agent-canvas-environment",
+        "frontmatter_keys": [
+          "description",
+          "name",
+          "triggers"
+        ],
+        "declared_triggers": [
+          "agent canvas",
+          "agent-canvas",
+          "local conversation",
+          "delegate local conversation",
+          "session api key",
+          "X-Session-API-Key",
+          "localhost:8001"
+        ],
+        "disable_model_invocation": null
+      },
+      {
+        "path": "framework/extensions/skills/agent-creator/SKILL.md",
+        "sha256": "c7321d4a60420cefe8f06b8946d4501f0a6a18352f1f79e9526354266cf0109f",
+        "bytes": 7254,
+        "declared_name": "agent-creator",
+        "frontmatter_keys": [
+          "description",
+          "name",
+          "triggers"
+        ],
+        "declared_triggers": [
+          "/agent-creator"
+        ],
+        "disable_model_invocation": null
+      },
+      {
+        "path": "framework/extensions/skills/agent-memory/SKILL.md",
+        "sha256": "f91fb602088b14732037b54c72de8648dd6c14b4261265eb0e4c87ac43b442bd",
+        "bytes": 2051,
+        "declared_name": "agent-memory",
+        "frontmatter_keys": [
+          "description",
+          "name",
+          "triggers"
+        ],
+        "declared_triggers": [
+          "/remember"
+        ],
+        "disable_model_invocation": null
+      },
+      {
+        "path": "framework/extensions/skills/agent-sdk-builder/SKILL.md",
+        "sha256": "0085981836b18cd815079936ea7784e575a1def0d77ba41f72d9b2abe7589cab",
+        "bytes": 2849,
+        "declared_name": "agent-sdk-builder",
+        "frontmatter_keys": [
+          "description",
+          "inputs",
+          "name",
+          "triggers"
+        ],
+        "declared_triggers": [
+          "/agent-builder"
+        ],
+        "disable_model_invocation": null
+      },
+      {
+        "path": "framework/extensions/skills/azure-devops/SKILL.md",
+        "sha256": "cac5da5b975c08e3e812c5a94b58e58f7ad4687528f5d248d0c1f8394daa5070",
+        "bytes": 4740,
+        "declared_name": "azure-devops",
+        "frontmatter_keys": [
+          "description",
+          "name",
+          "triggers"
+        ],
+        "declared_triggers": [
+          "azure_devops",
+          "azure"
+        ],
+        "disable_model_invocation": null
+      },
+      {
+        "path": "framework/extensions/skills/bitbucket/SKILL.md",
+        "sha256": "3d7501778cf5bbaa2ea862a907b5e937af823b90c831ef89ac4417406cd4cb09",
+        "bytes": 3074,
+        "declared_name": "bitbucket",
+        "frontmatter_keys": [
+          "description",
+          "name",
+          "triggers"
+        ],
+        "declared_triggers": [
+          "bitbucket"
+        ],
+        "disable_model_invocation": null
+      },
+      {
+        "path": "framework/extensions/skills/bitbucket-cloud/SKILL.md",
+        "sha256": "3686ec219fac45e438f87e2a43fe36d982bce01867baa9016b26a504a4387871",
+        "bytes": 4212,
+        "declared_name": "bitbucket-cloud",
+        "frontmatter_keys": [
+          "description",
+          "name"
+        ],
+        "declared_triggers": null,
+        "disable_model_invocation": null
+      },
+      {
+        "path": "framework/extensions/skills/bitbucket-data-center/SKILL.md",
+        "sha256": "cbc6d3d02beb381a5db9531140b2397a35e5bda0c33066aa022d0e74167aee75",
+        "bytes": 4921,
+        "declared_name": "bitbucket-data-center",
+        "frontmatter_keys": [
+          "description",
+          "name"
+        ],
+        "declared_triggers": null,
+        "disable_model_invocation": null
+      },
+      {
+        "path": "framework/extensions/skills/canvas-extension-api/SKILL.md",
+        "sha256": "06b10c7f935ec4c1c6bb412da200df3a0132be89d5960d78a7d260254dcf35f8",
+        "bytes": 21070,
+        "declared_name": "canvas-extension-api",
+        "frontmatter_keys": [
+          "description",
+          "name"
+        ],
+        "declared_triggers": null,
+        "disable_model_invocation": null
+      },
+      {
+        "path": "framework/extensions/skills/code-review/SKILL.md",
+        "sha256": "f4a3bf947db539fbb0467598c7bfed0ef25164278b5a22ad760eff5f78057dee",
+        "bytes": 8455,
+        "declared_name": "code-review",
+        "frontmatter_keys": [
+          "description",
+          "name",
+          "triggers"
+        ],
+        "declared_triggers": [
+          "/codereview",
+          "/codereview-roasted"
+        ],
+        "disable_model_invocation": null
+      },
+      {
+        "path": "framework/extensions/skills/code-simplifier/SKILL.md",
+        "sha256": "ba5cfc2908e5d7e4a896a88c87294a348f356222e5f7118753ed443c0c3a1116",
+        "bytes": 5033,
+        "declared_name": "code-simplifier",
+        "frontmatter_keys": [
+          "description",
+          "name",
+          "triggers"
+        ],
+        "declared_triggers": [
+          "/simplify"
+        ],
+        "disable_model_invocation": null
+      },
+      {
+        "path": "framework/extensions/skills/comment-cleanup/SKILL.md",
+        "sha256": "251475f160261cf96524331828f94cbcde770f116fd4ed07a08de104d6a43411",
+        "bytes": 6778,
+        "declared_name": "comment-cleanup",
+        "frontmatter_keys": [
+          "description",
+          "name"
+        ],
+        "declared_triggers": null,
+        "disable_model_invocation": null
+      },
+      {
+        "path": "framework/extensions/skills/cortex-training-rl/SKILL.md",
+        "sha256": "a429239bb79453a519a4d5fd4186f569c5dc889f96ae9847008fd1514917cef0",
+        "bytes": 10777,
+        "declared_name": "cortex-training-rl",
+        "frontmatter_keys": [
+          "description",
+          "name",
+          "triggers"
+        ],
+        "declared_triggers": [
+          "/cortex-training-rl",
+          "cortex training",
+          "cortex-training",
+          "arctic platform",
+          "arctic-platform",
+          "codescout",
+          "harbor"
+        ],
+        "disable_model_invocation": null
+      },
+      {
+        "path": "framework/extensions/skills/datadog/SKILL.md",
+        "sha256": "c67db102d293d21ee9318d51e5da8e86ed2d5ed1d92635a6830552b83c457c7f",
+        "bytes": 2864,
+        "declared_name": "datadog",
+        "frontmatter_keys": [
+          "description",
+          "name",
+          "triggers"
+        ],
+        "declared_triggers": [
+          "datadog"
+        ],
+        "disable_model_invocation": null
+      },
+      {
+        "path": "framework/extensions/skills/deno/SKILL.md",
+        "sha256": "6704eb29264daea9cf63af19c216a9d1c0970a094830efedd02e0545feaa65c1",
+        "bytes": 2266,
+        "declared_name": "deno",
+        "frontmatter_keys": [
+          "description",
+          "name",
+          "triggers"
+        ],
+        "declared_triggers": [
+          "deno",
+          "deno.json",
+          "deno.jsonc",
+          "deno.lock"
+        ],
+        "disable_model_invocation": null
+      },
+      {
+        "path": "framework/extensions/skills/discord/SKILL.md",
+        "sha256": "ff1cc68562cddeb1f51289e0f5fe13dd272aa89d2b156624ceb8bc65b01ac23f",
+        "bytes": 4352,
+        "declared_name": "discord",
+        "frontmatter_keys": [
+          "description",
+          "name",
+          "triggers"
+        ],
+        "declared_triggers": [
+          "discord",
+          "discord api",
+          "discord bot",
+          "discord webhook",
+          "discord.js",
+          "discord.py"
+        ],
+        "disable_model_invocation": null
+      },
+      {
+        "path": "framework/extensions/skills/docker/SKILL.md",
+        "sha256": "d4c69e41982982cf1b71e265fbcaec478030bee0bf627285a48bea3a84373a3a",
+        "bytes": 922,
+        "declared_name": "docker",
+        "frontmatter_keys": [
+          "description",
+          "name",
+          "triggers"
+        ],
+        "declared_triggers": [
+          "docker",
+          "container"
+        ],
+        "disable_model_invocation": null
+      },
+      {
+        "path": "framework/extensions/skills/evidence-based-citations/SKILL.md",
+        "sha256": "ebd2645e8e3651218d356c534ebcc453fafbd8b0ca36d9d9e7e7d60790ee7021",
+        "bytes": 3182,
+        "declared_name": "evidence-based-citations",
+        "frontmatter_keys": [
+          "description",
+          "name",
+          "triggers"
+        ],
+        "declared_triggers": [
+          "evidence-based",
+          "cite source",
+          "cite sources",
+          "official source",
+          "official link",
+          "official links",
+          "official docs",
+          "official documentation",
+          "verifiable source"
+        ],
+        "disable_model_invocation": null
+      },
+      {
+        "path": "framework/extensions/skills/flarglebargle/SKILL.md",
+        "sha256": "4abf0757e97eeb1163d8864a8955223430f5d977fe5b40c682d3640659cc7832",
+        "bytes": 337,
+        "declared_name": "flarglebargle",
+        "frontmatter_keys": [
+          "description",
+          "name",
+          "triggers"
+        ],
+        "declared_triggers": [
+          "flarglebargle"
+        ],
+        "disable_model_invocation": null
+      },
+      {
+        "path": "framework/extensions/skills/frontend-design/SKILL.md",
+        "sha256": "982cecaaf2a95a76d0bbebe8ff5570ea9e23088535fee54f90417f7b562545ad",
+        "bytes": 4443,
+        "declared_name": "frontend-design",
+        "frontmatter_keys": [
+          "description",
+          "license",
+          "name"
+        ],
+        "declared_triggers": null,
+        "disable_model_invocation": null
+      },
+      {
+        "path": "framework/extensions/skills/github/SKILL.md",
+        "sha256": "fac2323775a7390f7c305dff25482a972f73cb8259fd9260c79741e72c4aa974",
+        "bytes": 7703,
+        "declared_name": "github",
+        "frontmatter_keys": [
+          "description",
+          "name",
+          "triggers"
+        ],
+        "declared_triggers": [
+          "github"
+        ],
+        "disable_model_invocation": null
+      },
+      {
+        "path": "framework/extensions/skills/github-actions/SKILL.md",
+        "sha256": "3bc931615299740031ec21eef92a3c1cc1acd91d88d6579c67e8e6021a0c83f0",
+        "bytes": 1888,
+        "declared_name": "github-actions",
+        "frontmatter_keys": [
+          "description",
+          "name",
+          "triggers"
+        ],
+        "declared_triggers": [
+          "github actions",
+          "github workflow",
+          "actions workflow",
+          "gh actions",
+          ".github/workflows"
+        ],
+        "disable_model_invocation": null
+      },
+      {
+        "path": "framework/extensions/skills/github-agents-md-maintainer/SKILL.md",
+        "sha256": "2da13b34624f68327bb65e2998cc32d7bc026244bdb0cb9b7b356e3a88fa4523",
+        "bytes": 12164,
+        "declared_name": "github-agents-md-maintainer",
+        "frontmatter_keys": [
+          "description",
+          "name",
+          "triggers"
+        ],
+        "declared_triggers": [
+          "/agents-md:setup"
+        ],
+        "disable_model_invocation": null
+      },
+      {
+        "path": "framework/extensions/skills/github-comment-cleanup/SKILL.md",
+        "sha256": "c7342a351d3591e618276446f5af142a799e28a5f66f386874504acb7114887a",
+        "bytes": 4069,
+        "declared_name": "github-comment-cleanup",
+        "frontmatter_keys": [
+          "description",
+          "name",
+          "triggers"
+        ],
+        "declared_triggers": [
+          "/comment-cleanup:setup"
+        ],
+        "disable_model_invocation": null
+      },
+      {
+        "path": "framework/extensions/skills/github-delivery-watchdog/SKILL.md",
+        "sha256": "536cb76358c784e882c02d0040fe33fe19038fdf2b9050a94739ec07f760bce9",
+        "bytes": 1952,
+        "declared_name": "github-delivery-watchdog",
+        "frontmatter_keys": [
+          "description",
+          "name",
+          "triggers"
+        ],
+        "declared_triggers": [
+          "/github-delivery-watchdog"
+        ],
+        "disable_model_invocation": null
+      },
+      {
+        "path": "framework/extensions/skills/github-issue-to-pr/SKILL.md",
+        "sha256": "602425d9c99c774e2b4a31ac816313f3e64171a72ff34dcc6aa50a1c6b14ba6a",
+        "bytes": 17616,
+        "declared_name": "github-issue-to-pr",
+        "frontmatter_keys": [
+          "description",
+          "name",
+          "triggers"
+        ],
+        "declared_triggers": [
+          "/issue-to-pr:setup"
+        ],
+        "disable_model_invocation": null
+      },
+      {
+        "path": "framework/extensions/skills/github-issue-triage/SKILL.md",
+        "sha256": "92f840e246b26390df4d279f034bd1ddc1be1ff9fa80fcff903502bce3331032",
+        "bytes": 1748,
+        "declared_name": "github-issue-triage",
+        "frontmatter_keys": [
+          "description",
+          "name",
+          "triggers"
+        ],
+        "declared_triggers": [
+          "/github-issue-triage"
+        ],
+        "disable_model_invocation": null
+      },
+      {
+        "path": "framework/extensions/skills/github-pr-review/SKILL.md",
+        "sha256": "8b1c2f74dede90bbb7a524b66e991f9eb8ab3068b349ad343ca986668567652c",
+        "bytes": 9137,
+        "declared_name": "github-pr-review",
+        "frontmatter_keys": [
+          "description",
+          "name",
+          "triggers"
+        ],
+        "declared_triggers": [
+          "/github-pr-review"
+        ],
+        "disable_model_invocation": null
+      },
+      {
+        "path": "framework/extensions/skills/github-pr-reviewer/SKILL.md",
+        "sha256": "d88b35041b0672dfaf70b8bd71914b5096d93b35dbd65440c596f8049e74fbd4",
+        "bytes": 29278,
+        "declared_name": "github-pr-reviewer",
+        "frontmatter_keys": [
+          "description",
+          "name",
+          "triggers"
+        ],
+        "declared_triggers": [
+          "/pr-reviewer:setup"
+        ],
+        "disable_model_invocation": null
+      },
+      {
+        "path": "framework/extensions/skills/github-repo-monitor/SKILL.md",
+        "sha256": "3bcf0211e2b48f1316c669b04a76037db1e130e7a63610a635324901e349f2cb",
+        "bytes": 15419,
+        "declared_name": "github-repo-monitor",
+        "frontmatter_keys": [
+          "description",
+          "name",
+          "triggers"
+        ],
+        "declared_triggers": [
+          "/github-monitor:poll"
+        ],
+        "disable_model_invocation": null
+      },
+      {
+        "path": "framework/extensions/skills/github-stale-ci-pr-closer/SKILL.md",
+        "sha256": "060b136307daf00b908567e2a22e84cd3d8acec3f387668af3b9a82a3fb82aa3",
+        "bytes": 1210,
+        "declared_name": "github-stale-ci-pr-closer",
+        "frontmatter_keys": [
+          "description",
+          "name",
+          "triggers"
+        ],
+        "declared_triggers": [
+          "/github-stale-ci-pr-closer"
+        ],
+        "disable_model_invocation": null
+      },
+      {
+        "path": "framework/extensions/skills/gitlab/SKILL.md",
+        "sha256": "cba8cdc77a53b1168500e63071246dd0901eaab7049a9e65d2e29e63bcc0d828",
+        "bytes": 2514,
+        "declared_name": "gitlab",
+        "frontmatter_keys": [
+          "description",
+          "name",
+          "triggers"
+        ],
+        "declared_triggers": [
+          "gitlab"
+        ],
+        "disable_model_invocation": null
+      },
+      {
+        "path": "framework/extensions/skills/gitlab-issue-to-mr/SKILL.md",
+        "sha256": "6cdfedbe9043bd4e08d61ac6f0da811d6d429af7b6a5d57fd0b94aeb851d026a",
+        "bytes": 22320,
+        "declared_name": "gitlab-issue-to-mr",
+        "frontmatter_keys": [
+          "description",
+          "name",
+          "triggers"
+        ],
+        "declared_triggers": [
+          "/issue-to-mr:setup"
+        ],
+        "disable_model_invocation": null
+      },
+      {
+        "path": "framework/extensions/skills/incident-retrospective/SKILL.md",
+        "sha256": "aaf8c7ca51604e86f7c6f18324504a500e4d4456774977acb53d019ec77900c5",
+        "bytes": 3724,
+        "declared_name": "incident-retrospective",
+        "frontmatter_keys": [
+          "description",
+          "name",
+          "triggers"
+        ],
+        "declared_triggers": [
+          "/incident-retro:setup"
+        ],
+        "disable_model_invocation": null
+      },
+      {
+        "path": "framework/extensions/skills/iterate/SKILL.md",
+        "sha256": "58249391292da7a903f0e91483d959b78d405b77956c13f020df5eab7789495a",
+        "bytes": 15153,
+        "declared_name": "iterate",
+        "frontmatter_keys": [
+          "description",
+          "name",
+          "triggers"
+        ],
+        "declared_triggers": [
+          "/iterate",
+          "/verify",
+          "/babysit"
+        ],
+        "disable_model_invocation": null
+      },
+      {
+        "path": "framework/extensions/skills/jira-issue-to-pr/SKILL.md",
+        "sha256": "81bd298fd5b9808f1b19de8d8ccdd8c1e69d7681ff3ddbbcb5fb3bff242b7777",
+        "bytes": 20837,
+        "declared_name": "jira-issue-to-pr",
+        "frontmatter_keys": [
+          "description",
+          "name"
+        ],
+        "declared_triggers": null,
+        "disable_model_invocation": null
+      },
+      {
+        "path": "framework/extensions/skills/jupyter/SKILL.md",
+        "sha256": "11f5663bd9bc329844217cb6d3bacc8f475169080f3d859a36d4d0973bd7128e",
+        "bytes": 1540,
+        "declared_name": "jupyter",
+        "frontmatter_keys": [
+          "description",
+          "name",
+          "triggers"
+        ],
+        "declared_triggers": [
+          "ipynb",
+          "jupyter"
+        ],
+        "disable_model_invocation": null
+      },
+      {
+        "path": "framework/extensions/skills/kubernetes/SKILL.md",
+        "sha256": "e1c28130b212211c33138e0977e64dc57f368c42d6588e2bd173092cc9d4a96d",
+        "bytes": 1303,
+        "declared_name": "kubernetes",
+        "frontmatter_keys": [
+          "description",
+          "name",
+          "triggers"
+        ],
+        "declared_triggers": [
+          "kubernetes",
+          "k8s",
+          "kube"
+        ],
+        "disable_model_invocation": null
+      },
+      {
+        "path": "framework/extensions/skills/learn-from-code-review/SKILL.md",
+        "sha256": "146a6ec99296501601c2918644cbca54a337cca3290d173ac5ce64a5c62db497",
+        "bytes": 6300,
+        "declared_name": "learn-from-code-review",
+        "frontmatter_keys": [
+          "description",
+          "name",
+          "triggers"
+        ],
+        "declared_triggers": [
+          "/learn-from-reviews",
+          "learn from code review",
+          "distill reviews"
+        ],
+        "disable_model_invocation": null
+      },
+      {
+        "path": "framework/extensions/skills/linear/SKILL.md",
+        "sha256": "a1a9c642113e1be90a122e3b556c45ba61a9ad23adaf635bff546ba5b7de8a46",
+        "bytes": 7555,
+        "declared_name": "linear",
+        "frontmatter_keys": [
+          "description",
+          "name",
+          "triggers"
+        ],
+        "declared_triggers": [
+          "linear",
+          "ticket",
+          "issue tracking"
+        ],
+        "disable_model_invocation": null
+      },
+      {
+        "path": "framework/extensions/skills/linear-triage/SKILL.md",
+        "sha256": "7168190ad33f561c2ab15f67ca0ba779c421020fbf25ba496b8bd4c33c662e75",
+        "bytes": 3215,
+        "declared_name": "linear-triage",
+        "frontmatter_keys": [
+          "description",
+          "name",
+          "triggers"
+        ],
+        "declared_triggers": [
+          "/linear-triage:setup"
+        ],
+        "disable_model_invocation": null
+      },
+      {
+        "path": "framework/extensions/skills/news-digest/SKILL.md",
+        "sha256": "2e801836fd388ace221cf98be91b4783206e7adb2f05fb93876811ef104e5d6f",
+        "bytes": 12909,
+        "declared_name": "news-digest",
+        "frontmatter_keys": [
+          "description",
+          "name",
+          "triggers"
+        ],
+        "declared_triggers": [
+          "/news-digest:setup"
+        ],
+        "disable_model_invocation": null
+      },
+      {
+        "path": "framework/extensions/skills/notion/SKILL.md",
+        "sha256": "2ae4b3833a31781501c64e50ecfdda7c1abff34cc33687b039737a2731ab7ac7",
+        "bytes": 3786,
+        "declared_name": "notion",
+        "frontmatter_keys": [
+          "description",
+          "name",
+          "triggers"
+        ],
+        "declared_triggers": [
+          "notion"
+        ],
+        "disable_model_invocation": null
+      },
+      {
+        "path": "framework/extensions/skills/npm/SKILL.md",
+        "sha256": "f29251d112f6ba935eed0b36ccae2696f9080bdeb7fd852846f729161f7e30f2",
+        "bytes": 440,
+        "declared_name": "npm",
+        "frontmatter_keys": [
+          "description",
+          "name",
+          "triggers"
+        ],
+        "declared_triggers": [
+          "npm"
+        ],
+        "disable_model_invocation": null
+      },
+      {
+        "path": "framework/extensions/skills/openhands-api/SKILL.md",
+        "sha256": "ca29ad6bff97f860daf56af9ca3281bd80cc1f09c37559d8838f3a1b660ecd42",
+        "bytes": 18604,
+        "declared_name": "openhands-api",
+        "frontmatter_keys": [
+          "description",
+          "name",
+          "triggers"
+        ],
+        "declared_triggers": [
+          "openhands-api",
+          "openhands-api-v1",
+          "openhands-cloud",
+          "openhands-cloud-api-v1",
+          "oh-api-v1",
+          "oh-cloud-api-v1"
+        ],
+        "disable_model_invocation": null
+      },
+      {
+        "path": "framework/extensions/skills/openhands-automation/SKILL.md",
+        "sha256": "f0ff13b4eaf75ba1652214b7f1df4ccf4c9dc1aea110ca8827589dbad541a29e",
+        "bytes": 67239,
+        "declared_name": "openhands-automation",
+        "frontmatter_keys": [
+          "description",
+          "name",
+          "triggers"
+        ],
+        "declared_triggers": [
+          "automation",
+          "automations",
+          "scheduled task",
+          "cron job",
+          "cron schedule",
+          "webhook",
+          "webhooks",
+          "event trigger",
+          "github event",
+          "pull request automation",
+          "issue automation",
+          "/automation:create"
+        ],
+        "disable_model_invocation": null
+      },
+      {
+        "path": "framework/extensions/skills/openhands-enterprise-troubleshooting/SKILL.md",
+        "sha256": "b7baa048b8fbcbb971dd0be8d96104689091b58304ffea276819ad0fabd51382",
+        "bytes": 15206,
+        "declared_name": "openhands-enterprise-troubleshooting",
+        "frontmatter_keys": [
+          "description",
+          "name",
+          "triggers"
+        ],
+        "declared_triggers": [
+          "openhands enterprise",
+          "OHE troubleshooting",
+          "openhands not working",
+          "sandbox failed",
+          "replicated admin console",
+          "keycloak login",
+          "certificate error",
+          "LLM connectivity",
+          "upgrade failed",
+          "support bundle",
+          "openhands install"
+        ],
+        "disable_model_invocation": null
+      },
+      {
+        "path": "framework/extensions/skills/openhands-sdk/SKILL.md",
+        "sha256": "7711cd84e9f0ee5610af4f20aa75cc108bfbdfcb33a50206aafb158e9f034410",
+        "bytes": 28189,
+        "declared_name": "openhands-sdk",
+        "frontmatter_keys": [
+          "description",
+          "name",
+          "triggers"
+        ],
+        "declared_triggers": [
+          "openhands-sdk",
+          "openhands sdk",
+          "software-agent-sdk",
+          "agent-sdk",
+          "/sdk"
+        ],
+        "disable_model_invocation": null
+      },
+      {
+        "path": "framework/extensions/skills/pdflatex/SKILL.md",
+        "sha256": "cf92e9e088dffea0c4849d85fa1d50697e1285f77896a3b03eec026ce61ff889",
+        "bytes": 1278,
+        "declared_name": "pdflatex",
+        "frontmatter_keys": [
+          "description",
+          "name",
+          "triggers"
+        ],
+        "declared_triggers": [
+          "pdflatex"
+        ],
+        "disable_model_invocation": null
+      },
+      {
+        "path": "framework/extensions/skills/plain-english-content/SKILL.md",
+        "sha256": "2ef939ec154a2555a1018233ab818a4b0c92b16668c747b1ad9886a567c04ca2",
+        "bytes": 6023,
+        "declared_name": "plain-english-content",
+        "frontmatter_keys": [
+          "description",
+          "license",
+          "name",
+          "triggers"
+        ],
+        "declared_triggers": [
+          "plain English"
+        ],
+        "disable_model_invocation": null
+      },
+      {
+        "path": "framework/extensions/skills/prd/SKILL.md",
+        "sha256": "5de2431f9ceb205f76978940b7c1c65e503bb9603410088b8af75bdf2749eb61",
+        "bytes": 6897,
+        "declared_name": "prd",
+        "frontmatter_keys": [
+          "description",
+          "name",
+          "triggers"
+        ],
+        "declared_triggers": [
+          "create a prd",
+          "write prd",
+          "plan this feature",
+          "requirements for",
+          "spec out",
+          "/prd"
+        ],
+        "disable_model_invocation": null
+      },
+      {
+        "path": "framework/extensions/skills/qa-changes/SKILL.md",
+        "sha256": "d0c65cb81a5373d563698bfb2b28198cd0736cec99ce825a7e73872478d1d2b0",
+        "bytes": 17224,
+        "declared_name": "qa-changes",
+        "frontmatter_keys": [
+          "description",
+          "name",
+          "triggers"
+        ],
+        "declared_triggers": [
+          "/qa-changes"
+        ],
+        "disable_model_invocation": null
+      },
+      {
+        "path": "framework/extensions/skills/release-notes/SKILL.md",
+        "sha256": "5250f2d1aa52272a91f0b0469f6b52079d4931b8bf32784b559706c87b8aeffb",
+        "bytes": 854,
+        "declared_name": "release-notes",
+        "frontmatter_keys": [
+          "description",
+          "name",
+          "triggers"
+        ],
+        "declared_triggers": [
+          "/release-notes"
+        ],
+        "disable_model_invocation": null
+      },
+      {
+        "path": "framework/extensions/skills/research-brief/SKILL.md",
+        "sha256": "56d718a1d6c675399839bfd535746b000b75cb213434d71a0d575f61660ce797",
+        "bytes": 3356,
+        "declared_name": "research-brief",
+        "frontmatter_keys": [
+          "description",
+          "name",
+          "triggers"
+        ],
+        "declared_triggers": [
+          "/research-brief:setup"
+        ],
+        "disable_model_invocation": null
+      },
+      {
+        "path": "framework/extensions/skills/security/SKILL.md",
+        "sha256": "887a8c46466e388665d4b6679a6d1fe02c6a79b527c38aed6a5a6291b6831fa3",
+        "bytes": 1367,
+        "declared_name": "security",
+        "frontmatter_keys": [
+          "description",
+          "name",
+          "triggers"
+        ],
+        "declared_triggers": [
+          "security",
+          "vulnerability",
+          "authentication",
+          "authorization",
+          "permissions"
+        ],
+        "disable_model_invocation": null
+      },
+      {
+        "path": "framework/extensions/skills/show-me/SKILL.md",
+        "sha256": "82adefdf943b711583fc9445bfcc8b832557b2d2e32071cb7ec6f900448540c0",
+        "bytes": 3188,
+        "declared_name": "show-me",
+        "frontmatter_keys": [
+          "description",
+          "license",
+          "name"
+        ],
+        "declared_triggers": null,
+        "disable_model_invocation": null
+      },
+      {
+        "path": "framework/extensions/skills/simplified-technical-english/SKILL.md",
+        "sha256": "855b35192bfd8754dc2a6d5276c3f3c7c3b3c3ac74f6738547e53b2587c8b629",
+        "bytes": 3149,
+        "declared_name": "simplified-technical-english",
+        "frontmatter_keys": [
+          "description",
+          "license",
+          "name",
+          "triggers"
+        ],
+        "declared_triggers": [
+          "simplified technical english",
+          "STE",
+          "ASD-STE100"
+        ],
+        "disable_model_invocation": null
+      },
+      {
+        "path": "framework/extensions/skills/skill-creator/SKILL.md",
+        "sha256": "651c6a4db39a16d3a58ee4559ec52209aefc097f58bfa32dd4a24ba4f285fbb2",
+        "bytes": 20969,
+        "declared_name": "skill-creator",
+        "frontmatter_keys": [
+          "description",
+          "name"
+        ],
+        "declared_triggers": null,
+        "disable_model_invocation": null
+      },
+      {
+        "path": "framework/extensions/skills/slack-channel-monitor/SKILL.md",
+        "sha256": "89d06536816c55da7f19d37da2e1566a5eb3329998507a587d5dfe406b0a0518",
+        "bytes": 13857,
+        "declared_name": "slack-channel-monitor",
+        "frontmatter_keys": [
+          "description",
+          "name",
+          "triggers"
+        ],
+        "declared_triggers": [
+          "/slack-monitor:poll"
+        ],
+        "disable_model_invocation": null
+      },
+      {
+        "path": "framework/extensions/skills/slack-standup-digest/SKILL.md",
+        "sha256": "9b3718063a3092c086619072e734eff92acc5ac6f38065f13815216999a56cdb",
+        "bytes": 3378,
+        "declared_name": "slack-standup-digest",
+        "frontmatter_keys": [
+          "description",
+          "name",
+          "triggers"
+        ],
+        "declared_triggers": [
+          "/standup-digest:setup"
+        ],
+        "disable_model_invocation": null
+      },
+      {
+        "path": "framework/extensions/skills/software-factory/SKILL.md",
+        "sha256": "0a724a55ccbb3de5bb734d3130ee9f1d3ca0658f5a4e05c00b2a46ee2af09006",
+        "bytes": 13937,
+        "declared_name": "software-factory",
+        "frontmatter_keys": [
+          "description",
+          "name",
+          "triggers"
+        ],
+        "declared_triggers": [
+          "/software-factory",
+          "software factory"
+        ],
+        "disable_model_invocation": null
+      },
+      {
+        "path": "framework/extensions/skills/spark-version-upgrade/SKILL.md",
+        "sha256": "4351d37aec3b7b19cc52bba87aaa8c48c67c0ee4a50e73afcb175aeca4fe4762",
+        "bytes": 7777,
+        "declared_name": "spark-version-upgrade",
+        "frontmatter_keys": [
+          "compatibility",
+          "description",
+          "license",
+          "name",
+          "triggers"
+        ],
+        "declared_triggers": [
+          "spark upgrade",
+          "spark migration",
+          "spark version",
+          "upgrade spark",
+          "spark 3",
+          "spark 4",
+          "pyspark upgrade"
+        ],
+        "disable_model_invocation": null
+      },
+      {
+        "path": "framework/extensions/skills/ssh/SKILL.md",
+        "sha256": "ca7cca10ed32ca284afafecff35fa3218aa9baee1ed62ab415393adfe9817324",
+        "bytes": 3371,
+        "declared_name": "ssh",
+        "frontmatter_keys": [
+          "description",
+          "name",
+          "triggers"
+        ],
+        "declared_triggers": [
+          "ssh",
+          "remote server",
+          "remote machine",
+          "remote host",
+          "remote connection",
+          "secure shell",
+          "ssh keys"
+        ],
+        "disable_model_invocation": null
+      },
+      {
+        "path": "framework/extensions/skills/swift-linux/SKILL.md",
+        "sha256": "e4c39d4cfd04335df7e6d6d799470143ac7e805d7a98ca9366f2867a65c80ccc",
+        "bytes": 2637,
+        "declared_name": "swift-linux",
+        "frontmatter_keys": [
+          "description",
+          "name",
+          "triggers"
+        ],
+        "declared_triggers": [
+          "swift-linux",
+          "swift-debian",
+          "swift-installation"
+        ],
+        "disable_model_invocation": null
+      },
+      {
+        "path": "framework/extensions/skills/technical-writing/SKILL.md",
+        "sha256": "ddd627776d70161f3296dbbbb79c9592a9d89e4eab0622b9217eed648dae7b05",
+        "bytes": 4888,
+        "declared_name": "technical-writing",
+        "frontmatter_keys": [
+          "description",
+          "name"
+        ],
+        "declared_triggers": null,
+        "disable_model_invocation": null
+      },
+      {
+        "path": "framework/extensions/skills/theme-factory/SKILL.md",
+        "sha256": "c35893e221e28895c52143cc11bf30e41a44817796b39d4b15727dadc9796552",
+        "bytes": 3124,
+        "declared_name": "theme-factory",
+        "frontmatter_keys": [
+          "description",
+          "license",
+          "name"
+        ],
+        "declared_triggers": null,
+        "disable_model_invocation": null
+      },
+      {
+        "path": "framework/extensions/skills/ticket-to-code-change/SKILL.md",
+        "sha256": "7db317dea3729b1b78c2801ee599d571d3464b3dea1a93a43b3af985108af92c",
+        "bytes": 2630,
+        "declared_name": "ticket-to-code-change",
+        "frontmatter_keys": [
+          "description",
+          "name",
+          "triggers"
+        ],
+        "declared_triggers": [
+          "/ticket-to-code-change:setup"
+        ],
+        "disable_model_invocation": null
+      },
+      {
+        "path": "framework/extensions/skills/upstream-fork-sync/SKILL.md",
+        "sha256": "c53faa66ce41f0846116b4463313e4a985024eccd6e6ec6d0603a869aee0186d",
+        "bytes": 4606,
+        "declared_name": "upstream-fork-sync",
+        "frontmatter_keys": [
+          "description",
+          "name",
+          "triggers"
+        ],
+        "declared_triggers": [
+          "/upstream-fork-sync:setup"
+        ],
+        "disable_model_invocation": null
+      },
+      {
+        "path": "framework/extensions/skills/use-jev/SKILL.md",
+        "sha256": "56bd6d2c1003d53a5edb2a877889fa0fe62b72721e205ff91484ef47fa3bff32",
+        "bytes": 3221,
+        "declared_name": "use-jev",
+        "frontmatter_keys": [
+          "description",
+          "name",
+          "triggers"
+        ],
+        "declared_triggers": [
+          "jev"
+        ],
+        "disable_model_invocation": null
+      },
+      {
+        "path": "framework/extensions/skills/uv/SKILL.md",
+        "sha256": "e321822ec05752b5fd8b967f6bec30f0e9fd5d7d042aaf5a5d7002829d788315",
+        "bytes": 2639,
+        "declared_name": "uv",
+        "frontmatter_keys": [
+          "description",
+          "name",
+          "triggers"
+        ],
+        "declared_triggers": [
+          "uv",
+          "uv.lock"
+        ],
+        "disable_model_invocation": null
+      },
+      {
+        "path": "framework/extensions/skills/vercel/SKILL.md",
+        "sha256": "4060634017206b72caca6ad05195cd015a5309569d336cbc5b04dab263769b12",
+        "bytes": 3240,
+        "declared_name": "vercel",
+        "frontmatter_keys": [
+          "description",
+          "name",
+          "triggers"
+        ],
+        "declared_triggers": [
+          "vercel",
+          "preview deployment"
+        ],
+        "disable_model_invocation": null
+      }
+    ],
+    "status": "official file discovery executed, not equivalent to actual SDK Skill.load success or actual model-visible skill contents"
+  },
+  "selection_manifest_sha256": "a53744e2f0094169dd81c8d2de70767db42aff1fe7337aae16380c343878cc09",
+  "grader_contract": {
+    "official_package": "swebench==4.1.0",
+    "dataset": "dataset/grader_only/selected20.jsonl",
+    "must_not_mount": [
+      "dataset/grader_only",
+      "framework/packages",
+      "framework/evaluator-source"
+    ],
+    "no_gold_patch_or_test_patch_in_model_cache": true,
+    "arm_runs_must_use_distinct_run_id": true
+  },
+  "pending_runtime_checks": [
+    "isolated container CPU execution and filesystem boundaries",
+    "resolved immutable base-image/agent-image digests and per-task base commit",
+    "full SDK imports, actual public skill load manifest, recorded model request construction",
+    "endpoint/native tool-call formatting and same policy qualification",
+    "root-owned GPU lifecycle authorization/release"
+  ],
+  "sha256": "51732ed2c8c0d98a90d73d5e88c8965ad21b3052831fcaf80e1758d62e87778b"
+}

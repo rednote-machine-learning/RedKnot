@@ -1,0 +1,39 @@
+[
+  {
+    "cwd": ".",
+    "modules": [
+      "redknot.test_adapter",
+      "redknot.test_session",
+      "redknot.test_prefix_gate",
+      "redknot.test_dspark_admission",
+      "service.test_native_runtime",
+      "service.test_prefix_cache",
+      "service.test_engine_bridge",
+      "service.test_online_service",
+      "service.test_checkpoint_codec",
+      "test_prefix_decode_contract"
+    ]
+  },
+  {
+    "cwd": "GatedEngram",
+    "modules": [
+      "tests.test_s1_dflash_integration",
+      "tests.test_s1_runtime",
+      "tests.test_s1_system_runtime"
+    ]
+  },
+  {
+    "cwd": "workflow",
+    "modules": [
+      "test_process_control",
+      "test_run_triplet"
+    ]
+  },
+  {
+    "cwd": "framework-overlay",
+    "modules": [
+      "test_runtime_policy_overlay",
+      "test_single_attempt_greedy"
+    ]
+  }
+]

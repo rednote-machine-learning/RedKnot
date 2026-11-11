@@ -1,0 +1,159 @@
+[project]
+name = "openhands-benchmarks"
+version = "0.1.0"
+description = "OpenHands Benchmarks"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "certifi>=2026.10.19",  # eMudhra CA distrust: GHSA-6q48-6c7w-9gw2
+    "datasets",
+    "huggingface-hub>=1.10.1",
+    "jinja2",
+    "pandas",
+    "Pillow",
+    "toml",
+    "tqdm",
+    "openhands-sdk",
+    "openhands-tools",
+    "unidiff>=0.7.5,<0.8.0",
+    "openhands-agent-server",
+    "openhands-workspace",
+    "modal>=1.1.4",
+    "swebench==4.1.0",
+    "swesmith>=0.0.9",
+    "commit0",
+    "pytest-json-report",
+    # SWT-Bench dependencies (since the git package doesn't install them properly)
+    "requests",
+    "docker",
+    "python-dotenv",
+    "fire",
+    "editdistance",
+    "GitPython",
+    "pyright[nodejs]>=1.1.405",
+    "docker-registry-client>=0.5.2",
+    "deprecation>=2.1.0",
+    "fastmcp>=2.11.3",
+    "httpx>=0.27.0",
+    "litellm==1.93.0",
+    "pydantic>=2.12.0",
+    "python-frontmatter>=1.1.0",
+    "python-json-logger>=3.3.0",
+    "tenacity>=9.1.2",
+    "websockets>=12",
+    "lmnr>=0.7.41",
+    # TODO Remove the macOS exclusion once https://github.com/multi-swe-bench/multi-swe-bench/pull/93 is merged and released
+    "multi-swe-bench>=1.1.1; sys_platform != 'darwin'",
+    "swt-bench @ git+https://github.com/logic-star-ai/swt-bench.git@5fdcd446ff05e248ecfffc19d560a210699f71f8",
+    # See https://github.com/OpenHands/benchmarks/issues/449
+    "hf-xet>=1.1.10,<2.0",
+    # ProgramBench upstream harness — provides the `programbench` CLI used
+    # by `programbench-eval`, plus task metadata loaders we use during
+    # inference. Pinned by minor version while the upstream API stabilises.
+    "programbench>=1.0,<2.0; sys_platform != 'darwin'",
+]
+
+[project.scripts]
+validate-cfg = "benchmarks.scripts.validate_cfg:main"
+harbor-infer = "benchmarks.harbor.run_infer:main"
+harbor-eval = "benchmarks.harbor.eval_infer:main"
+swebench-infer = "benchmarks.swebench.run_infer:main"
+swtbench-infer = "benchmarks.swtbench.run_infer:main"
+swebench-eval = "benchmarks.swebench.eval_infer:main"
+swebenchpro-infer = "benchmarks.swebenchpro.run_infer:main"
+swebenchpro-eval = "benchmarks.swebenchpro.eval_infer:main"
+swtbench-eval = "benchmarks.swtbench.eval_infer:main"
+swtbench-list-images = "benchmarks.swtbench.image_utils:main"
+swtbench-build-eval-images = "benchmarks.swtbench.build_eval_env_images:main"
+gaia-infer = "benchmarks.gaia.run_infer:main"
+gaia-eval = "benchmarks.gaia.eval_infer:main"
+commit0-infer = "benchmarks.commit0.run_infer:main"
+commit0-eval = "benchmarks.commit0.eval_infer:main"
+multiswebench-infer = "benchmarks.multiswebench.run_infer:main"
+multiswebench-eval = "benchmarks.multiswebench.eval_infer:main"
+openagentsafety-infer = "benchmarks.openagentsafety.run_infer:main"
+openagentsafety-eval = "benchmarks.openagentsafety.eval_infer:main"
+swebenchmultimodal-infer = "benchmarks.swebenchmultimodal.run_infer:main"
+swebenchmultimodal-eval = "benchmarks.swebenchmultimodal.eval_infer:main"
+swebenchmultilingual-infer = "benchmarks.swebenchmultilingual.run_infer:main"
+swebenchmultilingual-eval = "benchmarks.swebenchmultilingual.eval_infer:main"
+swefficiency-infer = "benchmarks.swefficiency.run_infer:main"
+terminalbench-infer = "benchmarks.terminalbench.run_infer:main"
+terminalbench-eval = "benchmarks.terminalbench.eval_infer:main"
+skillsbench-infer = "benchmarks.skillsbench.run_infer:main"
+skillsbench-eval = "benchmarks.skillsbench.eval_infer:main"
+hybridgym-funclocalize-infer = "benchmarks.hybridgym_funclocalize.run_infer:main"
+hybridgym-funclocalize-eval = "benchmarks.hybridgym_funclocalize.eval_infer:main"
+hybridgym-depsearch-infer = "benchmarks.hybridgym_depsearch.run_infer:main"
+hybridgym-depsearch-eval = "benchmarks.hybridgym_depsearch.eval_infer:main"
+hybridgym-funcgen-infer = "benchmarks.hybridgym_funcgen.run_infer:main"
+hybridgym-funcgen-eval = "benchmarks.hybridgym_funcgen.eval_infer:main"
+hybridgym-issuelocalize-infer = "benchmarks.hybridgym_issuelocalize.run_infer:main"
+hybridgym-issuelocalize-eval = "benchmarks.hybridgym_issuelocalize.eval_infer:main"
+swesmith-infer = "benchmarks.swesmith.run_infer:main"
+swesmith-eval = "benchmarks.swesmith.eval_infer:main"
+programbench-infer = "benchmarks.programbench.run_infer:main"
+programbench-eval = "benchmarks.programbench.eval_infer:main"
+
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["benchmarks"]
+
+[tool.setuptools]
+# Install the top-level sitecustomize module so Python auto-loads our Modal logging patch.
+py-modules = ["sitecustomize"]
+
+[dependency-groups]
+dev = [
+    "pre-commit>=4.3.0",
+    "psutil>=7.0.0",
+    "pyright>=1.1.405",
+    "ruff>=0.12.10",
+    "pycodestyle>=2.12.0",
+    "pytest>=8.0.0",
+    "pytest-asyncio>=1.0.0",
+    "pytest-cov>=6.0.0",
+    "pytest-forked>=1.6.0",
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+
+# Ruff configuration
+[tool.ruff]
+target-version = "py312"
+line-length = 88
+exclude = ["legacy"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+ignore = ["E501"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["benchmarks", "openhands"]
+combine-as-imports = true
+force-single-line = false
+lines-after-imports = 2
+
+[tool.uv.sources]
+openhands-sdk = { workspace = true }
+openhands-tools = { workspace = true }
+openhands-workspace = { workspace = true }
+openhands-agent-server = { workspace = true }
+swt-bench = { git = "https://github.com/logic-star-ai/swt-bench.git", rev = "5fdcd446ff05e248ecfffc19d560a210699f71f8" }
+
+[tool.uv.workspace]
+members = [
+  "vendor/software-agent-sdk/openhands-sdk",
+  "vendor/software-agent-sdk/openhands-tools",
+  "vendor/software-agent-sdk/openhands-workspace",
+  "vendor/software-agent-sdk/openhands-agent-server",
+]
