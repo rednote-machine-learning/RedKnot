@@ -1,0 +1,90 @@
+{
+  "schema": "redknot-pr148-tracked-modified-source-archive-v1",
+  "remote_root": "/mnt/tidal-alsh01/dataset/redone/RedKnot_DeepInfer_20261028/DeepInfer-PR148",
+  "remote_head": "731508b4282cee87f526a492c6bad8cabcc2f35c",
+  "observed_unix": 1794369548.3314662,
+  "scope": "all HEAD-modified tracked Python source; untracked not yet included",
+  "untracked_included": false,
+  "remote_complete_worktree_claim": false,
+  "source_receipt": {
+    "path": "backups/redknot-code-preserve-20261111/remote-pr148-tracked-source.json",
+    "file_sha256": "3649fa3b84675c3d4ba1ec9dcb486481b47944f98f027aeabead40a9e458d3c2",
+    "sha256": "f86fd38deeca586ef700c03fab977b6c73a981882af32718717d55a2483ee19f"
+  },
+  "files": [
+    {
+      "path": "deepinfer/model_executor/layers/sm90/attention.py",
+      "remote_source_path": "/mnt/tidal-alsh01/dataset/redone/RedKnot_DeepInfer_20261028/DeepInfer-PR148/deepinfer/model_executor/layers/sm90/attention.py",
+      "bytes": 8110,
+      "sha256": "a7af059c9e8b2e3a89b3f4c74037cfa92ff88a1bef8dea885e61cf1c83d9048e",
+      "copy_mode": "verbatim_base64_decode",
+      "python_ast_parse": "passed"
+    },
+    {
+      "path": "deepinfer/model_executor/layers/sm90/indexer.py",
+      "remote_source_path": "/mnt/tidal-alsh01/dataset/redone/RedKnot_DeepInfer_20261028/DeepInfer-PR148/deepinfer/model_executor/layers/sm90/indexer.py",
+      "bytes": 7293,
+      "sha256": "0574fb6db360f69f9bb689e9013c1302b1d27c86ba52188d116ad87d6d219b1c",
+      "copy_mode": "verbatim_base64_decode",
+      "python_ast_parse": "passed"
+    },
+    {
+      "path": "deepinfer/model_executor/models/decoder_layer.py",
+      "remote_source_path": "/mnt/tidal-alsh01/dataset/redone/RedKnot_DeepInfer_20261028/DeepInfer-PR148/deepinfer/model_executor/models/decoder_layer.py",
+      "bytes": 11540,
+      "sha256": "7501b248ce55dd2aebcd601560656b1a08ef2ee7f98d12c98feb390aabf55073",
+      "copy_mode": "verbatim_base64_decode",
+      "python_ast_parse": "passed"
+    },
+    {
+      "path": "deepinfer/model_executor/models/v4_modules/attn.py",
+      "remote_source_path": "/mnt/tidal-alsh01/dataset/redone/RedKnot_DeepInfer_20261028/DeepInfer-PR148/deepinfer/model_executor/models/v4_modules/attn.py",
+      "bytes": 55046,
+      "sha256": "01a807d70b71203fa45ff85d5557f2ddacabf2661f562d4f24907c742ad1bb42",
+      "copy_mode": "verbatim_base64_decode",
+      "python_ast_parse": "passed"
+    },
+    {
+      "path": "deepinfer/model_executor/models/v4_modules/index_attn.py",
+      "remote_source_path": "/mnt/tidal-alsh01/dataset/redone/RedKnot_DeepInfer_20261028/DeepInfer-PR148/deepinfer/model_executor/models/v4_modules/index_attn.py",
+      "bytes": 27783,
+      "sha256": "416d09a87233034f93c42788c209516bf0b9ef9527ce662e8f0f34482449b8fc",
+      "copy_mode": "verbatim_base64_decode",
+      "python_ast_parse": "passed"
+    },
+    {
+      "path": "deepinfer/worker/model_runner.py",
+      "remote_source_path": "/mnt/tidal-alsh01/dataset/redone/RedKnot_DeepInfer_20261028/DeepInfer-PR148/deepinfer/worker/model_runner.py",
+      "bytes": 38254,
+      "sha256": "4b7ed922cc2fad214943992415214862751a98aef6e8ef0db96d00a512cd6923",
+      "copy_mode": "verbatim_base64_decode",
+      "python_ast_parse": "passed"
+    },
+    {
+      "path": "examples/_launch.py",
+      "remote_source_path": "/mnt/tidal-alsh01/dataset/redone/RedKnot_DeepInfer_20261028/DeepInfer-PR148/examples/_launch.py",
+      "bytes": 2078,
+      "sha256": "9fc6ad9a672cca855bce9eac2ef3d51cade84d49149d0cb57ba0c6fb405b7451",
+      "copy_mode": "verbatim_base64_decode",
+      "python_ast_parse": "passed"
+    }
+  ],
+  "file_count": 7,
+  "source_bytes": 150104,
+  "review": {
+    "receipt_seal_verified": true,
+    "all_source_hashes_and_sizes_verified": true,
+    "all_python_ast_parse_passed": true,
+    "common_credential_pattern_findings": [],
+    "sensitive_literal_assignment_findings": [],
+    "long_literals_reviewed": "Only documentation strings; no encoded deployment payload observed",
+    "source_imported_or_executed": false,
+    "gpu_actions": false
+  },
+  "readme": {
+    "path": "README.md",
+    "sha256": "f70ea1c1cf83e92083f86fa9a0d0978ec60683639b830e22f7d330664311351f",
+    "bytes": 1589
+  },
+  "sha256": "38a7349199028d88bfd3e912819d148517899db24f9a0a8b4675fc5996de3766"
+}
