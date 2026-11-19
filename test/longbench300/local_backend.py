@@ -1,4 +1,4 @@
-"""Run paired Full/S1.6 inference on 300 frozen questions on eight local SM90 GPUs.
+"""Run paired Full/S1.6 inference on frozen LongBench questions on eight local SM90 GPUs.
 
 The default uses this checkout's S1.6 implementation and a local checkpoint.
 Use Python 3.12 with DeepInfer's GPU dependencies installed. For an optional
@@ -208,27 +208,40 @@ def local_modules(config, locations):
     return base, producer
 
 
-def check_dataset(base, data):
+# Both workloads use the same native model and scheduler. Bind the logical
+# request/target order and reusable token spans independently of record compression.
+WORKLOADS = {
+    300: (75, "0deffb2e243e784cf02476ff090c18aaa4d66dae400a0bfcfaf9b9ac75020955",
+          "b483befdfba1e2985fd8044829a27d1582e881ed089d50d8d9cd1d111a9f8852"),
+    2100: (527, "bcb1559ffde66ab95ec6b7b13d7889b90bce272cae6b4b53a71f6dfb99a0cebe",
+           "fcaccd37391e186ce090d4afa20669733cf2225e657e6afb7a7027c1a336be5f"),
+}
+
+
+def check_dataset(base, data, target_count=300):
+    group_count, plan_digest, documents_digest = WORKLOADS[target_count]
     terminal = read(data / "complete.json")
-    require((terminal["group_count"], terminal["target_count"]) == (75, 300),
-            "Pass the 300-question subset, not the original larger dataset")
-    names = [f"lb-{i:04d}" for i in range(75)]
-    require(sorted(p.stem for p in (data/"groups").glob("*.json")) == names, "Invalid 75-group inventory")
-    plan, documents_by_id = [], {}
+    require((terminal["group_count"], terminal["target_count"]) == (group_count, target_count),
+            f"Expected {target_count} targets in {group_count} original batches")
+    names = [f"lb-{i:04d}" for i in range(group_count)]
+    require(sorted(p.stem for p in (data/"groups").glob("*.json")) == names, "Invalid original B4 inventory")
+    plan, documents_by_id, targets = [], {}, set()
     for name in names:
         group, rows = base.group_rows(data, data/"groups"/(name+".json"))
         ids = [row["index"] for row in rows]
-        require(ids == group["target_indices"] and documents_by_id.keys().isdisjoint(ids), f"Wrong target membership: {name}")
+        require(targets.isdisjoint(group["target_indices"]), f"Target counted twice in {name}")
+        targets.update(group["target_indices"])
         plan.append([name, ids, group["target_indices"], group["native_chunk_counts"]])
         for row in rows:
             spans = [[d["input_start"], d["input_end"], d["token_ids_sha256"]] for d in row["documents"]]
-            documents_by_id[row["index"]] = [row["index"], row["input_ids_sha256"], spans]
-    require(digest(plan) == "0deffb2e243e784cf02476ff090c18aaa4d66dae400a0bfcfaf9b9ac75020955"
-            and set(documents_by_id) == {i for b in (1000, 2000, 3000) for i in range(b, b+100)},
-            "Unexpected original group order")
-    require(digest([documents_by_id[i] for i in sorted(documents_by_id)]) ==
-            "b483befdfba1e2985fd8044829a27d1582e881ed089d50d8d9cd1d111a9f8852",
+            item = [row["index"], row["input_ids_sha256"], spans]
+            require(documents_by_id.setdefault(row["index"], item) == item, "Companion input mismatch")
+    expected = {1000 * dataset + slot for dataset in range(1, target_count // 100 + 1) for slot in range(100)}
+    require(targets == expected == set(documents_by_id) and digest(plan) == plan_digest,
+            "Unexpected target membership or original group order")
+    require(digest([documents_by_id[i] for i in sorted(documents_by_id)]) == documents_digest,
             "Frozen prefill token IDs or reusable document spans changed")
+    return group_count
 
 
 def rank_worker(options, locations, contract, attempt, world, rank):
@@ -323,8 +336,9 @@ def native_child(config_path, locations_path, data, output, attempt):
     options = dict(template=str(config_path), runner=loc["runner"], kernel=loc["kernel"], data=str(data), out=str(output))
     launch(functools.partial(rank_worker, options, loc, contract, attempt), 8, attempt)
     terminal = read(output/"run.json")
+    manifest = read(data/"complete.json")
     require((terminal["status"], terminal["group_count"], terminal["target_count"], terminal["contract_id"])
-            == ("complete", 75, 300, contract), "Incomplete native GPU run")
+            == ("complete", manifest["group_count"], manifest["target_count"], contract), "Incomplete native GPU run")
 
 
 def release_child(config_path, locations_path, data, output, contract):
@@ -389,7 +403,7 @@ def main():
     print(json.dumps(run_local(opt.runtime_root, opt.model_path, opt.data, opt.output, opt.check_only)))
 
 
-def run_local(runtime_root, model_path, data, output, check_only=False):
+def run_local(runtime_root, model_path, data, output, check_only=False, *, target_count=300):
     """Validate or execute the local benchmark. Raw Full and S1.6 pairs are under output/groups/."""
     require(model_path, "Set --model-path or REDKNOT_MODEL_PATH to the matching local DeepSeek V4.1 Flash checkpoint")
     data, out = Path(data).resolve(strict=True), Path(output).resolve()
@@ -401,7 +415,7 @@ def run_local(runtime_root, model_path, data, output, check_only=False):
         cfg, loc = load_runtime(runtime_root, model_path, out)
         prepare_native(cfg)
         base, producer = local_modules(cfg, loc)
-        check_dataset(base, data)
+        group_count = check_dataset(base, data, target_count)
         contract = base.digest(producer.identity(base, Path(loc["runner"]), Path(loc["kernel"]), data))
         if __package__:
             from .sm90_source import build_extension, extension_path
@@ -411,7 +425,7 @@ def run_local(runtime_root, model_path, data, output, check_only=False):
         extension = extension_path(snapshot)
         extension_ready = extension.is_file() and extension.stat().st_size > 0
         if check_only:
-            return dict(status="cpu_pass", group_count=75, target_count=300, model_calls=0, contract_id=contract,
+            return dict(status="cpu_pass", group_count=group_count, target_count=target_count, model_calls=0, contract_id=contract,
                         sm90_extension_ready=extension_ready)
         if not extension_ready and runtime_root is None:
             build_extension(snapshot)
@@ -421,7 +435,7 @@ def run_local(runtime_root, model_path, data, output, check_only=False):
         save(config_path, cfg)
         save(locations_path, loc)
         release_child(config_path, locations_path, data, out, contract)
-        return dict(status="complete", group_count=75, target_count=300, contract_id=contract, results=str(out))
+        return dict(status="complete", group_count=group_count, target_count=target_count, contract_id=contract, results=str(out))
 
 
 if __name__ == "__main__":

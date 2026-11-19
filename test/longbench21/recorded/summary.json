@@ -1,0 +1,5089 @@
+{
+  "status": "partial",
+  "mode": "historical_reference",
+  "expected": 2100,
+  "expected_by_dataset": {
+    "hotpotqa": 100,
+    "2wikimqa": 100,
+    "musique": 100,
+    "dureader": 100,
+    "narrativeqa": 100,
+    "qasper": 100,
+    "multifieldqa_en": 100,
+    "multifieldqa_zh": 100,
+    "gov_report": 100,
+    "qmsum": 100,
+    "multi_news": 100,
+    "vcsum": 100,
+    "trec": 100,
+    "triviaqa": 100,
+    "samsum": 100,
+    "lsht": 100,
+    "passage_count": 100,
+    "passage_retrieval_en": 100,
+    "passage_retrieval_zh": 100,
+    "lcc": 100,
+    "repobench-p": 100
+  },
+  "completed": 500,
+  "overall": {
+    "paired": 500,
+    "metric": null,
+    "min_input_tokens": 12174,
+    "max_input_tokens": 253504,
+    "mean_input_tokens": 80701.21,
+    "identical_outputs": 244,
+    "higher": 74,
+    "equal": 302,
+    "lower": 124,
+    "Full": {
+      "mean_ttft_s": 35.084100934916,
+      "mean_duration_s": 37.906476595612,
+      "mean_output_tokens": 49.202,
+      "termination": {
+        "stop": 500
+      }
+    },
+    "RedKnot": {
+      "mean_ttft_s": 17.014540850394,
+      "mean_duration_s": 20.393404687938,
+      "mean_output_tokens": 58.84,
+      "termination": {
+        "stop": 500
+      }
+    },
+    "speedup_ratio_of_mean_ttft": 2.062006917694965
+  },
+  "by_dataset": {
+    "hotpotqa": {
+      "paired": 100,
+      "metric": "qa_f1_score",
+      "min_input_tokens": 12776,
+      "max_input_tokens": 129090,
+      "mean_input_tokens": 73899.09,
+      "identical_outputs": 80,
+      "higher": 4,
+      "equal": 86,
+      "lower": 10,
+      "Full": {
+        "mean_ttft_s": 31.6230731631,
+        "mean_duration_s": 31.90861939346,
+        "mean_output_tokens": 4.49,
+        "termination": {
+          "stop": 100
+        },
+        "score_100": 75.60692713084018
+      },
+      "RedKnot": {
+        "mean_ttft_s": 14.4122199586,
+        "mean_duration_s": 14.70352883699,
+        "mean_output_tokens": 4.49,
+        "termination": {
+          "stop": 100
+        },
+        "score_100": 72.23386613386613
+      },
+      "speedup_ratio_of_mean_ttft": 2.1941847441920292,
+      "score_change_pp": -3.3730609969740404,
+      "largest_score_drops": [
+        {
+          "index": 1010,
+          "score_change_pp": -100.0
+        },
+        {
+          "index": 1011,
+          "score_change_pp": -100.0
+        }
+      ]
+    },
+    "2wikimqa": {
+      "paired": 100,
+      "metric": "qa_f1_score",
+      "min_input_tokens": 15194,
+      "max_input_tokens": 129257,
+      "mean_input_tokens": 73520.26,
+      "identical_outputs": 67,
+      "higher": 5,
+      "equal": 78,
+      "lower": 17,
+      "Full": {
+        "mean_ttft_s": 32.95982318149,
+        "mean_duration_s": 33.2824751166,
+        "mean_output_tokens": 5.27,
+        "termination": {
+          "stop": 100
+        },
+        "score_100": 66.22380952380954
+      },
+      "RedKnot": {
+        "mean_ttft_s": 16.02825267238,
+        "mean_duration_s": 16.40004360607,
+        "mean_output_tokens": 5.15,
+        "termination": {
+          "stop": 100
+        },
+        "score_100": 55.92380952380952
+      },
+      "speedup_ratio_of_mean_ttft": 2.056357848556169,
+      "score_change_pp": -10.3,
+      "largest_score_drops": [
+        {
+          "index": 2001,
+          "score_change_pp": -100.0
+        },
+        {
+          "index": 2011,
+          "score_change_pp": -100.0
+        }
+      ]
+    },
+    "musique": {
+      "paired": 100,
+      "metric": "qa_f1_score",
+      "min_input_tokens": 15217,
+      "max_input_tokens": 130269,
+      "mean_input_tokens": 74257.81,
+      "identical_outputs": 58,
+      "higher": 12,
+      "equal": 77,
+      "lower": 11,
+      "Full": {
+        "mean_ttft_s": 32.69469689123,
+        "mean_duration_s": 33.06405901455,
+        "mean_output_tokens": 5.42,
+        "termination": {
+          "stop": 100
+        },
+        "score_100": 46.04905869324474
+      },
+      "RedKnot": {
+        "mean_ttft_s": 15.8273729838,
+        "mean_duration_s": 16.25940075541,
+        "mean_output_tokens": 6.59,
+        "termination": {
+          "stop": 100
+        },
+        "score_100": 48.66150793650794
+      },
+      "speedup_ratio_of_mean_ttft": 2.0657058454801334,
+      "score_change_pp": 2.6124492432631965,
+      "largest_score_drops": [
+        {
+          "index": 3008,
+          "score_change_pp": -100.0
+        },
+        {
+          "index": 3009,
+          "score_change_pp": -100.0
+        }
+      ]
+    },
+    "dureader": {
+      "paired": 100,
+      "metric": "rouge_zh_score",
+      "min_input_tokens": 12174,
+      "max_input_tokens": 129006,
+      "mean_input_tokens": 73499.61,
+      "identical_outputs": 1,
+      "higher": 35,
+      "equal": 1,
+      "lower": 64,
+      "Full": {
+        "mean_ttft_s": 30.19567476743,
+        "mean_duration_s": 42.71578739584,
+        "mean_output_tokens": 222.16,
+        "termination": {
+          "stop": 100
+        },
+        "score_100": 34.07998423195993
+      },
+      "RedKnot": {
+        "mean_ttft_s": 15.44989114118,
+        "mean_duration_s": 30.61892352796,
+        "mean_output_tokens": 268.66,
+        "termination": {
+          "stop": 100
+        },
+        "score_100": 30.109677266561658
+      },
+      "speedup_ratio_of_mean_ttft": 1.9544263769565806,
+      "score_change_pp": -3.9703069653982728,
+      "largest_score_drops": [
+        {
+          "index": 4027,
+          "score_change_pp": -62.10526269534626
+        },
+        {
+          "index": 4066,
+          "score_change_pp": -54.19479246662128
+        }
+      ]
+    },
+    "narrativeqa": {
+      "paired": 100,
+      "metric": "qa_f1_score",
+      "min_input_tokens": 13494,
+      "max_input_tokens": 253504,
+      "mean_input_tokens": 108329.28,
+      "identical_outputs": 38,
+      "higher": 18,
+      "equal": 60,
+      "lower": 22,
+      "Full": {
+        "mean_ttft_s": 47.94723667133,
+        "mean_duration_s": 48.56144205761,
+        "mean_output_tokens": 8.67,
+        "termination": {
+          "stop": 100
+        },
+        "score_100": 35.62178156142763
+      },
+      "RedKnot": {
+        "mean_ttft_s": 23.35496749601,
+        "mean_duration_s": 23.98512671326,
+        "mean_output_tokens": 9.31,
+        "termination": {
+          "stop": 100
+        },
+        "score_100": 34.45902274406927
+      },
+      "speedup_ratio_of_mean_ttft": 2.052978094682486,
+      "score_change_pp": -1.1627588173583594,
+      "largest_score_drops": [
+        {
+          "index": 5054,
+          "score_change_pp": -100.0
+        },
+        {
+          "index": 5020,
+          "score_change_pp": -66.66666666666666
+        }
+      ]
+    },
+    "qasper": {
+      "paired": 0,
+      "metric": "qa_f1_score",
+      "min_input_tokens": null,
+      "max_input_tokens": null,
+      "mean_input_tokens": null,
+      "identical_outputs": 0,
+      "higher": 0,
+      "equal": 0,
+      "lower": 0,
+      "Full": {
+        "mean_ttft_s": null,
+        "mean_duration_s": null,
+        "mean_output_tokens": null,
+        "termination": {},
+        "score_100": null
+      },
+      "RedKnot": {
+        "mean_ttft_s": null,
+        "mean_duration_s": null,
+        "mean_output_tokens": null,
+        "termination": {},
+        "score_100": null
+      },
+      "speedup_ratio_of_mean_ttft": null,
+      "score_change_pp": null,
+      "largest_score_drops": []
+    },
+    "multifieldqa_en": {
+      "paired": 0,
+      "metric": "qa_f1_score",
+      "min_input_tokens": null,
+      "max_input_tokens": null,
+      "mean_input_tokens": null,
+      "identical_outputs": 0,
+      "higher": 0,
+      "equal": 0,
+      "lower": 0,
+      "Full": {
+        "mean_ttft_s": null,
+        "mean_duration_s": null,
+        "mean_output_tokens": null,
+        "termination": {},
+        "score_100": null
+      },
+      "RedKnot": {
+        "mean_ttft_s": null,
+        "mean_duration_s": null,
+        "mean_output_tokens": null,
+        "termination": {},
+        "score_100": null
+      },
+      "speedup_ratio_of_mean_ttft": null,
+      "score_change_pp": null,
+      "largest_score_drops": []
+    },
+    "multifieldqa_zh": {
+      "paired": 0,
+      "metric": "qa_f1_zh_score",
+      "min_input_tokens": null,
+      "max_input_tokens": null,
+      "mean_input_tokens": null,
+      "identical_outputs": 0,
+      "higher": 0,
+      "equal": 0,
+      "lower": 0,
+      "Full": {
+        "mean_ttft_s": null,
+        "mean_duration_s": null,
+        "mean_output_tokens": null,
+        "termination": {},
+        "score_100": null
+      },
+      "RedKnot": {
+        "mean_ttft_s": null,
+        "mean_duration_s": null,
+        "mean_output_tokens": null,
+        "termination": {},
+        "score_100": null
+      },
+      "speedup_ratio_of_mean_ttft": null,
+      "score_change_pp": null,
+      "largest_score_drops": []
+    },
+    "gov_report": {
+      "paired": 0,
+      "metric": "rouge_score",
+      "min_input_tokens": null,
+      "max_input_tokens": null,
+      "mean_input_tokens": null,
+      "identical_outputs": 0,
+      "higher": 0,
+      "equal": 0,
+      "lower": 0,
+      "Full": {
+        "mean_ttft_s": null,
+        "mean_duration_s": null,
+        "mean_output_tokens": null,
+        "termination": {},
+        "score_100": null
+      },
+      "RedKnot": {
+        "mean_ttft_s": null,
+        "mean_duration_s": null,
+        "mean_output_tokens": null,
+        "termination": {},
+        "score_100": null
+      },
+      "speedup_ratio_of_mean_ttft": null,
+      "score_change_pp": null,
+      "largest_score_drops": []
+    },
+    "qmsum": {
+      "paired": 0,
+      "metric": "rouge_score",
+      "min_input_tokens": null,
+      "max_input_tokens": null,
+      "mean_input_tokens": null,
+      "identical_outputs": 0,
+      "higher": 0,
+      "equal": 0,
+      "lower": 0,
+      "Full": {
+        "mean_ttft_s": null,
+        "mean_duration_s": null,
+        "mean_output_tokens": null,
+        "termination": {},
+        "score_100": null
+      },
+      "RedKnot": {
+        "mean_ttft_s": null,
+        "mean_duration_s": null,
+        "mean_output_tokens": null,
+        "termination": {},
+        "score_100": null
+      },
+      "speedup_ratio_of_mean_ttft": null,
+      "score_change_pp": null,
+      "largest_score_drops": []
+    },
+    "multi_news": {
+      "paired": 0,
+      "metric": "rouge_score",
+      "min_input_tokens": null,
+      "max_input_tokens": null,
+      "mean_input_tokens": null,
+      "identical_outputs": 0,
+      "higher": 0,
+      "equal": 0,
+      "lower": 0,
+      "Full": {
+        "mean_ttft_s": null,
+        "mean_duration_s": null,
+        "mean_output_tokens": null,
+        "termination": {},
+        "score_100": null
+      },
+      "RedKnot": {
+        "mean_ttft_s": null,
+        "mean_duration_s": null,
+        "mean_output_tokens": null,
+        "termination": {},
+        "score_100": null
+      },
+      "speedup_ratio_of_mean_ttft": null,
+      "score_change_pp": null,
+      "largest_score_drops": []
+    },
+    "vcsum": {
+      "paired": 0,
+      "metric": "rouge_zh_score",
+      "min_input_tokens": null,
+      "max_input_tokens": null,
+      "mean_input_tokens": null,
+      "identical_outputs": 0,
+      "higher": 0,
+      "equal": 0,
+      "lower": 0,
+      "Full": {
+        "mean_ttft_s": null,
+        "mean_duration_s": null,
+        "mean_output_tokens": null,
+        "termination": {},
+        "score_100": null
+      },
+      "RedKnot": {
+        "mean_ttft_s": null,
+        "mean_duration_s": null,
+        "mean_output_tokens": null,
+        "termination": {},
+        "score_100": null
+      },
+      "speedup_ratio_of_mean_ttft": null,
+      "score_change_pp": null,
+      "largest_score_drops": []
+    },
+    "trec": {
+      "paired": 0,
+      "metric": "classification_score",
+      "min_input_tokens": null,
+      "max_input_tokens": null,
+      "mean_input_tokens": null,
+      "identical_outputs": 0,
+      "higher": 0,
+      "equal": 0,
+      "lower": 0,
+      "Full": {
+        "mean_ttft_s": null,
+        "mean_duration_s": null,
+        "mean_output_tokens": null,
+        "termination": {},
+        "score_100": null
+      },
+      "RedKnot": {
+        "mean_ttft_s": null,
+        "mean_duration_s": null,
+        "mean_output_tokens": null,
+        "termination": {},
+        "score_100": null
+      },
+      "speedup_ratio_of_mean_ttft": null,
+      "score_change_pp": null,
+      "largest_score_drops": []
+    },
+    "triviaqa": {
+      "paired": 0,
+      "metric": "qa_f1_score",
+      "min_input_tokens": null,
+      "max_input_tokens": null,
+      "mean_input_tokens": null,
+      "identical_outputs": 0,
+      "higher": 0,
+      "equal": 0,
+      "lower": 0,
+      "Full": {
+        "mean_ttft_s": null,
+        "mean_duration_s": null,
+        "mean_output_tokens": null,
+        "termination": {},
+        "score_100": null
+      },
+      "RedKnot": {
+        "mean_ttft_s": null,
+        "mean_duration_s": null,
+        "mean_output_tokens": null,
+        "termination": {},
+        "score_100": null
+      },
+      "speedup_ratio_of_mean_ttft": null,
+      "score_change_pp": null,
+      "largest_score_drops": []
+    },
+    "samsum": {
+      "paired": 0,
+      "metric": "rouge_score",
+      "min_input_tokens": null,
+      "max_input_tokens": null,
+      "mean_input_tokens": null,
+      "identical_outputs": 0,
+      "higher": 0,
+      "equal": 0,
+      "lower": 0,
+      "Full": {
+        "mean_ttft_s": null,
+        "mean_duration_s": null,
+        "mean_output_tokens": null,
+        "termination": {},
+        "score_100": null
+      },
+      "RedKnot": {
+        "mean_ttft_s": null,
+        "mean_duration_s": null,
+        "mean_output_tokens": null,
+        "termination": {},
+        "score_100": null
+      },
+      "speedup_ratio_of_mean_ttft": null,
+      "score_change_pp": null,
+      "largest_score_drops": []
+    },
+    "lsht": {
+      "paired": 0,
+      "metric": "classification_score",
+      "min_input_tokens": null,
+      "max_input_tokens": null,
+      "mean_input_tokens": null,
+      "identical_outputs": 0,
+      "higher": 0,
+      "equal": 0,
+      "lower": 0,
+      "Full": {
+        "mean_ttft_s": null,
+        "mean_duration_s": null,
+        "mean_output_tokens": null,
+        "termination": {},
+        "score_100": null
+      },
+      "RedKnot": {
+        "mean_ttft_s": null,
+        "mean_duration_s": null,
+        "mean_output_tokens": null,
+        "termination": {},
+        "score_100": null
+      },
+      "speedup_ratio_of_mean_ttft": null,
+      "score_change_pp": null,
+      "largest_score_drops": []
+    },
+    "passage_count": {
+      "paired": 0,
+      "metric": "count_score",
+      "min_input_tokens": null,
+      "max_input_tokens": null,
+      "mean_input_tokens": null,
+      "identical_outputs": 0,
+      "higher": 0,
+      "equal": 0,
+      "lower": 0,
+      "Full": {
+        "mean_ttft_s": null,
+        "mean_duration_s": null,
+        "mean_output_tokens": null,
+        "termination": {},
+        "score_100": null
+      },
+      "RedKnot": {
+        "mean_ttft_s": null,
+        "mean_duration_s": null,
+        "mean_output_tokens": null,
+        "termination": {},
+        "score_100": null
+      },
+      "speedup_ratio_of_mean_ttft": null,
+      "score_change_pp": null,
+      "largest_score_drops": []
+    },
+    "passage_retrieval_en": {
+      "paired": 0,
+      "metric": "retrieval_score",
+      "min_input_tokens": null,
+      "max_input_tokens": null,
+      "mean_input_tokens": null,
+      "identical_outputs": 0,
+      "higher": 0,
+      "equal": 0,
+      "lower": 0,
+      "Full": {
+        "mean_ttft_s": null,
+        "mean_duration_s": null,
+        "mean_output_tokens": null,
+        "termination": {},
+        "score_100": null
+      },
+      "RedKnot": {
+        "mean_ttft_s": null,
+        "mean_duration_s": null,
+        "mean_output_tokens": null,
+        "termination": {},
+        "score_100": null
+      },
+      "speedup_ratio_of_mean_ttft": null,
+      "score_change_pp": null,
+      "largest_score_drops": []
+    },
+    "passage_retrieval_zh": {
+      "paired": 0,
+      "metric": "retrieval_zh_score",
+      "min_input_tokens": null,
+      "max_input_tokens": null,
+      "mean_input_tokens": null,
+      "identical_outputs": 0,
+      "higher": 0,
+      "equal": 0,
+      "lower": 0,
+      "Full": {
+        "mean_ttft_s": null,
+        "mean_duration_s": null,
+        "mean_output_tokens": null,
+        "termination": {},
+        "score_100": null
+      },
+      "RedKnot": {
+        "mean_ttft_s": null,
+        "mean_duration_s": null,
+        "mean_output_tokens": null,
+        "termination": {},
+        "score_100": null
+      },
+      "speedup_ratio_of_mean_ttft": null,
+      "score_change_pp": null,
+      "largest_score_drops": []
+    },
+    "lcc": {
+      "paired": 0,
+      "metric": "code_sim_score",
+      "min_input_tokens": null,
+      "max_input_tokens": null,
+      "mean_input_tokens": null,
+      "identical_outputs": 0,
+      "higher": 0,
+      "equal": 0,
+      "lower": 0,
+      "Full": {
+        "mean_ttft_s": null,
+        "mean_duration_s": null,
+        "mean_output_tokens": null,
+        "termination": {},
+        "score_100": null
+      },
+      "RedKnot": {
+        "mean_ttft_s": null,
+        "mean_duration_s": null,
+        "mean_output_tokens": null,
+        "termination": {},
+        "score_100": null
+      },
+      "speedup_ratio_of_mean_ttft": null,
+      "score_change_pp": null,
+      "largest_score_drops": []
+    },
+    "repobench-p": {
+      "paired": 0,
+      "metric": "code_sim_score",
+      "min_input_tokens": null,
+      "max_input_tokens": null,
+      "mean_input_tokens": null,
+      "identical_outputs": 0,
+      "higher": 0,
+      "equal": 0,
+      "lower": 0,
+      "Full": {
+        "mean_ttft_s": null,
+        "mean_duration_s": null,
+        "mean_output_tokens": null,
+        "termination": {},
+        "score_100": null
+      },
+      "RedKnot": {
+        "mean_ttft_s": null,
+        "mean_duration_s": null,
+        "mean_output_tokens": null,
+        "termination": {},
+        "score_100": null
+      },
+      "speedup_ratio_of_mean_ttft": null,
+      "score_change_pp": null,
+      "largest_score_drops": []
+    }
+  },
+  "by_length": {
+    "16k": {
+      "paired": 77,
+      "metric": null,
+      "min_input_tokens": 12174,
+      "max_input_tokens": 16358,
+      "mean_input_tokens": 15283.57142857143,
+      "identical_outputs": 45,
+      "higher": 8,
+      "equal": 51,
+      "lower": 18,
+      "Full": {
+        "mean_ttft_s": 8.679053027155843,
+        "mean_duration_s": 11.764406543454545,
+        "mean_output_tokens": 56.883116883116884,
+        "termination": {
+          "stop": 77
+        }
+      },
+      "RedKnot": {
+        "mean_ttft_s": 5.246277508636363,
+        "mean_duration_s": 8.399002977155844,
+        "mean_output_tokens": 53.44155844155844,
+        "termination": {
+          "stop": 77
+        }
+      },
+      "speedup_ratio_of_mean_ttft": 1.6543259507085708
+    },
+    "32k": {
+      "paired": 107,
+      "metric": null,
+      "min_input_tokens": 29882,
+      "max_input_tokens": 32526,
+      "mean_input_tokens": 31275.92523364486,
+      "identical_outputs": 50,
+      "higher": 14,
+      "equal": 68,
+      "lower": 25,
+      "Full": {
+        "mean_ttft_s": 14.394116202214953,
+        "mean_duration_s": 17.195137451308412,
+        "mean_output_tokens": 47.18691588785047,
+        "termination": {
+          "stop": 107
+        }
+      },
+      "RedKnot": {
+        "mean_ttft_s": 7.7039917352242995,
+        "mean_duration_s": 11.683145211990654,
+        "mean_output_tokens": 75.85046728971963,
+        "termination": {
+          "stop": 107
+        }
+      },
+      "speedup_ratio_of_mean_ttft": 1.868397150064683
+    },
+    "64k": {
+      "paired": 112,
+      "metric": null,
+      "min_input_tokens": 58750,
+      "max_input_tokens": 65190,
+      "mean_input_tokens": 63829.6875,
+      "identical_outputs": 56,
+      "higher": 14,
+      "equal": 68,
+      "lower": 30,
+      "Full": {
+        "mean_ttft_s": 27.603155899767856,
+        "mean_duration_s": 29.993528770267858,
+        "mean_output_tokens": 44.05357142857143,
+        "termination": {
+          "stop": 112
+        }
+      },
+      "RedKnot": {
+        "mean_ttft_s": 13.9846198929375,
+        "mean_duration_s": 16.653489665535716,
+        "mean_output_tokens": 47.50892857142857,
+        "termination": {
+          "stop": 112
+        }
+      },
+      "speedup_ratio_of_mean_ttft": 1.973822392820843
+    },
+    "128k": {
+      "paired": 184,
+      "metric": null,
+      "min_input_tokens": 123153,
+      "max_input_tokens": 130868,
+      "mean_input_tokens": 128599.15760869565,
+      "identical_outputs": 83,
+      "higher": 35,
+      "equal": 101,
+      "lower": 48,
+      "Full": {
+        "mean_ttft_s": 54.276919003804345,
+        "mean_duration_s": 57.521184261673916,
+        "mean_output_tokens": 54.869565217391305,
+        "termination": {
+          "stop": 184
+        }
+      },
+      "RedKnot": {
+        "mean_ttft_s": 25.09723831295652,
+        "mean_duration_s": 28.96986678802174,
+        "mean_output_tokens": 63.71195652173913,
+        "termination": {
+          "stop": 184
+        }
+      },
+      "speedup_ratio_of_mean_ttft": 2.162665004291876
+    },
+    "256k": {
+      "paired": 20,
+      "metric": null,
+      "min_input_tokens": 247876,
+      "max_input_tokens": 253504,
+      "mean_input_tokens": 250803.8,
+      "identical_outputs": 10,
+      "higher": 3,
+      "equal": 14,
+      "lower": 3,
+      "Full": {
+        "mean_ttft_s": 112.7543196628,
+        "mean_duration_s": 113.2163080126,
+        "mean_output_tokens": 7.1,
+        "termination": {
+          "stop": 20
+        }
+      },
+      "RedKnot": {
+        "mean_ttft_s": 54.7405331885,
+        "mean_duration_s": 55.21181227545,
+        "mean_output_tokens": 7.25,
+        "termination": {
+          "stop": 20
+        }
+      },
+      "speedup_ratio_of_mean_ttft": 2.0597957874200548
+    }
+  },
+  "by_composition": {
+    "native": {
+      "paired": 42,
+      "metric": null,
+      "min_input_tokens": 12174,
+      "max_input_tokens": 61560,
+      "mean_input_tokens": 19835.880952380954,
+      "identical_outputs": 23,
+      "higher": 4,
+      "equal": 29,
+      "lower": 9,
+      "Full": {
+        "mean_ttft_s": 10.531130960619048,
+        "mean_duration_s": 12.722508021047618,
+        "mean_output_tokens": 43.285714285714285,
+        "termination": {
+          "stop": 42
+        }
+      },
+      "RedKnot": {
+        "mean_ttft_s": 5.749680947428572,
+        "mean_duration_s": 7.670237968047619,
+        "mean_output_tokens": 36.57142857142857,
+        "termination": {
+          "stop": 42
+        }
+      },
+      "speedup_ratio_of_mean_ttft": 1.8316026675060784
+    },
+    "extended": {
+      "paired": 458,
+      "metric": null,
+      "min_input_tokens": 15053,
+      "max_input_tokens": 253504,
+      "mean_input_tokens": 86282.74672489084,
+      "identical_outputs": 221,
+      "higher": 70,
+      "equal": 273,
+      "lower": 115,
+      "Full": {
+        "mean_ttft_s": 37.33568333430568,
+        "mean_duration_s": 40.21592349546288,
+        "mean_output_tokens": 49.74454148471616,
+        "termination": {
+          "stop": 458
+        }
+      },
+      "RedKnot": {
+        "mean_ttft_s": 18.047562937565502,
+        "mean_duration_s": 21.560157967927946,
+        "mean_output_tokens": 60.88209606986899,
+        "termination": {
+          "stop": 458
+        }
+      },
+      "speedup_ratio_of_mean_ttft": 2.068738225956951
+    }
+  },
+  "by_dataset_and_length": {
+    "hotpotqa": {
+      "16k": {
+        "paired": 19,
+        "metric": "qa_f1_score",
+        "min_input_tokens": 12776,
+        "max_input_tokens": 16327,
+        "mean_input_tokens": 15356.052631578947,
+        "identical_outputs": 17,
+        "higher": 0,
+        "equal": 18,
+        "lower": 1,
+        "Full": {
+          "mean_ttft_s": 7.834314284105263,
+          "mean_duration_s": 8.087038502631579,
+          "mean_output_tokens": 4.052631578947368,
+          "termination": {
+            "stop": 19
+          },
+          "score_100": 93.15596684017736
+        },
+        "RedKnot": {
+          "mean_ttft_s": 4.2262003550000005,
+          "mean_duration_s": 4.480745056736842,
+          "mean_output_tokens": 4.052631578947368,
+          "termination": {
+            "stop": 19
+          },
+          "score_100": 89.6471949103528
+        },
+        "speedup_ratio_of_mean_ttft": 1.8537489058786618,
+        "score_change_pp": -3.5087719298245617
+      },
+      "32k": {
+        "paired": 21,
+        "metric": "qa_f1_score",
+        "min_input_tokens": 31008,
+        "max_input_tokens": 31690,
+        "mean_input_tokens": 31305.285714285714,
+        "identical_outputs": 16,
+        "higher": 1,
+        "equal": 19,
+        "lower": 1,
+        "Full": {
+          "mean_ttft_s": 14.183172076142856,
+          "mean_duration_s": 14.42846259647619,
+          "mean_output_tokens": 3.5714285714285716,
+          "termination": {
+            "stop": 21
+          },
+          "score_100": 65.26077097505669
+        },
+        "RedKnot": {
+          "mean_ttft_s": 7.098602418809524,
+          "mean_duration_s": 7.374311717285714,
+          "mean_output_tokens": 3.619047619047619,
+          "termination": {
+            "stop": 21
+          },
+          "score_100": 63.990929705215414
+        },
+        "speedup_ratio_of_mean_ttft": 1.998023165596793,
+        "score_change_pp": -1.2698412698412698
+      },
+      "64k": {
+        "paired": 20,
+        "metric": "qa_f1_score",
+        "min_input_tokens": 63968,
+        "max_input_tokens": 65042,
+        "mean_input_tokens": 64271.95,
+        "identical_outputs": 15,
+        "higher": 0,
+        "equal": 17,
+        "lower": 3,
+        "Full": {
+          "mean_ttft_s": 26.9132669747,
+          "mean_duration_s": 27.21080114615,
+          "mean_output_tokens": 4.65,
+          "termination": {
+            "stop": 20
+          },
+          "score_100": 71.7215320910973
+        },
+        "RedKnot": {
+          "mean_ttft_s": 13.15171783205,
+          "mean_duration_s": 13.4513827842,
+          "mean_output_tokens": 4.9,
+          "termination": {
+            "stop": 20
+          },
+          "score_100": 60.7014652014652
+        },
+        "speedup_ratio_of_mean_ttft": 2.046368947265115,
+        "score_change_pp": -11.020066889632107
+      },
+      "128k": {
+        "paired": 40,
+        "metric": "qa_f1_score",
+        "min_input_tokens": 128766,
+        "max_input_tokens": 129090,
+        "mean_input_tokens": 128882.35,
+        "identical_outputs": 32,
+        "higher": 3,
+        "equal": 32,
+        "lower": 5,
+        "Full": {
+          "mean_ttft_s": 54.433584795475,
+          "mean_duration_s": 54.749861758675,
+          "mean_output_tokens": 5.1,
+          "termination": {
+            "stop": 40
+          },
+          "score_100": 74.64556277056276
+        },
+        "RedKnot": {
+          "mean_ttft_s": 23.720479541975,
+          "mean_duration_s": 24.03326314685,
+          "mean_output_tokens": 4.95,
+          "termination": {
+            "stop": 40
+          },
+          "score_100": 74.05627705627705
+        },
+        "speedup_ratio_of_mean_ttft": 2.2947927633229788,
+        "score_change_pp": -0.5892857142857141
+      },
+      "256k": {
+        "paired": 0,
+        "metric": "qa_f1_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      }
+    },
+    "2wikimqa": {
+      "16k": {
+        "paired": 20,
+        "metric": "qa_f1_score",
+        "min_input_tokens": 15194,
+        "max_input_tokens": 15765,
+        "mean_input_tokens": 15261.8,
+        "identical_outputs": 18,
+        "higher": 0,
+        "equal": 19,
+        "lower": 1,
+        "Full": {
+          "mean_ttft_s": 9.10514598285,
+          "mean_duration_s": 9.3809086969,
+          "mean_output_tokens": 4.95,
+          "termination": {
+            "stop": 20
+          },
+          "score_100": 68.33333333333333
+        },
+        "RedKnot": {
+          "mean_ttft_s": 5.89698613275,
+          "mean_duration_s": 6.17243251685,
+          "mean_output_tokens": 4.7,
+          "termination": {
+            "stop": 20
+          },
+          "score_100": 63.33333333333333
+        },
+        "speedup_ratio_of_mean_ttft": 1.544033812846005,
+        "score_change_pp": -5.0
+      },
+      "32k": {
+        "paired": 20,
+        "metric": "qa_f1_score",
+        "min_input_tokens": 30968,
+        "max_input_tokens": 32526,
+        "mean_input_tokens": 31347.85,
+        "identical_outputs": 15,
+        "higher": 1,
+        "equal": 17,
+        "lower": 2,
+        "Full": {
+          "mean_ttft_s": 15.37081641395,
+          "mean_duration_s": 15.6867436195,
+          "mean_output_tokens": 5.6,
+          "termination": {
+            "stop": 20
+          },
+          "score_100": 74.41666666666666
+        },
+        "RedKnot": {
+          "mean_ttft_s": 7.9336265118,
+          "mean_duration_s": 8.52053850095,
+          "mean_output_tokens": 5.35,
+          "termination": {
+            "stop": 20
+          },
+          "score_100": 69.0
+        },
+        "speedup_ratio_of_mean_ttft": 1.937426269195855,
+        "score_change_pp": -5.416666666666667
+      },
+      "64k": {
+        "paired": 20,
+        "metric": "qa_f1_score",
+        "min_input_tokens": 62975,
+        "max_input_tokens": 64385,
+        "mean_input_tokens": 64124.9,
+        "identical_outputs": 14,
+        "higher": 1,
+        "equal": 16,
+        "lower": 3,
+        "Full": {
+          "mean_ttft_s": 28.5597482459,
+          "mean_duration_s": 28.91273270545,
+          "mean_output_tokens": 5.55,
+          "termination": {
+            "stop": 20
+          },
+          "score_100": 70.0
+        },
+        "RedKnot": {
+          "mean_ttft_s": 14.40566816025,
+          "mean_duration_s": 14.76149609995,
+          "mean_output_tokens": 6.05,
+          "termination": {
+            "stop": 20
+          },
+          "score_100": 60.0
+        },
+        "speedup_ratio_of_mean_ttft": 1.982535480353892,
+        "score_change_pp": -10.0
+      },
+      "128k": {
+        "paired": 40,
+        "metric": "qa_f1_score",
+        "min_input_tokens": 125416,
+        "max_input_tokens": 129257,
+        "mean_input_tokens": 128433.375,
+        "identical_outputs": 20,
+        "higher": 3,
+        "equal": 26,
+        "lower": 11,
+        "Full": {
+          "mean_ttft_s": 55.881702632375,
+          "mean_duration_s": 56.215995280575,
+          "mean_output_tokens": 5.125,
+          "termination": {
+            "stop": 40
+          },
+          "score_100": 59.18452380952382
+        },
+        "RedKnot": {
+          "mean_ttft_s": 25.95249127855,
+          "mean_duration_s": 26.2728754563,
+          "mean_output_tokens": 4.825,
+          "termination": {
+            "stop": 40
+          },
+          "score_100": 43.642857142857146
+        },
+        "speedup_ratio_of_mean_ttft": 2.153230764345225,
+        "score_change_pp": -15.541666666666666
+      },
+      "256k": {
+        "paired": 0,
+        "metric": "qa_f1_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      }
+    },
+    "musique": {
+      "16k": {
+        "paired": 17,
+        "metric": "qa_f1_score",
+        "min_input_tokens": 15217,
+        "max_input_tokens": 16358,
+        "mean_input_tokens": 15970.35294117647,
+        "identical_outputs": 10,
+        "higher": 1,
+        "equal": 14,
+        "lower": 2,
+        "Full": {
+          "mean_ttft_s": 9.610999657647058,
+          "mean_duration_s": 9.982278539941177,
+          "mean_output_tokens": 4.882352941176471,
+          "termination": {
+            "stop": 17
+          },
+          "score_100": 46.778711484593835
+        },
+        "RedKnot": {
+          "mean_ttft_s": 5.210371235647059,
+          "mean_duration_s": 5.59853548317647,
+          "mean_output_tokens": 4.823529411764706,
+          "termination": {
+            "stop": 17
+          },
+          "score_100": 45.23809523809524
+        },
+        "speedup_ratio_of_mean_ttft": 1.844590188102691,
+        "score_change_pp": -1.540616246498599
+      },
+      "32k": {
+        "paired": 23,
+        "metric": "qa_f1_score",
+        "min_input_tokens": 31132,
+        "max_input_tokens": 31689,
+        "mean_input_tokens": 31294.347826086956,
+        "identical_outputs": 12,
+        "higher": 2,
+        "equal": 17,
+        "lower": 4,
+        "Full": {
+          "mean_ttft_s": 14.23315368826087,
+          "mean_duration_s": 14.615659514608696,
+          "mean_output_tokens": 5.521739130434782,
+          "termination": {
+            "stop": 23
+          },
+          "score_100": 39.50310559006211
+        },
+        "RedKnot": {
+          "mean_ttft_s": 8.44421203747826,
+          "mean_duration_s": 8.766147593391304,
+          "mean_output_tokens": 4.6521739130434785,
+          "termination": {
+            "stop": 23
+          },
+          "score_100": 38.792270531400966
+        },
+        "speedup_ratio_of_mean_ttft": 1.6855514315710376,
+        "score_change_pp": -0.7108350586611457
+      },
+      "64k": {
+        "paired": 20,
+        "metric": "qa_f1_score",
+        "min_input_tokens": 61529,
+        "max_input_tokens": 64424,
+        "mean_input_tokens": 64064.8,
+        "identical_outputs": 13,
+        "higher": 1,
+        "equal": 16,
+        "lower": 3,
+        "Full": {
+          "mean_ttft_s": 28.5335973774,
+          "mean_duration_s": 28.86904208965,
+          "mean_output_tokens": 4.75,
+          "termination": {
+            "stop": 20
+          },
+          "score_100": 50.66666666666667
+        },
+        "RedKnot": {
+          "mean_ttft_s": 13.8466361401,
+          "mean_duration_s": 14.25101558945,
+          "mean_output_tokens": 6.4,
+          "termination": {
+            "stop": 20
+          },
+          "score_100": 40.095238095238095
+        },
+        "speedup_ratio_of_mean_ttft": 2.0606880320026906,
+        "score_change_pp": -10.571428571428571
+      },
+      "128k": {
+        "paired": 40,
+        "metric": "qa_f1_score",
+        "min_input_tokens": 127047,
+        "max_input_tokens": 130269,
+        "mean_input_tokens": 128830.475,
+        "identical_outputs": 23,
+        "higher": 8,
+        "equal": 30,
+        "lower": 2,
+        "Full": {
+          "mean_ttft_s": 55.201205314125,
+          "mean_duration_s": 55.579153891175,
+          "mean_output_tokens": 5.925,
+          "termination": {
+            "stop": 40
+          },
+          "score_100": 47.19407530454042
+        },
+        "RedKnot": {
+          "mean_ttft_s": 25.57528469275,
+          "mean_duration_s": 26.10308164725,
+          "mean_output_tokens": 8.55,
+          "termination": {
+            "stop": 40
+          },
+          "score_100": 60.074404761904766
+        },
+        "speedup_ratio_of_mean_ttft": 2.158380873459964,
+        "score_change_pp": 12.880329457364342
+      },
+      "256k": {
+        "paired": 0,
+        "metric": "qa_f1_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      }
+    },
+    "dureader": {
+      "16k": {
+        "paired": 20,
+        "metric": "rouge_zh_score",
+        "min_input_tokens": 12174,
+        "max_input_tokens": 15664,
+        "mean_input_tokens": 14742.2,
+        "identical_outputs": 0,
+        "higher": 6,
+        "equal": 0,
+        "lower": 14,
+        "Full": {
+          "mean_ttft_s": 8.18175548335,
+          "mean_duration_s": 19.2144381957,
+          "mean_output_tokens": 205.8,
+          "termination": {
+            "stop": 20
+          },
+          "score_100": 38.53847124763766
+        },
+        "RedKnot": {
+          "mean_ttft_s": 5.6575367583,
+          "mean_duration_s": 16.9331972719,
+          "mean_output_tokens": 192.95,
+          "termination": {
+            "stop": 20
+          },
+          "score_100": 31.281680682155493
+        },
+        "speedup_ratio_of_mean_ttft": 1.4461692133677782,
+        "score_change_pp": -7.256790565482159
+      },
+      "32k": {
+        "paired": 20,
+        "metric": "rouge_zh_score",
+        "min_input_tokens": 30951,
+        "max_input_tokens": 32216,
+        "mean_input_tokens": 31308.1,
+        "identical_outputs": 0,
+        "higher": 6,
+        "equal": 0,
+        "lower": 14,
+        "Full": {
+          "mean_ttft_s": 13.57100691715,
+          "mean_duration_s": 26.7133465887,
+          "mean_output_tokens": 225.5,
+          "termination": {
+            "stop": 20
+          },
+          "score_100": 32.18670604918621
+        },
+        "RedKnot": {
+          "mean_ttft_s": 7.1896195163000005,
+          "mean_duration_s": 26.45027331975,
+          "mean_output_tokens": 379.45,
+          "termination": {
+            "stop": 20
+          },
+          "score_100": 26.525311440071125
+        },
+        "speedup_ratio_of_mean_ttft": 1.8875834647970435,
+        "score_change_pp": -5.661394609115089
+      },
+      "64k": {
+        "paired": 20,
+        "metric": "rouge_zh_score",
+        "min_input_tokens": 64141,
+        "max_input_tokens": 65096,
+        "mean_input_tokens": 64251.8,
+        "identical_outputs": 1,
+        "higher": 7,
+        "equal": 1,
+        "lower": 12,
+        "Full": {
+          "mean_ttft_s": 26.5444358403,
+          "mean_duration_s": 37.9728365017,
+          "mean_output_tokens": 217.7,
+          "termination": {
+            "stop": 20
+          },
+          "score_100": 38.86883473375502
+        },
+        "RedKnot": {
+          "mean_ttft_s": 14.3414390177,
+          "mean_duration_s": 27.2688196334,
+          "mean_output_tokens": 234.95,
+          "termination": {
+            "stop": 20
+          },
+          "score_100": 34.49473584099252
+        },
+        "speedup_ratio_of_mean_ttft": 1.8508906817188453,
+        "score_change_pp": -4.3740988927625075
+      },
+      "128k": {
+        "paired": 40,
+        "metric": "rouge_zh_score",
+        "min_input_tokens": 124563,
+        "max_input_tokens": 129006,
+        "mean_input_tokens": 128597.975,
+        "identical_outputs": 0,
+        "higher": 16,
+        "equal": 0,
+        "lower": 24,
+        "Full": {
+          "mean_ttft_s": 51.340587798175,
+          "mean_duration_s": 64.83915784655,
+          "mean_output_tokens": 230.9,
+          "termination": {
+            "stop": 40
+          },
+          "score_100": 30.402954564610386
+        },
+        "RedKnot": {
+          "mean_ttft_s": 25.030430206800002,
+          "mean_duration_s": 41.221163707375,
+          "mean_output_tokens": 267.975,
+          "termination": {
+            "stop": 40
+          },
+          "score_100": 29.123329184794578
+        },
+        "speedup_ratio_of_mean_ttft": 2.0511268633420188,
+        "score_change_pp": -1.2796253798158044
+      },
+      "256k": {
+        "paired": 0,
+        "metric": "rouge_zh_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      }
+    },
+    "narrativeqa": {
+      "16k": {
+        "paired": 1,
+        "metric": "qa_f1_score",
+        "min_input_tokens": 13494,
+        "max_input_tokens": 13494,
+        "mean_input_tokens": 13494,
+        "identical_outputs": 0,
+        "higher": 1,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": 10.310088189,
+          "mean_duration_s": 10.599899265,
+          "mean_output_tokens": 5,
+          "termination": {
+            "stop": 1
+          },
+          "score_100": 66.66666666666666
+        },
+        "RedKnot": {
+          "mean_ttft_s": 3.998792593,
+          "mean_duration_s": 4.301374174,
+          "mean_output_tokens": 3,
+          "termination": {
+            "stop": 1
+          },
+          "score_100": 100.0
+        },
+        "speedup_ratio_of_mean_ttft": 2.5783003117111156,
+        "score_change_pp": 33.333333333333336
+      },
+      "32k": {
+        "paired": 23,
+        "metric": "qa_f1_score",
+        "min_input_tokens": 29882,
+        "max_input_tokens": 32267,
+        "mean_input_tokens": 31140.17391304348,
+        "identical_outputs": 7,
+        "higher": 4,
+        "equal": 15,
+        "lower": 4,
+        "Full": {
+          "mean_ttft_s": 14.614122547217391,
+          "mean_duration_s": 15.335653033217392,
+          "mean_output_tokens": 9.782608695652174,
+          "termination": {
+            "stop": 23
+          },
+          "score_100": 28.52099591230026
+        },
+        "RedKnot": {
+          "mean_ttft_s": 7.7641159760869565,
+          "mean_duration_s": 8.443406980782608,
+          "mean_output_tokens": 10.304347826086957,
+          "termination": {
+            "stop": 23
+          },
+          "score_100": 29.69289164941339
+        },
+        "speedup_ratio_of_mean_ttft": 1.882264844088892,
+        "score_change_pp": 1.1718957371131289
+      },
+      "64k": {
+        "paired": 32,
+        "metric": "qa_f1_score",
+        "min_input_tokens": 58750,
+        "max_input_tokens": 65190,
+        "mean_input_tokens": 62958,
+        "identical_outputs": 13,
+        "higher": 5,
+        "equal": 18,
+        "lower": 9,
+        "Full": {
+          "mean_ttft_s": 27.51664037525,
+          "mean_duration_s": 28.12396791909375,
+          "mean_output_tokens": 8.78125,
+          "termination": {
+            "stop": 32
+          },
+          "score_100": 40.103463923809294
+        },
+        "RedKnot": {
+          "mean_ttft_s": 14.105256406468751,
+          "mean_duration_s": 14.7042675125,
+          "mean_output_tokens": 8.59375,
+          "termination": {
+            "stop": 32
+          },
+          "score_100": 38.052863589056486
+        },
+        "speedup_ratio_of_mean_ttft": 1.9508075275136942,
+        "score_change_pp": -2.050600334752811
+      },
+      "128k": {
+        "paired": 24,
+        "metric": "qa_f1_score",
+        "min_input_tokens": 123153,
+        "max_input_tokens": 130868,
+        "mean_input_tokens": 128019.91666666667,
+        "identical_outputs": 8,
+        "higher": 5,
+        "equal": 13,
+        "lower": 6,
+        "Full": {
+          "mean_ttft_s": 54.69457812891667,
+          "mean_duration_s": 55.355464711208334,
+          "mean_output_tokens": 8.916666666666666,
+          "termination": {
+            "stop": 24
+          },
+          "score_100": 33.46818214465273
+        },
+        "RedKnot": {
+          "mean_ttft_s": 25.281017532541668,
+          "mean_duration_s": 26.051672111875,
+          "mean_output_tokens": 11.291666666666666,
+          "termination": {
+            "stop": 24
+          },
+          "score_100": 29.946950710108606
+        },
+        "speedup_ratio_of_mean_ttft": 2.1634642695260955,
+        "score_change_pp": -3.521231434544128
+      },
+      "256k": {
+        "paired": 20,
+        "metric": "qa_f1_score",
+        "min_input_tokens": 247876,
+        "max_input_tokens": 253504,
+        "mean_input_tokens": 250803.8,
+        "identical_outputs": 10,
+        "higher": 3,
+        "equal": 14,
+        "lower": 3,
+        "Full": {
+          "mean_ttft_s": 112.7543196628,
+          "mean_duration_s": 113.2163080126,
+          "mean_output_tokens": 7.1,
+          "termination": {
+            "stop": 20
+          },
+          "score_100": 37.649068322981364
+        },
+        "RedKnot": {
+          "mean_ttft_s": 54.7405331885,
+          "mean_duration_s": 55.21181227545,
+          "mean_output_tokens": 7.25,
+          "termination": {
+            "stop": 20
+          },
+          "score_100": 36.327365728900254
+        },
+        "speedup_ratio_of_mean_ttft": 2.0597957874200548,
+        "score_change_pp": -1.3217025940811102
+      }
+    },
+    "qasper": {
+      "16k": {
+        "paired": 0,
+        "metric": "qa_f1_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      },
+      "32k": {
+        "paired": 0,
+        "metric": "qa_f1_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      },
+      "64k": {
+        "paired": 0,
+        "metric": "qa_f1_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      },
+      "128k": {
+        "paired": 0,
+        "metric": "qa_f1_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      },
+      "256k": {
+        "paired": 0,
+        "metric": "qa_f1_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      }
+    },
+    "multifieldqa_en": {
+      "16k": {
+        "paired": 0,
+        "metric": "qa_f1_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      },
+      "32k": {
+        "paired": 0,
+        "metric": "qa_f1_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      },
+      "64k": {
+        "paired": 0,
+        "metric": "qa_f1_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      },
+      "128k": {
+        "paired": 0,
+        "metric": "qa_f1_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      },
+      "256k": {
+        "paired": 0,
+        "metric": "qa_f1_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      }
+    },
+    "multifieldqa_zh": {
+      "16k": {
+        "paired": 0,
+        "metric": "qa_f1_zh_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      },
+      "32k": {
+        "paired": 0,
+        "metric": "qa_f1_zh_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      },
+      "64k": {
+        "paired": 0,
+        "metric": "qa_f1_zh_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      },
+      "128k": {
+        "paired": 0,
+        "metric": "qa_f1_zh_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      },
+      "256k": {
+        "paired": 0,
+        "metric": "qa_f1_zh_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      }
+    },
+    "gov_report": {
+      "16k": {
+        "paired": 0,
+        "metric": "rouge_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      },
+      "32k": {
+        "paired": 0,
+        "metric": "rouge_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      },
+      "64k": {
+        "paired": 0,
+        "metric": "rouge_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      },
+      "128k": {
+        "paired": 0,
+        "metric": "rouge_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      },
+      "256k": {
+        "paired": 0,
+        "metric": "rouge_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      }
+    },
+    "qmsum": {
+      "16k": {
+        "paired": 0,
+        "metric": "rouge_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      },
+      "32k": {
+        "paired": 0,
+        "metric": "rouge_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      },
+      "64k": {
+        "paired": 0,
+        "metric": "rouge_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      },
+      "128k": {
+        "paired": 0,
+        "metric": "rouge_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      },
+      "256k": {
+        "paired": 0,
+        "metric": "rouge_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      }
+    },
+    "multi_news": {
+      "16k": {
+        "paired": 0,
+        "metric": "rouge_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      },
+      "32k": {
+        "paired": 0,
+        "metric": "rouge_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      },
+      "64k": {
+        "paired": 0,
+        "metric": "rouge_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      },
+      "128k": {
+        "paired": 0,
+        "metric": "rouge_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      },
+      "256k": {
+        "paired": 0,
+        "metric": "rouge_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      }
+    },
+    "vcsum": {
+      "16k": {
+        "paired": 0,
+        "metric": "rouge_zh_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      },
+      "32k": {
+        "paired": 0,
+        "metric": "rouge_zh_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      },
+      "64k": {
+        "paired": 0,
+        "metric": "rouge_zh_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      },
+      "128k": {
+        "paired": 0,
+        "metric": "rouge_zh_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      },
+      "256k": {
+        "paired": 0,
+        "metric": "rouge_zh_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      }
+    },
+    "trec": {
+      "16k": {
+        "paired": 0,
+        "metric": "classification_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      },
+      "32k": {
+        "paired": 0,
+        "metric": "classification_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      },
+      "64k": {
+        "paired": 0,
+        "metric": "classification_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      },
+      "128k": {
+        "paired": 0,
+        "metric": "classification_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      },
+      "256k": {
+        "paired": 0,
+        "metric": "classification_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      }
+    },
+    "triviaqa": {
+      "16k": {
+        "paired": 0,
+        "metric": "qa_f1_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      },
+      "32k": {
+        "paired": 0,
+        "metric": "qa_f1_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      },
+      "64k": {
+        "paired": 0,
+        "metric": "qa_f1_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      },
+      "128k": {
+        "paired": 0,
+        "metric": "qa_f1_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      },
+      "256k": {
+        "paired": 0,
+        "metric": "qa_f1_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      }
+    },
+    "samsum": {
+      "16k": {
+        "paired": 0,
+        "metric": "rouge_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      },
+      "32k": {
+        "paired": 0,
+        "metric": "rouge_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      },
+      "64k": {
+        "paired": 0,
+        "metric": "rouge_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      },
+      "128k": {
+        "paired": 0,
+        "metric": "rouge_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      },
+      "256k": {
+        "paired": 0,
+        "metric": "rouge_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      }
+    },
+    "lsht": {
+      "16k": {
+        "paired": 0,
+        "metric": "classification_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      },
+      "32k": {
+        "paired": 0,
+        "metric": "classification_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      },
+      "64k": {
+        "paired": 0,
+        "metric": "classification_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      },
+      "128k": {
+        "paired": 0,
+        "metric": "classification_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      },
+      "256k": {
+        "paired": 0,
+        "metric": "classification_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      }
+    },
+    "passage_count": {
+      "16k": {
+        "paired": 0,
+        "metric": "count_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      },
+      "32k": {
+        "paired": 0,
+        "metric": "count_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      },
+      "64k": {
+        "paired": 0,
+        "metric": "count_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      },
+      "128k": {
+        "paired": 0,
+        "metric": "count_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      },
+      "256k": {
+        "paired": 0,
+        "metric": "count_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      }
+    },
+    "passage_retrieval_en": {
+      "16k": {
+        "paired": 0,
+        "metric": "retrieval_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      },
+      "32k": {
+        "paired": 0,
+        "metric": "retrieval_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      },
+      "64k": {
+        "paired": 0,
+        "metric": "retrieval_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      },
+      "128k": {
+        "paired": 0,
+        "metric": "retrieval_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      },
+      "256k": {
+        "paired": 0,
+        "metric": "retrieval_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      }
+    },
+    "passage_retrieval_zh": {
+      "16k": {
+        "paired": 0,
+        "metric": "retrieval_zh_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      },
+      "32k": {
+        "paired": 0,
+        "metric": "retrieval_zh_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      },
+      "64k": {
+        "paired": 0,
+        "metric": "retrieval_zh_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      },
+      "128k": {
+        "paired": 0,
+        "metric": "retrieval_zh_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      },
+      "256k": {
+        "paired": 0,
+        "metric": "retrieval_zh_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      }
+    },
+    "lcc": {
+      "16k": {
+        "paired": 0,
+        "metric": "code_sim_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      },
+      "32k": {
+        "paired": 0,
+        "metric": "code_sim_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      },
+      "64k": {
+        "paired": 0,
+        "metric": "code_sim_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      },
+      "128k": {
+        "paired": 0,
+        "metric": "code_sim_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      },
+      "256k": {
+        "paired": 0,
+        "metric": "code_sim_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      }
+    },
+    "repobench-p": {
+      "16k": {
+        "paired": 0,
+        "metric": "code_sim_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      },
+      "32k": {
+        "paired": 0,
+        "metric": "code_sim_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      },
+      "64k": {
+        "paired": 0,
+        "metric": "code_sim_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      },
+      "128k": {
+        "paired": 0,
+        "metric": "code_sim_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      },
+      "256k": {
+        "paired": 0,
+        "metric": "code_sim_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      }
+    }
+  },
+  "by_dataset_and_composition": {
+    "hotpotqa": {
+      "native": {
+        "paired": 11,
+        "metric": "qa_f1_score",
+        "min_input_tokens": 12776,
+        "max_input_tokens": 16327,
+        "mean_input_tokens": 15462.272727272728,
+        "identical_outputs": 11,
+        "higher": 0,
+        "equal": 11,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": 7.588366456636364,
+          "mean_duration_s": 7.8309348790909095,
+          "mean_output_tokens": 4.181818181818182,
+          "termination": {
+            "stop": 11
+          },
+          "score_100": 91.20879120879121
+        },
+        "RedKnot": {
+          "mean_ttft_s": 4.417555873272727,
+          "mean_duration_s": 4.665498311454545,
+          "mean_output_tokens": 4.181818181818182,
+          "termination": {
+            "stop": 11
+          },
+          "score_100": 91.20879120879121
+        },
+        "speedup_ratio_of_mean_ttft": 1.7177748678964768,
+        "score_change_pp": 0.0
+      },
+      "extended": {
+        "paired": 89,
+        "metric": "qa_f1_score",
+        "min_input_tokens": 15053,
+        "max_input_tokens": 129090,
+        "mean_input_tokens": 81121.61797752809,
+        "identical_outputs": 69,
+        "higher": 4,
+        "equal": 75,
+        "lower": 10,
+        "Full": {
+          "mean_ttft_s": 34.59365489086517,
+          "mean_duration_s": 34.88451298512359,
+          "mean_output_tokens": 4.52808988764045,
+          "termination": {
+            "stop": 89
+          },
+          "score_100": 73.67860685154287
+        },
+        "RedKnot": {
+          "mean_ttft_s": 15.647515519707865,
+          "mean_duration_s": 15.944184295202247,
+          "mean_output_tokens": 4.52808988764045,
+          "termination": {
+            "stop": 89
+          },
+          "score_100": 69.88865067516753
+        },
+        "speedup_ratio_of_mean_ttft": 2.2108081533643382,
+        "score_change_pp": -3.7899561763753264
+      }
+    },
+    "2wikimqa": {
+      "native": {
+        "paired": 0,
+        "metric": "qa_f1_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      },
+      "extended": {
+        "paired": 100,
+        "metric": "qa_f1_score",
+        "min_input_tokens": 15194,
+        "max_input_tokens": 129257,
+        "mean_input_tokens": 73520.26,
+        "identical_outputs": 67,
+        "higher": 5,
+        "equal": 78,
+        "lower": 17,
+        "Full": {
+          "mean_ttft_s": 32.95982318149,
+          "mean_duration_s": 33.2824751166,
+          "mean_output_tokens": 5.27,
+          "termination": {
+            "stop": 100
+          },
+          "score_100": 66.22380952380954
+        },
+        "RedKnot": {
+          "mean_ttft_s": 16.02825267238,
+          "mean_duration_s": 16.40004360607,
+          "mean_output_tokens": 5.15,
+          "termination": {
+            "stop": 100
+          },
+          "score_100": 55.92380952380952
+        },
+        "speedup_ratio_of_mean_ttft": 2.056357848556169,
+        "score_change_pp": -10.3
+      }
+    },
+    "musique": {
+      "native": {
+        "paired": 17,
+        "metric": "qa_f1_score",
+        "min_input_tokens": 15217,
+        "max_input_tokens": 16358,
+        "mean_input_tokens": 15970.35294117647,
+        "identical_outputs": 10,
+        "higher": 1,
+        "equal": 14,
+        "lower": 2,
+        "Full": {
+          "mean_ttft_s": 9.610999657647058,
+          "mean_duration_s": 9.982278539941177,
+          "mean_output_tokens": 4.882352941176471,
+          "termination": {
+            "stop": 17
+          },
+          "score_100": 46.778711484593835
+        },
+        "RedKnot": {
+          "mean_ttft_s": 5.210371235647059,
+          "mean_duration_s": 5.59853548317647,
+          "mean_output_tokens": 4.823529411764706,
+          "termination": {
+            "stop": 17
+          },
+          "score_100": 45.23809523809524
+        },
+        "speedup_ratio_of_mean_ttft": 1.844590188102691,
+        "score_change_pp": -1.540616246498599
+      },
+      "extended": {
+        "paired": 83,
+        "metric": "qa_f1_score",
+        "min_input_tokens": 31132,
+        "max_input_tokens": 130269,
+        "mean_input_tokens": 86196.2048192771,
+        "identical_outputs": 48,
+        "higher": 11,
+        "equal": 63,
+        "lower": 9,
+        "Full": {
+          "mean_ttft_s": 37.42268307160241,
+          "mean_duration_s": 37.79165260573494,
+          "mean_output_tokens": 5.530120481927711,
+          "termination": {
+            "stop": 83
+          },
+          "score_100": 45.899611735980464
+        },
+        "RedKnot": {
+          "mean_ttft_s": 18.001939606915663,
+          "mean_duration_s": 18.442951473819278,
+          "mean_output_tokens": 6.951807228915663,
+          "termination": {
+            "stop": 83
+          },
+          "score_100": 49.36268885064066
+        },
+        "speedup_ratio_of_mean_ttft": 2.07881394387225,
+        "score_change_pp": 3.463077114660191
+      }
+    },
+    "dureader": {
+      "native": {
+        "paired": 5,
+        "metric": "rouge_zh_score",
+        "min_input_tokens": 12174,
+        "max_input_tokens": 14196,
+        "mean_input_tokens": 13004.4,
+        "identical_outputs": 0,
+        "higher": 1,
+        "equal": 0,
+        "lower": 4,
+        "Full": {
+          "mean_ttft_s": 8.721451898,
+          "mean_duration_s": 24.2472110974,
+          "mean_output_tokens": 323,
+          "termination": {
+            "stop": 5
+          },
+          "score_100": 45.81143073919144
+        },
+        "RedKnot": {
+          "mean_ttft_s": 4.4030185522,
+          "mean_duration_s": 17.9026781634,
+          "mean_output_tokens": 270.8,
+          "termination": {
+            "stop": 5
+          },
+          "score_100": 43.42918859550451
+        },
+        "speedup_ratio_of_mean_ttft": 1.9807892686807471,
+        "score_change_pp": -2.3822421436869257
+      },
+      "extended": {
+        "paired": 95,
+        "metric": "rouge_zh_score",
+        "min_input_tokens": 15204,
+        "max_input_tokens": 129006,
+        "mean_input_tokens": 76683.56842105264,
+        "identical_outputs": 1,
+        "higher": 34,
+        "equal": 1,
+        "lower": 60,
+        "Full": {
+          "mean_ttft_s": 31.32589702371579,
+          "mean_duration_s": 43.68781772733684,
+          "mean_output_tokens": 216.85263157894738,
+          "termination": {
+            "stop": 95
+          },
+          "score_100": 33.46253967894774
+        },
+        "RedKnot": {
+          "mean_ttft_s": 16.03130548796842,
+          "mean_duration_s": 31.28819959977895,
+          "mean_output_tokens": 268.5473684210526,
+          "termination": {
+            "stop": 95
+          },
+          "score_100": 29.408650354512034
+        },
+        "speedup_ratio_of_mean_ttft": 1.9540452926448217,
+        "score_change_pp": -4.053889324435712
+      }
+    },
+    "narrativeqa": {
+      "native": {
+        "paired": 9,
+        "metric": "qa_f1_score",
+        "min_input_tokens": 13494,
+        "max_input_tokens": 61560,
+        "mean_input_tokens": 36278.22222222222,
+        "identical_outputs": 2,
+        "higher": 2,
+        "equal": 4,
+        "lower": 3,
+        "Full": {
+          "mean_ttft_s": 16.871246183666667,
+          "mean_duration_s": 17.474473616444445,
+          "mean_output_tokens": 8.222222222222221,
+          "termination": {
+            "stop": 9
+          },
+          "score_100": 40.51756885090219
+        },
+        "RedKnot": {
+          "mean_ttft_s": 9.144675713222222,
+          "mean_duration_s": 9.571224355666667,
+          "mean_output_tokens": 6,
+          "termination": {
+            "stop": 9
+          },
+          "score_100": 47.61904761904762
+        },
+        "speedup_ratio_of_mean_ttft": 1.8449255843236356,
+        "score_change_pp": 7.101478768145435
+      },
+      "extended": {
+        "paired": 91,
+        "metric": "qa_f1_score",
+        "min_input_tokens": 29882,
+        "max_input_tokens": 253504,
+        "mean_input_tokens": 115455.20879120879,
+        "identical_outputs": 36,
+        "higher": 16,
+        "equal": 56,
+        "lower": 19,
+        "Full": {
+          "mean_ttft_s": 51.02068628,
+          "mean_duration_s": 51.635977397945055,
+          "mean_output_tokens": 8.714285714285714,
+          "termination": {
+            "stop": 91
+          },
+          "score_100": 35.13758281851256
+        },
+        "RedKnot": {
+          "mean_ttft_s": 24.760380969032965,
+          "mean_duration_s": 25.41067749587912,
+          "mean_output_tokens": 9.637362637362637,
+          "termination": {
+            "stop": 91
+          },
+          "score_100": 33.15748182236812
+        },
+        "speedup_ratio_of_mean_ttft": 2.060577595466321,
+        "score_change_pp": -1.980100996144449
+      }
+    },
+    "qasper": {
+      "native": {
+        "paired": 0,
+        "metric": "qa_f1_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      },
+      "extended": {
+        "paired": 0,
+        "metric": "qa_f1_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      }
+    },
+    "multifieldqa_en": {
+      "native": {
+        "paired": 0,
+        "metric": "qa_f1_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      },
+      "extended": {
+        "paired": 0,
+        "metric": "qa_f1_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      }
+    },
+    "multifieldqa_zh": {
+      "native": {
+        "paired": 0,
+        "metric": "qa_f1_zh_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      },
+      "extended": {
+        "paired": 0,
+        "metric": "qa_f1_zh_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      }
+    },
+    "gov_report": {
+      "native": {
+        "paired": 0,
+        "metric": "rouge_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      },
+      "extended": {
+        "paired": 0,
+        "metric": "rouge_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      }
+    },
+    "qmsum": {
+      "native": {
+        "paired": 0,
+        "metric": "rouge_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      },
+      "extended": {
+        "paired": 0,
+        "metric": "rouge_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      }
+    },
+    "multi_news": {
+      "native": {
+        "paired": 0,
+        "metric": "rouge_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      },
+      "extended": {
+        "paired": 0,
+        "metric": "rouge_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      }
+    },
+    "vcsum": {
+      "native": {
+        "paired": 0,
+        "metric": "rouge_zh_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      },
+      "extended": {
+        "paired": 0,
+        "metric": "rouge_zh_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      }
+    },
+    "trec": {
+      "native": {
+        "paired": 0,
+        "metric": "classification_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      },
+      "extended": {
+        "paired": 0,
+        "metric": "classification_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      }
+    },
+    "triviaqa": {
+      "native": {
+        "paired": 0,
+        "metric": "qa_f1_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      },
+      "extended": {
+        "paired": 0,
+        "metric": "qa_f1_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      }
+    },
+    "samsum": {
+      "native": {
+        "paired": 0,
+        "metric": "rouge_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      },
+      "extended": {
+        "paired": 0,
+        "metric": "rouge_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      }
+    },
+    "lsht": {
+      "native": {
+        "paired": 0,
+        "metric": "classification_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      },
+      "extended": {
+        "paired": 0,
+        "metric": "classification_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      }
+    },
+    "passage_count": {
+      "native": {
+        "paired": 0,
+        "metric": "count_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      },
+      "extended": {
+        "paired": 0,
+        "metric": "count_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      }
+    },
+    "passage_retrieval_en": {
+      "native": {
+        "paired": 0,
+        "metric": "retrieval_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      },
+      "extended": {
+        "paired": 0,
+        "metric": "retrieval_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      }
+    },
+    "passage_retrieval_zh": {
+      "native": {
+        "paired": 0,
+        "metric": "retrieval_zh_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      },
+      "extended": {
+        "paired": 0,
+        "metric": "retrieval_zh_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      }
+    },
+    "lcc": {
+      "native": {
+        "paired": 0,
+        "metric": "code_sim_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      },
+      "extended": {
+        "paired": 0,
+        "metric": "code_sim_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      }
+    },
+    "repobench-p": {
+      "native": {
+        "paired": 0,
+        "metric": "code_sim_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      },
+      "extended": {
+        "paired": 0,
+        "metric": "code_sim_score",
+        "min_input_tokens": null,
+        "max_input_tokens": null,
+        "mean_input_tokens": null,
+        "identical_outputs": 0,
+        "higher": 0,
+        "equal": 0,
+        "lower": 0,
+        "Full": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "RedKnot": {
+          "mean_ttft_s": null,
+          "mean_duration_s": null,
+          "mean_output_tokens": null,
+          "termination": {},
+          "score_100": null
+        },
+        "speedup_ratio_of_mean_ttft": null,
+        "score_change_pp": null
+      }
+    }
+  }
+}

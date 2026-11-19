@@ -1,0 +1,19 @@
+{
+  "server_snapshot_utc": "2026-11-19T07:15:47.425381+00:00",
+  "contract_id": "bfe129cde7b6635a7089fab64e5860fa3e1e3be303965d4dd7faddc7ca8e85df",
+  "gemm_revision": "s16-sm90-runtime-m-asm-ask-v1",
+  "complete_committed_groups": 127,
+  "actual_native_files_verified_against_server_sha256": 381,
+  "input_indices_verified_against_server_sha256": 508,
+  "published_target_count": 500,
+  "methods": [
+    "Full",
+    "RedKnot"
+  ],
+  "files": {
+    "answers.jsonl": {
+      "targets": 500,
+      "sha256": "d188c1d9345fc65ac520890c6a7f9753d6b92a626e034b25b84c2bc156270e11"
+    }
+  }
+}

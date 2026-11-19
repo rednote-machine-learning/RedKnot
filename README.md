@@ -22,6 +22,8 @@ RedKnot belongs to its contributors. We welcome issues, bug reports, suggestions
 
 ## Reproduce the RedKnot workloads
 
+[Full and RedKnot on 21 LongBench datasets](test/longbench21/README.md) replays 2,100 local targets in 527 B4 groups. Run `python test/benchmark_rag_redknot_21.py --model-path /models/DeepSeek-V4.1-Flash-1017` for fresh measurements or [open the archived 500-question answer comparison](test/longbench21/recorded/index.html).
+
 [Full and RedKnot S1.6 on 300 LongBench questions](test/longbench300/README.md) runs paired four-request batches on eight H200s, with local inputs and side-by-side answers. Run `python test/benchmark_rag_redknot.py --reference` to inspect all recorded answers and timings on CPU.
 
 The [benchmark guide](benchmarks/redknot/README.md) covers the 64K / 128K / 256K / 440K release suites, five LongBench-derived datasets, model support status, native TTFT and QA scoring, and validation commands. Preparation and result checks work without importing the GPU runtime.
