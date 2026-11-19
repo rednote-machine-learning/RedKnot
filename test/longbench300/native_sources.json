@@ -1,0 +1,186 @@
+{
+  "GatedEngram/gpu_pilot/cuda_mask_qualification.py": {
+    "origin": "bundle",
+    "sha256": "910254c71c5b3d97e7c8e605e65306151e5a94464bb1d737848283e83949d6fc"
+  },
+  "GatedEngram/gpu_pilot/index_hit20_empty_ep_qualification.py": {
+    "origin": "bundle",
+    "sha256": "3a8c95fcd85fc712b7eaee2747d3cb0f14dd773d904e6d4fa229c0652b80e148"
+  },
+  "GatedEngram/gpu_pilot/read_s11_results.py": {
+    "origin": "bundle",
+    "sha256": "5983bb2639ec1a99733061184d173c74dfa024e8a989e2efd2c1c4084660ade6"
+  },
+  "GatedEngram/kv_cache_engram/__init__.py": {
+    "origin": "checkout",
+    "sha256": "77230377d3f0cc54e3693774f52cafd9240b1e912d03b0f4ed7290a0642953ce"
+  },
+  "GatedEngram/kv_cache_engram/adjacent_kv_selector.py": {
+    "origin": "checkout",
+    "sha256": "492955304999da028a6f26a47be9001052009b51b5a52f0e8368d5496b73d06a"
+  },
+  "GatedEngram/kv_cache_engram/cache.py": {
+    "origin": "checkout",
+    "sha256": "bd5fd5338a708c0adb683a749bde6766efe45e9c97f3bdc1851a59204fd2a92a"
+  },
+  "GatedEngram/kv_cache_engram/calibration.py": {
+    "origin": "checkout",
+    "sha256": "0d5a1b95d5b932d6c1ad230376e937070c329a84ac2d255b97988d64d50432f0"
+  },
+  "GatedEngram/kv_cache_engram/core.py": {
+    "origin": "checkout",
+    "sha256": "5bd8a4201b8756b7772fc8c6a9c2b0155e8edf8a7283c369a741f2bffa3f0f41"
+  },
+  "GatedEngram/kv_cache_engram/early_mhc_adapter.py": {
+    "origin": "checkout",
+    "sha256": "7a19b8775c1cf9a93c9dcf41dbd8e0e54816e32ccdad0a3ae3c0fb47e20b9d00"
+  },
+  "GatedEngram/kv_cache_engram/ffn_only.py": {
+    "origin": "bundle",
+    "sha256": "d320cd1efdae292e994a0bbb6911d43481ac71330466c5739c50a923d71ce59b"
+  },
+  "GatedEngram/kv_cache_engram/ffn_only_adapter.py": {
+    "origin": "bundle",
+    "sha256": "a5fe50b1bbfdc6e66488c9616b63c74e95f862e29af9c7b2ce071987e368a9c0"
+  },
+  "GatedEngram/kv_cache_engram/gate.py": {
+    "origin": "checkout",
+    "sha256": "7d7ff18ebba8c5bc0c051c4a1029d77f9a15c4f0999bdf8966d1f807ede1a533"
+  },
+  "GatedEngram/kv_cache_engram/index_hit20.py": {
+    "origin": "bundle",
+    "sha256": "0dd0f5c8d2df642c2139a0478e9246ef145091e8b905e12c4ba173aa62c061df"
+  },
+  "GatedEngram/kv_cache_engram/index_hit20_adapter.py": {
+    "origin": "bundle",
+    "sha256": "9dd49e07b85b610eeea3c3d6e2f177ec23973c4740e151ab128bb3a2c9cfd2ea"
+  },
+  "GatedEngram/kv_cache_engram/index_hit_selector.py": {
+    "origin": "bundle",
+    "sha256": "6e1f930ec446186e4da9092bd97e7845b0dd82b434efcbed22faaf265f3b6220"
+  },
+  "GatedEngram/kv_cache_engram/native_reuse.py": {
+    "origin": "bundle",
+    "sha256": "7d7b0f2b301d46a862190142089706724eb6794bbd1dd26f15e224b31cc1ea43"
+  },
+  "GatedEngram/kv_cache_engram/runtime.py": {
+    "origin": "checkout",
+    "sha256": "8a5ebcc8bf91e7d34713f5a706c78d345cc181016a3725e5e50e186ca4c1f2b7"
+  },
+  "GatedEngram/kv_cache_engram/s11_qualification.py": {
+    "origin": "bundle",
+    "sha256": "0d0c90fd5c055de152abfc0a68e9d0892f637fcb6ef5e2fb4813c1f20047f289"
+  },
+  "GatedEngram/kv_cache_engram/s1_attention.py": {
+    "origin": "bundle",
+    "sha256": "3c47ef7119ee16a2764e1203d10b2af86eb00935a36af5566eb00db225cabebb"
+  },
+  "GatedEngram/kv_cache_engram/s1_cache.py": {
+    "origin": "bundle",
+    "sha256": "8eab07b22e97aa7688c5d5235da0d3a0df7ef71358ad03eecb81f87074087b4f"
+  },
+  "GatedEngram/kv_cache_engram/s1_dflash_bridge.py": {
+    "origin": "bundle",
+    "sha256": "1a6e2568e5448687a1ec9a59a96cff70902b539752f17069a558d526cb4ff7c4"
+  },
+  "GatedEngram/kv_cache_engram/s1_plan.py": {
+    "origin": "bundle",
+    "sha256": "b7a576332933ee11bf39ffe080856d1a5c9b889b468161cc0957099d478f9fc3"
+  },
+  "GatedEngram/kv_cache_engram/s1_runtime.py": {
+    "origin": "bundle",
+    "sha256": "a41b3549ce53aa99057be593fd63c1cf7cd061e809598c25d52ce6a13d26af1b"
+  },
+  "GatedEngram/kv_cache_engram/s1_system_attention.py": {
+    "origin": "bundle",
+    "sha256": "1b4260e7e986faaae090193260700dab0f4daa43ac22a4e2bbd1ff586fbd8ef9"
+  },
+  "GatedEngram/kv_cache_engram/s1_system_batch.py": {
+    "origin": "bundle",
+    "sha256": "28acd73b2d1c3b4b8bd31aef030fd60606a58b4a68d4160040a749c919c433b9"
+  },
+  "GatedEngram/kv_cache_engram/s1_system_cache.py": {
+    "origin": "bundle",
+    "sha256": "cbcf2959e25db57c811eebd800c06adc6552a4de13ab5c7e81bd00935f4a93d9"
+  },
+  "GatedEngram/kv_cache_engram/s1_system_runtime.py": {
+    "origin": "bundle",
+    "sha256": "7b862ebcbc339921fcbc2421b705702718d48aa6db7190da5215e67a4e9ba5cf"
+  },
+  "GatedEngram/kv_cache_engram/tail_link_plan.py": {
+    "origin": "bundle",
+    "sha256": "e62c35018784618114b52cb2d10fe47911319397e252dc5e4ca3028b73a98a1c"
+  },
+  "dependencies/benchmark/pr148_native_runner.py": {
+    "origin": "bundle",
+    "sha256": "615315c76ee54320201daa918d462676cd3c59cb05000769396e3253f0886a47"
+  },
+  "dependencies/kv_recompression_20261029/canonical_request_binding.py": {
+    "origin": "bundle",
+    "sha256": "f25097ab9ebe51662c21b9652af472e43d7664e368276a4c317fc133d02e913e"
+  },
+  "dependencies/kv_recompression_20261029/quality_process_group.py": {
+    "origin": "bundle",
+    "sha256": "a7d503f23d1df3f41044c98107b25ca2a09debc1e66384d17d26a9f9f33ba9db"
+  },
+  "dependencies/strong_native_20261029/native_profile.py": {
+    "origin": "bundle",
+    "sha256": "e68d7d3b39c8255ef1f06d4ba42bb26e2e6121b4f141ace5da06c41060ba0717"
+  },
+  "dependencies/strong_native_20261029/strong_native_runner.py": {
+    "origin": "bundle",
+    "sha256": "45f25f878ea62741cef12ca186618483531e0c968a50dc8722051b4177411a7a"
+  },
+  "dflash_tail_adapter.py": {
+    "origin": "bundle",
+    "sha256": "13cac28f5c9a63a9cdbd1c9cde69550811df12e2edd8260ab90097c833846286"
+  },
+  "native_decode_profile.py": {
+    "origin": "bundle",
+    "sha256": "99ec0e5fa33ab728866f434a502b3b3213db86b6ef95e468f9c345d5d09deabd"
+  },
+  "prefix_decode_contract.py": {
+    "origin": "bundle",
+    "sha256": "5ffd6b1801daab8f0e3cc1791720e7bfef909a7d2edb0af75b3b0824849f8dfd"
+  },
+  "redknot/__init__.py": {
+    "origin": "bundle",
+    "sha256": "b5d7f19af32440a4d1c2eff95a7703f3d6f33506ad7413b61f4142d845cc5a18"
+  },
+  "redknot/admission.py": {
+    "origin": "bundle",
+    "sha256": "1f1b05989e25e17b5e6e153f3b5e3abc08b28df6bc7d4a6a74913309edab5d26"
+  },
+  "redknot/controller.py": {
+    "origin": "bundle",
+    "sha256": "4eb189b48df9a465895ccff72400b0fb9dcf387a04e8315f69c70867de066b5c"
+  },
+  "redknot/decode_evidence.py": {
+    "origin": "bundle",
+    "sha256": "a0722c5a73daa50cb331803d0c6080cd94db56451ebef3b8fe17c7c722c71378"
+  },
+  "redknot/gate.py": {
+    "origin": "bundle",
+    "sha256": "80810ad4d6fead8294b21a40563d2c510be81a02da09c4fc9adefe25a95dcd24"
+  },
+  "service/__init__.py": {
+    "origin": "bundle",
+    "sha256": "bd013f42e86844d321e607a943851ab6b7795e7db3fb5d67ea768c1ab4585c90"
+  },
+  "service/canonical_request_binding_dspark.py": {
+    "origin": "bundle",
+    "sha256": "56d4124edc962498c243ed52af9a3d8ee0949d86eb26660f219cdfa84ccd33b3"
+  },
+  "service/engine_bridge.py": {
+    "origin": "bundle",
+    "sha256": "8ae5d7c01806d715c22f1a18639821b161bffc11017a2586f58f01f620e14f6c"
+  },
+  "service/native_runtime.py": {
+    "origin": "bundle",
+    "sha256": "60124cd54f1d508b377f9f01dd382c9ff7fd6ed442d1ae473fd4a44df11b9f60"
+  },
+  "service/prefix_cache.py": {
+    "origin": "bundle",
+    "sha256": "5a5e563952d62ea9e1233177ec8a9dac4fcab3e26b9071970c5fcacd3c08987f"
+  }
+}

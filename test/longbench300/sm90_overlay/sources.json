@@ -1,0 +1,1147 @@
+{
+  "LICENSE": {
+    "from": "repo",
+    "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+  },
+  "csrc/asc_utils.cpp": {
+    "from": "repo",
+    "sha256": "eb5f768ad76671629480aa93dbae3b90312a63d76a45caf97290e59562bde4d0"
+  },
+  "csrc/cuda_utils.cpp": {
+    "from": "repo",
+    "sha256": "7a60eab789f32ef096f5d35d87dae41b806ecdba89e6e10138e12559b7f8f506"
+  },
+  "csrc/cuda_utils.hpp": {
+    "from": "repo",
+    "sha256": "186d86652f31d8259e9a23dafef72c681576f4f0856792842d816e5eb484a620"
+  },
+  "csrc/engine/block_manager.hpp": {
+    "from": "repo",
+    "sha256": "83eabc936b4316b70254f8772041669de3e6a8878b4f12859e3a7ddd17c395d0"
+  },
+  "csrc/engine/flops_estimator.hpp": {
+    "from": "repo",
+    "sha256": "89fbefa41ef0f1ee79be19bb92700d446de38c3781d18227bb0044eb20e7b4f2"
+  },
+  "csrc/engine/input_metadata/block_load_plan.cpp": {
+    "from": "repo",
+    "sha256": "3a68483099af69e6a712a54d4f48f2b7b6f785fcacadeb6502074acaa26e6669"
+  },
+  "csrc/engine/input_metadata/block_load_plan.hpp": {
+    "from": "repo",
+    "sha256": "a10251b502a28c8170fbcae823c6d3eb83ca40bc1739bac183fa9e1b1972b174"
+  },
+  "csrc/engine/input_metadata/prepare_tensor_input.hpp": {
+    "from": "repo",
+    "sha256": "ceceefb7639b90e10379c2cc15cd5e00f8efc84fe238058c5b19498bb2d6caa8"
+  },
+  "csrc/engine/input_metadata/prepare_tensor_input_base.cpp": {
+    "from": "repo",
+    "sha256": "b8e7c5eff7dc2b5ae59b41918faf0669c7415a053dcbbb0f7568d7a4e4618794"
+  },
+  "csrc/engine/input_metadata/prepare_tensor_input_v4.cpp": {
+    "from": "repo",
+    "sha256": "93a6b1dd533db116d2f7540c78d6bb5419bdb8c1d2063b031ab8b1a8cc138fe2"
+  },
+  "csrc/engine/mtp_varlen.hpp": {
+    "from": "repo",
+    "sha256": "164f45db4cccd6d6909dd2846e7dfffb57754b108af679443bf4bd71ec33785a"
+  },
+  "csrc/engine/outputs.hpp": {
+    "from": "repo",
+    "sha256": "9ef2f5a37dd07b03fe7fac7f92cbbf1dfc056ff4a0c0fbb9b7a384149f71bf6f"
+  },
+  "csrc/engine/prepare_sample.cpp": {
+    "from": "repo",
+    "sha256": "277a53eeed3295dd7b4467272ed4fc44bd2220586f2fd771cbbfca3edffda523"
+  },
+  "csrc/engine/prepare_sample.hpp": {
+    "from": "repo",
+    "sha256": "d17732b122fbf6d64c1e0ad7752238e91354360ef634cd00318235ac42b902de"
+  },
+  "csrc/engine/process_output.hpp": {
+    "from": "repo",
+    "sha256": "d8b32a8ffac39c290495eaf7182262e629afe8a47ba8b6275c1db665f13ca99b"
+  },
+  "csrc/engine/pybind.cpp": {
+    "from": "repo",
+    "sha256": "666dc5169b5d9b37ef9e10f2f9550971092d88369fd50594a946725acd11b6c9"
+  },
+  "csrc/engine/pybind.hpp": {
+    "from": "repo",
+    "sha256": "2cc86586ae86dd7a1c1b4fd45bef629c1f71077a5dc22944e559beb6d723296a"
+  },
+  "csrc/engine/pybind_output.cpp": {
+    "from": "repo",
+    "sha256": "be4123bbf5e05d0e717e3f58816bc7d8726b55f3b02dde5b1854ef6ee1e9a056"
+  },
+  "csrc/engine/pybind_scheduler.cpp": {
+    "from": "repo",
+    "sha256": "a81d71dbfe5a0d7ad5c0c79c104abd65ada2ab57b8073f339e0c13a5cb74a438"
+  },
+  "csrc/engine/pybind_sequence.cpp": {
+    "from": "repo",
+    "sha256": "872775774022bb27fd4b1fade37ec9f6fe9ec4c3051844206e3ec36c8103a9ce"
+  },
+  "csrc/engine/scheduler.hpp": {
+    "from": "repo",
+    "sha256": "c14de4d5341170227b82ddf2d146d9c6a337937885a6886237aab5a7238da5db"
+  },
+  "csrc/engine/sequence.hpp": {
+    "from": "repo",
+    "sha256": "67ef6ea70ee31a519fd632ee2d7be4710a6d796f786cf336dd3d3f06f7fbe16b"
+  },
+  "csrc/engine/utils.hpp": {
+    "from": "repo",
+    "sha256": "35155a3809f66dc056a716f5e3b6d8149facb122491c7272ded27ae5ef76385a"
+  },
+  "csrc/engine/zos.cpp": {
+    "from": "repo",
+    "sha256": "1cb70e0b4ed7181b95e19ef2cc3cc640d1cd8f24e874ce4bc34fe51d6f031b46"
+  },
+  "csrc/engine/zos.hpp": {
+    "from": "repo",
+    "sha256": "4543c5db232acf2ce6c18f8027e49be71921c113e3f963ea371c8f61405277f2"
+  },
+  "csrc/graph_timer/graph_timer.hpp": {
+    "from": "repo",
+    "sha256": "f0d9cef5b41bceea49c41f76f78e0106c1cffc6af68e693797bd632e21813eec"
+  },
+  "csrc/graph_timer/graph_timer_asc.cpp": {
+    "from": "repo",
+    "sha256": "411852af71844a9daaf323f8e2a234feb3a3705681cd2414ff8e49b156f6153d"
+  },
+  "csrc/graph_timer/graph_timer_cuda.cpp": {
+    "from": "repo",
+    "sha256": "21064af96b986f23a810dd056f2919e9e036130e8fbf13645560944deebba3d9"
+  },
+  "csrc/graph_timer/pybind.cpp": {
+    "from": "repo",
+    "sha256": "0fd00c8051311d08b00384db94e8ee3e7194bd1dc40258b6ed483d5ab49ce6b2"
+  },
+  "csrc/pybind.cpp": {
+    "from": "repo",
+    "sha256": "9f62703b69893083b0ee4eaa19c2acda6ba21674477d23eacd9d795d187fd1e3"
+  },
+  "csrc/utils/lockable.hpp": {
+    "from": "repo",
+    "sha256": "b71802be978e8e4f0dc37a3feef4c1f9f106e92da2dda232ab2cacba0b953b1a"
+  },
+  "csrc/utils/log.hpp": {
+    "from": "repo",
+    "sha256": "ef513190e76c5878fade4077b3d7aeb7f587255b17baba18b03939fafeb922a3"
+  },
+  "csrc/utils/object_pool.hpp": {
+    "from": "repo",
+    "sha256": "8808aae3f6095d5ed221c8828a42a9e048d3bb4975ca72bc860d23866029aec4"
+  },
+  "deep_cluster/__init__.py": {
+    "from": "repo",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "deep_cluster/hardware/__init__.py": {
+    "from": "repo",
+    "sha256": "eb971d3dbf2f545efb51d002f0961cf78c9e51a94c3685cd21d4bb50220966d5"
+  },
+  "deep_cluster/hardware/ascend.py": {
+    "from": "repo",
+    "sha256": "f0fb8df71efba56541bb07ed6fb7d75237bd2689be668d861f3b8c4ad032da26"
+  },
+  "deep_cluster/hardware/cpu.py": {
+    "from": "repo",
+    "sha256": "592307221827b4116e31ca605bbe19ddb58a976f3033f5fa23d4e69364db8965"
+  },
+  "deep_cluster/hardware/device.py": {
+    "base_sha256": "d305c2e5994a5c8a3d59cae22aa3ed8db0941c0279577888d02e188c7cb4b591",
+    "from": "patch",
+    "patch_sha256": "1fff34c3d48395bad259da2cb62a05436f3f7ca6bcacc769f40ef123ff1f48a5",
+    "sha256": "bba38aea79dd623dbbd4c53af61249708c04d1ad473188245c50cd16fee8171a"
+  },
+  "deep_cluster/hardware/nvidia.py": {
+    "from": "repo",
+    "sha256": "27820f621da5318fc972725b2f3702accfc294b160ce25812edeb427007e4eb3"
+  },
+  "deep_cluster/topology/__init__.py": {
+    "from": "repo",
+    "sha256": "25e4e074a8848fa829a8fe9ab813e76c73523ba413a2d49c2b41305cdd20c60f"
+  },
+  "deep_cluster/topology/bind.py": {
+    "from": "repo",
+    "sha256": "325fa9827b0d601c80a3e6d169ddf734375a715b720de1839636f5f7affb8894"
+  },
+  "deepinfer/_C/__init__.pyi": {
+    "from": "repo",
+    "sha256": "5008c83056fb349fc7236525ec5c0f69c672fb6e07c514767a3fdf857187a3b8"
+  },
+  "deepinfer/_C/cuda_utils.pyi": {
+    "from": "repo",
+    "sha256": "edc5c9bf9544d3e21e433e7cad6a5824ef05c2f6009037d3df2e24d776f7c362"
+  },
+  "deepinfer/_C/engine.pyi": {
+    "from": "repo",
+    "sha256": "fbcb1e99b66b14cf4cbb1a92291bd1fca1aae38ddb9077b0db4e5cd55ae05ffe"
+  },
+  "deepinfer/_C/graph_timer.pyi": {
+    "from": "repo",
+    "sha256": "efda135f4fabb9f0ba6d6325122e851e6ec439da9ce3db9ac1e63531bf1cd10d"
+  },
+  "deepinfer/__init__.py": {
+    "from": "repo",
+    "sha256": "049d7fa1492d4b0c3f6947b7150946ec92a57e74b4ae25415392de7aed5ec7a4"
+  },
+  "deepinfer/attrdict.py": {
+    "from": "repo",
+    "sha256": "3fa75e9374e76468539e42927a1157f75faa6afb458c2e280ab2f8aaa183694a"
+  },
+  "deepinfer/config.py": {
+    "from": "repo",
+    "sha256": "df67b1e66c1f528e69885e3d4bcb6e2ce130261981dd26017b04ea57eee2daec"
+  },
+  "deepinfer/distributed/__init__.py": {
+    "from": "repo",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "deepinfer/distributed/shm_broadcast.py": {
+    "from": "repo",
+    "sha256": "aa461587184bf979acb813ed6ee646665715e3eaaca286a9270a5e4ceb559006"
+  },
+  "deepinfer/engine/__init__.py": {
+    "from": "repo",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "deepinfer/engine/arg_utils.py": {
+    "from": "repo",
+    "sha256": "c28c478bd376165c073c6e0722bed8468599a2fd766ffc7aafcd4ef270af52c5"
+  },
+  "deepinfer/engine/engine_type.py": {
+    "from": "repo",
+    "sha256": "9933d83f500e3cc14c5fef0dd2fbe5c5170dbbf24df217376b0a55c4fb4ab48c"
+  },
+  "deepinfer/engine/llm_engine.py": {
+    "from": "repo",
+    "sha256": "a636d60ca5711f6b7c21e68370c3bd9c2de6fc3f4439a7429ca4f572f0edeebe"
+  },
+  "deepinfer/engine/profile_server.py": {
+    "from": "repo",
+    "sha256": "3225a073cbde24d598df2a9bff195574ba6d98bc9fe4a1b0c0a338fcecc54afa"
+  },
+  "deepinfer/engine/stats_logger.py": {
+    "from": "repo",
+    "sha256": "9ef93c3930d6dd8d889d4ba69558a85459c2210ae0714d5073c3b4328c8e7cb9"
+  },
+  "deepinfer/entrypoints/__init__.py": {
+    "from": "repo",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "deepinfer/entrypoints/llm.py": {
+    "from": "repo",
+    "sha256": "069a5333d9f47047ccc87584792627dfa6eee9cf93bdc046107cbd0218a6bada"
+  },
+  "deepinfer/environ.py": {
+    "base_sha256": "c63414c101ce21e199f2d7df27ec01ca53e3b0dc7a688f6047469551f6449f47",
+    "from": "patch",
+    "patch_sha256": "39d3788bd7aa0551e330aa78c34113c1219d1379354c239132e3dbce7248ad75",
+    "sha256": "fe2c531989c419f0b51b169a07f5ed826dcec7f95c0c5bc3a351805923c4f218"
+  },
+  "deepinfer/hugging_face/__init__.py": {
+    "from": "repo",
+    "sha256": "d0cc5142519903e8f3386078ea7792da400f3ded33f0b2afc0578a2b50fc00cb"
+  },
+  "deepinfer/hugging_face/config.py": {
+    "from": "repo",
+    "sha256": "978c863928ece0e7f81c3e619c02d1287ade442f9282d7eb67bc739411595e49"
+  },
+  "deepinfer/hugging_face/loading.py": {
+    "from": "repo",
+    "sha256": "d65964296fcf69e6b80e958e45bf5d99ac6b8e6f0c667ffef1ed5788757cf414"
+  },
+  "deepinfer/hugging_face/names.py": {
+    "from": "repo",
+    "sha256": "6ad1d7e150f7b0c3e37883bc4c1e827e1db84ecb00638887c5f2f5b88390632a"
+  },
+  "deepinfer/hugging_face/parameters.py": {
+    "from": "repo",
+    "sha256": "a14f8c76956f6bbeddd25f2157e3ac01f72a79a0a78c4b4b6e1cf2e4743281aa"
+  },
+  "deepinfer/hugging_face/processor.py": {
+    "from": "repo",
+    "sha256": "4dca0c066379d2e7a18205b7a0c8e1ebd9e7bd350dad5413ac33961f9804dc46"
+  },
+  "deepinfer/hugging_face/tokenizer.py": {
+    "from": "repo",
+    "sha256": "a2a205fa71bd6e7f1ad7656ab1a7e15817eaef042f91a50218e69fe0f1e5dc23"
+  },
+  "deepinfer/hugging_face/weights.py": {
+    "from": "repo",
+    "sha256": "7d2cbad153411ee5876278bf90c970944f5ccc05700fbe67f1d0a246d7ae321d"
+  },
+  "deepinfer/load_class.py": {
+    "from": "repo",
+    "sha256": "3136e51faf0445e5c0d865ac0a142102c0d39be7a5a4dd6f11033f9942538c56"
+  },
+  "deepinfer/logger.py": {
+    "from": "repo",
+    "sha256": "5b8f8d9947de692353609c1fc2851097d24f9b6ba6004dce1dbfa394dc6d3ec8"
+  },
+  "deepinfer/model_config_loader.py": {
+    "from": "repo",
+    "sha256": "f85c1b7ed33937d0ca7bd1e0737830ecb5ae906489baef0f39fd506a16e487a7"
+  },
+  "deepinfer/model_executor/__init__.py": {
+    "from": "repo",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "deepinfer/model_executor/eplb/__init__.py": {
+    "from": "repo",
+    "sha256": "1b30c01b36cfc711281bd729ab5cbf09826b4ba22359573f46d96c10ea6e7260"
+  },
+  "deepinfer/model_executor/eplb/policy.py": {
+    "from": "repo",
+    "sha256": "52241603827a1a1d19a395d48f5d618a7336fd1ceee631127e6782c644f736dc"
+  },
+  "deepinfer/model_executor/eplb/shuffle.py": {
+    "from": "repo",
+    "sha256": "e86dcd3a1b54678cb28d7910461c670e42c10c1d8cafe3e766afce0a640ee71f"
+  },
+  "deepinfer/model_executor/input_metadata/__init__.py": {
+    "from": "repo",
+    "sha256": "545e7d49003c413aeaf80703b4bba35e4ae3200000c0b08365f2ee665c396ac6"
+  },
+  "deepinfer/model_executor/input_metadata/dflash.py": {
+    "base_sha256": "00975d7bd7daa2bcd7a0fc239dd55132c5a4ad927f951b6b48f61f9c22621a2b",
+    "from": "patch",
+    "patch_sha256": "42c775d8c14a6c483d0b46ba2241988421fc450e4686173143ec3bb7a2ea573f",
+    "sha256": "cf4d952a26847d9871e177773634ba146daeb5b9a22d3fac518f6be2ccb66b83"
+  },
+  "deepinfer/model_executor/input_metadata/input_metadata.py": {
+    "base_sha256": "612b95008ab3ca3caf74e911b010ee705eabc8edac76e22fd52af81bdbae52ec",
+    "from": "patch",
+    "patch_sha256": "e2a8518d8bb26751377dabbe2feff91824f940ec940c6539ec431226de3697fe",
+    "sha256": "41c59e3770a45b5c30e771002c167f0fe349602a27dc70b73635bdd80813122c"
+  },
+  "deepinfer/model_executor/input_metadata/prepare_tensor_input_zos.py": {
+    "from": "repo",
+    "sha256": "da306b02a40cfa2cf3ea70f78e49e22984bfcf2348cbf7897fee0238811ce9e7"
+  },
+  "deepinfer/model_executor/input_metadata/yoco.py": {
+    "from": "repo",
+    "sha256": "882a33de3da0fba81644adde9e9e1a90ec3d3ff34a8f3ad4dda18faafebd6460"
+  },
+  "deepinfer/model_executor/layer_utils.py": {
+    "from": "repo",
+    "sha256": "0aa862777dd5932bc367f19deb89c070d9598a80e383df955e2f5982c8c96c2b"
+  },
+  "deepinfer/model_executor/layers/__init__.py": {
+    "from": "repo",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "deepinfer/model_executor/layers/attention_backend.py": {
+    "base_sha256": "0ad1c371863524dacf199e2e8be25b02033221c3c85c9922d39d9696c6a247d3",
+    "from": "patch",
+    "patch_sha256": "57c7966b5a7c725b8a9888e519163650d1350bf37b13cc6d0c8bd931c37f095e",
+    "sha256": "429a1f5c8e3af834ed94bdd81e290206ac5a1c92cd589b0c67552c4cb855f4c9"
+  },
+  "deepinfer/model_executor/layers/attention_metadata.py": {
+    "from": "new",
+    "sha256": "b2f94e6892c37d5609784af476b29fab755303de4658581cb2ee10c03c2e0d60"
+  },
+  "deepinfer/model_executor/layers/layernorm.py": {
+    "from": "repo",
+    "sha256": "9d641bc03f21571c017e3e8873cd66d443a2bbd66efb8d31e554d9391e63b554"
+  },
+  "deepinfer/model_executor/layers/linear.py": {
+    "base_sha256": "a8ca60074a1c868e87662240073c6c3648d66ceae953befa3b08772da2225967",
+    "from": "patch",
+    "patch_sha256": "134fbd806cb69e8a04e3f9e6f1cc94f74af3a83ba7ed209f00c1d9c4fe187a37",
+    "sha256": "00c958121671b930b6534f6bbdc1601e3d12c58584980ad1acff768c9a60b187"
+  },
+  "deepinfer/model_executor/layers/mtp_info_pool.py": {
+    "from": "repo",
+    "sha256": "f0ae9ad98d03e2bc6d3f4406cd757e7ce82010ec6fdc0f545d9d86776e31ee72"
+  },
+  "deepinfer/model_executor/layers/rotary_embedding.py": {
+    "from": "repo",
+    "sha256": "097f73da01d16b4a9fbb7e2dd0d43ec04a1d2033b063dd10986c93a3e0d0cd1d"
+  },
+  "deepinfer/model_executor/layers/sampler.py": {
+    "from": "repo",
+    "sha256": "81205a12e860041ffa904321b852db2d048bc038bb07d494dbb78b44b522d9a9"
+  },
+  "deepinfer/model_executor/layers/sampler_utils.py": {
+    "from": "repo",
+    "sha256": "35bdfd873865375cbf834258543e54ea7a1dbb860767412b8b8e44bea1b296b9"
+  },
+  "deepinfer/model_executor/layers/sm90/__init__.py": {
+    "from": "new",
+    "sha256": "d81fb0313366f7ce5e66fcfc8b31f90b66d80ee5cb68752fb3e3ea87608ef687"
+  },
+  "deepinfer/model_executor/layers/sm90/attention.py": {
+    "from": "preserved",
+    "sha256": "a7af059c9e8b2e3a89b3f4c74037cfa92ff88a1bef8dea885e61cf1c83d9048e",
+    "source": "experiments/redknot_preserved_20261111/remote_pr148_modified/deepinfer/model_executor/layers/sm90/attention.py"
+  },
+  "deepinfer/model_executor/layers/sm90/gemm.py": {
+    "from": "new",
+    "sha256": "8e78883a887784f31cc12462daeb80000c3db52406a5d7fe5e0cbefd8c8490c5"
+  },
+  "deepinfer/model_executor/layers/sm90/indexer.py": {
+    "from": "preserved",
+    "sha256": "0574fb6db360f69f9bb689e9013c1302b1d27c86ba52188d116ad87d6d219b1c",
+    "source": "experiments/redknot_preserved_20261111/remote_pr148_modified/deepinfer/model_executor/layers/sm90/indexer.py"
+  },
+  "deepinfer/model_executor/layers/sm90/quant.py": {
+    "from": "new",
+    "sha256": "f90c6420e790911042f5a3d14f4eaf7b5b2ceb281b651375a843abed15ebfa56"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/__init__.py": {
+    "from": "repo",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/asc/__init__.py": {
+    "from": "repo",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/asc/candidate_blocks.py": {
+    "from": "repo",
+    "sha256": "3dcc9fb61226967b1fc847fa07d304a17ff29bb8f715591b685f4f72d4a00612"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/asc/compress.py": {
+    "from": "repo",
+    "sha256": "ffcefa03bbb0bceedeb0abfc17656264f1788c81594565414aedc3c35362f7c5"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/asc/compute_seqlens_k_zos.py": {
+    "from": "repo",
+    "sha256": "3b70f210e5e9a952f69fb4451e90678491cd9c9392ec26053a54b1bd735ed339"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/asc/dflash.py": {
+    "from": "repo",
+    "sha256": "602d02f4528ac5df199dca65c89c4216841f1a2361ae16aeab568b284e0903a3"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/asc/dflash_copy.py": {
+    "from": "repo",
+    "sha256": "21a8c5b8e67cc3f434ed9ab8e133cb633f291442a412fc8fb73195cd08adcccb"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/asc/flash_mla_utils.py": {
+    "from": "repo",
+    "sha256": "2c6f6b2151790f68f60eb1937020e6aac495ed555c714feee4a0cb4668836e41"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/asc/fused_sample.py": {
+    "from": "repo",
+    "sha256": "5de46ef65a060dd412bc4fe7c24458f56e86c7993cd49443d99b54f010b2c52b"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/asc/fused_transform.py": {
+    "from": "repo",
+    "sha256": "cf8517f24b91a700edd200760ae5addcfa3a934d87b7041fce17db5a87a13768"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/asc/gather.py": {
+    "from": "repo",
+    "sha256": "ec4f9ab4fd78ea6d61532d2bb005bf692b6b1e07e89bbfcbf2307ab8b04eae23"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/asc/gather_engram_tokens_zos.py": {
+    "from": "repo",
+    "sha256": "a8d19c8323c6ddce2f52c9fb31b51b9ec256d139100e4213a360bbe8e08be847"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/asc/gather_input_ids_zos.py": {
+    "from": "repo",
+    "sha256": "834229979c126855a3e00be36b11751f41a7a0d9a578528d86f65c979e305b3e"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/asc/get_kv_index.py": {
+    "from": "repo",
+    "sha256": "fb232ca8f928a7a590d1cf4f475027a22c9abb4f0f3dd1f8aaa5c1c23768bcd9"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/asc/image_embed_ops.py": {
+    "from": "repo",
+    "sha256": "190d27247cd0f65c4219b820574a365bf7dd8ab5449e8e7c2128c6fe03e12c01"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/asc/kv_index_cat.py": {
+    "from": "repo",
+    "sha256": "58528d157972575155cc1b6542d35b44374d9e6118bfa8cc5ff6f541412724e7"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/asc/kv_quant.py": {
+    "from": "repo",
+    "sha256": "83c0f165834edb1c24d9fd0fe28cf3dca91f8d53d3d2e6b55e6ac6c70169c053"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/asc/load_paged_kv_cache.py": {
+    "from": "repo",
+    "sha256": "67f37aff91c824e51880dcc449b3f21f4c7718647bc81fc9305cf4ffd34bf9b4"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/asc/norm.py": {
+    "from": "repo",
+    "sha256": "15ff678f75943d4da3287c5a19ff6e10a12e69d51f5366ef8dae58a5f6afce72"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/asc/prepare_cp_mirror.py": {
+    "from": "repo",
+    "sha256": "5d718a3f745611cb87417920d18b1bcd7d6ddc35a183da4c375e46600b259e25"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/asc/prepare_v4_decode_metadata.py": {
+    "from": "repo",
+    "sha256": "842747b9184fe88e7f0703d15a906814da9a13480d2296721c044eed3022426d"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/asc/random_sampling.py": {
+    "from": "repo",
+    "sha256": "86a06d226a855eaa1445f2ffa8401ff09afab1cd47a92bd3681ccd624c38394d"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/asc/rstd_1ulp.py": {
+    "from": "repo",
+    "sha256": "ffc954fe296c3de0757030084095a38173e75ee5e02047f6deb924ec40ea7df2"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/asc/sampler.py": {
+    "from": "repo",
+    "sha256": "c78c8d0223d56462ae737ea7529cfaddea46eb1cefe2d67928a3532f73696500"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/asc/schedule_mtp_varlen.py": {
+    "from": "repo",
+    "sha256": "dceafeed2b598b84db654b8d70c520bc4a368a03e2dacf2acf97b72623097809"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/asc/state_cache.py": {
+    "from": "repo",
+    "sha256": "67060817908b6441d5c259ce2bf59d8e46fcf9e66a8a57ad935125bd78facbce"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/asc/store_kv_cache.py": {
+    "from": "repo",
+    "sha256": "6c862a60fdf432492f89e3cae49b686fd88289f518b7c295da0a45d03b7dca82"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/asc/store_mtp_info.py": {
+    "from": "repo",
+    "sha256": "f0eadf2ce66fad1ec53b9750c019f41d8bf207f1acee4133875a8ebb40bd562b"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/asc/structure_output.py": {
+    "from": "repo",
+    "sha256": "e53b26bb82fc4793c5b25414490564b93859b07965ebd33bc6efdd9665e53a54"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/asc/sum_smaller_probs.py": {
+    "from": "repo",
+    "sha256": "9e8cdeb8b2e51c9b39ce2ec0e85b29b442bfcb211b6eb6963f18091cbc1d4805"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/asc/swa_index.py": {
+    "from": "repo",
+    "sha256": "90381234e61899de0144833e73379167249915f341cde99aa4dea389b8dc1e34"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/cache_common.py": {
+    "from": "repo",
+    "sha256": "95835810dc6676704c7902ca6e9778d38b6f8137fb37320a245826992aed55d1"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/candidate_blocks.py": {
+    "from": "repo",
+    "sha256": "4d04add6918385e9137e835eccdbd765ad1ef4d6c6aec1d7627c01d1c7e2a860"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/common.py": {
+    "from": "repo",
+    "sha256": "d5cbc52dda0bd611d5ea417d2e8bb1ec70c70f5932edaeb809eb7cfa6a669a1b"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/compress.py": {
+    "from": "repo",
+    "sha256": "18b72e2d1891c28512d9d70db13b21fc7952b9bef8ed73820c45f9e590fe38ee"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/compute_seqlens_k_zos.py": {
+    "from": "repo",
+    "sha256": "83d5decd78b992d697074f38f1005db007c0e75332a7ab2a90620922844406f4"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/cuda/__init__.py": {
+    "from": "repo",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/cuda/candidate_blocks.py": {
+    "from": "repo",
+    "sha256": "41fb2aab99ec0f8f4b2f1d7b49144ce7e1709a7e2e96b6f00797fe7b1d0e3fa2"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/cuda/compress.py": {
+    "from": "repo",
+    "sha256": "f29ab1fc97c73537bfd9b0e5be6a9f4014e9b17a1a1952c876f2dea4cf4c8b9c"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/cuda/compute_seqlens_k_zos.py": {
+    "from": "repo",
+    "sha256": "6a95493e4759dd51193a50f4fd3533050f901433bdb3dd9534f9add65f2fce5c"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/cuda/dflash.py": {
+    "from": "repo",
+    "sha256": "789d90758ac2c20fe36dcb97156a9e6448a76220562ebfcf3f8c53cea9366504"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/cuda/dflash_copy.py": {
+    "from": "repo",
+    "sha256": "2ed3a19d94afe5b5c2533049ad62815fb2684e718957e491520c18fbb5aeb686"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/cuda/flash_mla_utils.py": {
+    "from": "repo",
+    "sha256": "5a365195b848668126ebd73dfed00e3645648b1e509c39549c4da4fbe7c5f9b5"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/cuda/fused_sample.py": {
+    "from": "repo",
+    "sha256": "2b289145a9c28bb869dcc4cb63d80eff845d923a3fc34885366a2caa0411223f"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/cuda/fused_transform.py": {
+    "from": "repo",
+    "sha256": "0256201181ebe3dc08c4ab1d08fddef6b46d91f46ecbeb9406268474b3f64ca3"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/cuda/gather.py": {
+    "from": "repo",
+    "sha256": "cf62656b215e07ac791ffa096da66c64ed0c81231172a46a2e01abf5171c4983"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/cuda/gather_engram_tokens_zos.py": {
+    "from": "repo",
+    "sha256": "8a117c3d7721ba1ded8ba39f8fcea8e5a49bc4d8c4546bc158670f44d816f92a"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/cuda/gather_input_ids_zos.py": {
+    "from": "repo",
+    "sha256": "f6504fe35b05b2b53af0e9215a1c3da72c3fe7cdc5fda0643b527e8b14610448"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/cuda/get_kv_index.py": {
+    "from": "repo",
+    "sha256": "3671731746eda09711e3e93c5328454b7033eb272e8a0573545d40095bcc532a"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/cuda/image_embed_ops.py": {
+    "from": "repo",
+    "sha256": "927dbce53734e1945da84ea1b987d1a2c2ea4280ddd1c98c6ded50acacba5d95"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/cuda/kv_index_cat.py": {
+    "from": "repo",
+    "sha256": "5e94bddf70d06c7b5954abda2f15a67aa75d6f33db83b50ff82b01faf93a979d"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/cuda/load_paged_kv_cache.py": {
+    "from": "repo",
+    "sha256": "916ab93b34920141b30ccf24672a1f73f1af3bb9e593fe7ac01ef2e0990df6e8"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/cuda/norm.py": {
+    "from": "repo",
+    "sha256": "568abbc63ec7d72aed3edaa8ffde9033095eb1421077141c787cabe6628dcb91"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/cuda/outlier_detection.py": {
+    "from": "repo",
+    "sha256": "3d7047e6e8bb40260f6dad46ca9b49e1f0d10b01312d34716e5f1d2ceb657c7c"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/cuda/prepare_cp_mirror.py": {
+    "from": "repo",
+    "sha256": "92e7477a0a07ba441e877c277d93144448f35ced5da68321f65dfcd49d49d7a1"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/cuda/prepare_decode_metadata.py": {
+    "from": "repo",
+    "sha256": "33ee5730fab7ed13957f8bf8c3cf27c20b01bede9ad2b53fe98a8c68c6a2362e"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/cuda/quant.py": {
+    "from": "repo",
+    "sha256": "c395de8faadfed2689d86841ec284533a2c1e136037bc8527a091fdb0328d1f9"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/cuda/random_sampling.py": {
+    "from": "repo",
+    "sha256": "18ff9677ca6886e6329e62ef5cd6dac92d6a2658be3fe97ee60d7985494b1b6c"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/cuda/sampler.py": {
+    "from": "repo",
+    "sha256": "4a37c7e4bc44d7c4ef50b8590590c9a8d646eb7a8627f2de9e9c1a4f0f5927e3"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/cuda/schedule_mtp_varlen.py": {
+    "from": "repo",
+    "sha256": "c4814812966ae3bd69ed4b4078f6a9c3a183c0a9625144b72bf092dbc7b357bb"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/cuda/state_cache.py": {
+    "from": "repo",
+    "sha256": "224915e1e55b25caf6537a6d7e19c80a85f1b1641f788d09679245dd5a25c0c4"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/cuda/store_kv_cache.py": {
+    "from": "repo",
+    "sha256": "5e2bd6dd81bc912e7649bda5df1d099cd9cca9112ca542d3d0b73ae30c4c92d6"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/cuda/store_mtp_info.py": {
+    "from": "repo",
+    "sha256": "83bf4e33be7a9a17e53fc824630a12188afb4b66d166286e9b98397e7e6841d8"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/cuda/structure_output.py": {
+    "from": "repo",
+    "sha256": "70465a3897c999bb54b9fa569ec99cf09e60213560480dd2f459ee45cda7c2b3"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/cuda/sum_smaller_probs.py": {
+    "from": "repo",
+    "sha256": "37f612c2df98cd84b7815f384ee459187e814d5aae31d5d8842dc0703d10de9c"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/cuda/swa_index.py": {
+    "from": "repo",
+    "sha256": "5af74a5e4c9481b076f9a6e9015969779f6fd27b79e9bb273d206fa2d8290465"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/dflash.py": {
+    "from": "repo",
+    "sha256": "79d0e86dc57cc0f58bdb9bcba4559888a7d2611a1d914474c6d616d0a78a6ec0"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/dflash_copy.py": {
+    "from": "repo",
+    "sha256": "c38e7a7930da4bfb2e847c2da02b5785b3a81fc70a0f425b633ce103a61ca90e"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/flash_mla_utils.py": {
+    "from": "repo",
+    "sha256": "83b2d1c4eba06271e02f9002a4d90f5d183c7cb3e55792624f629c36e75067a7"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/fused_sample.py": {
+    "from": "repo",
+    "sha256": "f43ac934284d15f708a0aa07aaa8fff7daa257984e311ca554bd9dbea89e5e1d"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/fused_transform.py": {
+    "base_sha256": "8bb4e3f1177d6a474ea1398de3dacef5fcddec2e54a93920902dd0d480dd28d8",
+    "from": "patch",
+    "patch_sha256": "3494aa66e6b22f7fbcd84a503f594808c6b650a2ba04e098f9fc1d5a746a27f9",
+    "sha256": "3483e3155ac685c317fd21f7f12d89bf24196d9f613987d7f40d34fd3c5dba68"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/gather.py": {
+    "from": "repo",
+    "sha256": "1d131a8609412373eaaa7e3b2698ee0237ef6e2d521e2de38653c1d9e2b30d04"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/gather_engram_tokens_zos.py": {
+    "from": "repo",
+    "sha256": "1cd430d3d5c75fd1bfe1e822c903fb0220f2c15a6e5b93b954e915b068cf6e5e"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/gather_input_ids_zos.py": {
+    "from": "repo",
+    "sha256": "13fe137be5994eee96bd193d6cc7bdbed16efe913ff21b57e044e9b6340c855f"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/get_kv_index.py": {
+    "from": "repo",
+    "sha256": "7a9e2ebc82bcb5df9f879b222a17152e9d17e0ec85cd06a4d55c96eb226e6cf9"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/image_embed_ops.py": {
+    "from": "repo",
+    "sha256": "b745cdaa3b2862f2d9ae8a103dd90b62a37383e4ff6145b365de5a3ecf786508"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/kv_index_cat.py": {
+    "from": "repo",
+    "sha256": "6bd5a69287a41282bb43a4abc05d26a4e2765bc5de383ea5b8c810b114948a16"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/load_paged_kv_cache.py": {
+    "from": "repo",
+    "sha256": "81538081644c0e58fc2da15fd62931e07f26740c9fe22408906b08c5f6188ef1"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/norm.py": {
+    "from": "repo",
+    "sha256": "14d6f0704e2fa172052cc9dfdc455cae49004c0107f0b7ea7cb72ba0e8b6dce0"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/ops.py": {
+    "from": "repo",
+    "sha256": "9b443cb87be447a15853781f76b9d54c224cf60fbafcf577b71f4ba14da989cd"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/outlier_detection.py": {
+    "from": "repo",
+    "sha256": "e93e2509b2a57c08659ba27e7286b79745bf9da50f7a87f0abbd9e24393602e9"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/prepare_cp_mirror.py": {
+    "from": "repo",
+    "sha256": "4b58b8b353be45ea0ebb917a8ddb2a2e4b1c2e2350e57d2ff0036ae4bf25b7d7"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/prepare_v4_decode_metadata.py": {
+    "from": "repo",
+    "sha256": "4117a3203a8e444549969647ba57c1d56d10116a93b50c9d9b8e96c74f36d06e"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/random_sampling.py": {
+    "from": "repo",
+    "sha256": "59d8d5befc1a98ec28ca824117ff1ffa7829740fb327240c1ec9a0c77731f9c2"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/sampler.py": {
+    "from": "repo",
+    "sha256": "cef9d2dda13f24fed56ca9bef45fdffa883edc63208d54e1b83ead9358271304"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/schedule_mtp_varlen.py": {
+    "from": "repo",
+    "sha256": "0c6e5eb4faa087b96e0558ea4791e1b4ead1939a6cc8b086de86ca2f68bd4e88"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/state_cache.py": {
+    "from": "repo",
+    "sha256": "76c7451da15631b75055961976c048f04317fdfe6970f1140f8d93c0148a79f0"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/store_kv_cache.py": {
+    "from": "repo",
+    "sha256": "1be0ce334f8ff0a20f3f3818594ee876805cfdff2bd6d4f4af738f9373134fe6"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/store_mtp_info.py": {
+    "from": "repo",
+    "sha256": "c651b2184756d24f460f51b47a6080345890dd62f3becb55e73f5575e0c9ab2c"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/structure_output.py": {
+    "from": "repo",
+    "sha256": "d62fb6e93e68ae2f2e4e3225cd4065cdfd19ac9acc31e972e46b8eb0106ab982"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/sum_smaller_probs.py": {
+    "from": "repo",
+    "sha256": "3f85da6fc031e0bc4bed345d86470166e1383f63e3a5de1ddef047edab7b7447"
+  },
+  "deepinfer/model_executor/layers/tilelang_ops/swa_index.py": {
+    "from": "repo",
+    "sha256": "67f28f7991fc27cc3905177dbe1fcd68019877289ebe959e66e4fbfffcc7ffee"
+  },
+  "deepinfer/model_executor/layers/vocab_parallel_embedding.py": {
+    "from": "repo",
+    "sha256": "1b7d792930d3ee8b7e46d8ccf0707fbde1ac4248ec9cff5b27238ae5b5bcaf1a"
+  },
+  "deepinfer/model_executor/model_loader.py": {
+    "from": "repo",
+    "sha256": "a79705921224c117255b6472c614fed280122d431a8b3d5cf349604f55009549"
+  },
+  "deepinfer/model_executor/model_metadata_utils.py": {
+    "from": "repo",
+    "sha256": "1ef7803d2b0083d025de676c841db9a317235b881fb9ebf6781ec76d49d7b22c"
+  },
+  "deepinfer/model_executor/model_output.py": {
+    "from": "repo",
+    "sha256": "97320901eb107198e5c38e8d044320c98ef431ae515c3c4a3c485bf7ccfba6db"
+  },
+  "deepinfer/model_executor/models/__init__.py": {
+    "from": "repo",
+    "sha256": "3674f961c620c18a937da9127bfb87f7084c21d3a2a6ceb0b297d21b572dbfc4"
+  },
+  "deepinfer/model_executor/models/decoder_layer.py": {
+    "from": "preserved",
+    "sha256": "7501b248ce55dd2aebcd601560656b1a08ef2ee7f98d12c98feb390aabf55073",
+    "source": "experiments/redknot_preserved_20261111/remote_pr148_modified/deepinfer/model_executor/models/decoder_layer.py"
+  },
+  "deepinfer/model_executor/models/deepseek.py": {
+    "from": "repo",
+    "sha256": "881fe2839b34d191ffd50ca6d5b7b57443b43ed8d811e204e4d48164f31f613a"
+  },
+  "deepinfer/model_executor/models/deepseek_vl.py": {
+    "from": "repo",
+    "sha256": "6eda92aa4a0b51b92ab95feb3e3c0714b15499a8a5783280ce6e1c86251b3e51"
+  },
+  "deepinfer/model_executor/models/mtp/__init__.py": {
+    "from": "repo",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "deepinfer/model_executor/models/mtp/dflash.py": {
+    "from": "repo",
+    "sha256": "12ebfb9c793062844d40e0fab17164d5365d965c318f8b9f0f4adf51b3afb684"
+  },
+  "deepinfer/model_executor/models/v4_modules/__init__.py": {
+    "from": "repo",
+    "sha256": "b4598007774b87200a0a4bfc4f27bb7f7f70627636f8661a9c2c553e277459a8"
+  },
+  "deepinfer/model_executor/models/v4_modules/attn.py": {
+    "from": "preserved",
+    "sha256": "01a807d70b71203fa45ff85d5557f2ddacabf2661f562d4f24907c742ad1bb42",
+    "source": "experiments/redknot_preserved_20261111/remote_pr148_modified/deepinfer/model_executor/models/v4_modules/attn.py"
+  },
+  "deepinfer/model_executor/models/v4_modules/attn_redknot.py": {
+    "from": "new",
+    "sha256": "367ccfea96b4f235a08d27d0982b309af819dd7eda0f1f256b628b8614ea50d1"
+  },
+  "deepinfer/model_executor/models/v4_modules/builder.py": {
+    "from": "repo",
+    "sha256": "2aa85c2d03b1caebf1def294f1a066ab57e5190a9954983e1f79edee22450ce0"
+  },
+  "deepinfer/model_executor/models/v4_modules/compress.py": {
+    "from": "repo",
+    "sha256": "11bd28990062349369890f274051873dba98152bd9224d8164495eb1fadc53f2"
+  },
+  "deepinfer/model_executor/models/v4_modules/containers.py": {
+    "from": "repo",
+    "sha256": "1e1b48b06ed5319515f601ae59fc2ca0bdabf22bd6b3e88a8d1029f7d29f5e9e"
+  },
+  "deepinfer/model_executor/models/v4_modules/cross_layer.py": {
+    "from": "repo",
+    "sha256": "5a01c6d3c1166c2724eac92ac5706fc838423d7ae6479785ceabfd46c81855ea"
+  },
+  "deepinfer/model_executor/models/v4_modules/engram.py": {
+    "from": "repo",
+    "sha256": "d2aa096a1f73177e2dd06f5a1fcd6746139c52af56c3bcfb77d5226a3deeae8f"
+  },
+  "deepinfer/model_executor/models/v4_modules/engram_metadata.py": {
+    "from": "repo",
+    "sha256": "22d694d7193fa66584320cb21bb57df913d1b98f0b771ab21cad664e5078f2db"
+  },
+  "deepinfer/model_executor/models/v4_modules/engram_parameters.py": {
+    "from": "repo",
+    "sha256": "2b8bfb1d4b595dc337ceeac0fd574fff7549c9f2f6014cc672ad1bc9755ade53"
+  },
+  "deepinfer/model_executor/models/v4_modules/hc.py": {
+    "base_sha256": "1dd2d2e880c28deaa77363f040c31b451d1aeedf4ea188ace6803798713e3701",
+    "from": "patch",
+    "patch_sha256": "c3e15181e2571b000a497c34e8e8199e40c73a1ed800b2e4d4faf269d6ebf800",
+    "sha256": "f57b6f5e8ca12aadf5c2004a415de75673dfdd8da471b7ad13d2198b292dc05c"
+  },
+  "deepinfer/model_executor/models/v4_modules/hc_blocks.py": {
+    "from": "repo",
+    "sha256": "d37962bb3c47ec541f62302054f16e1f21899c7fabc1fefce55caea405522cca"
+  },
+  "deepinfer/model_executor/models/v4_modules/hc_lazy.py": {
+    "from": "repo",
+    "sha256": "553c9fae0179443d38dd4d3b02f827492f0b2a613238efcdda1f8304b8027a51"
+  },
+  "deepinfer/model_executor/models/v4_modules/heads.py": {
+    "from": "repo",
+    "sha256": "697439602617d53409fea41c8cc1d95b1002842823d7ccd824fb720b5111ae2e"
+  },
+  "deepinfer/model_executor/models/v4_modules/index_attn.py": {
+    "from": "preserved",
+    "sha256": "416d09a87233034f93c42788c209516bf0b9ef9527ce662e8f0f34482449b8fc",
+    "source": "experiments/redknot_preserved_20261111/remote_pr148_modified/deepinfer/model_executor/models/v4_modules/index_attn.py"
+  },
+  "deepinfer/model_executor/models/v4_modules/linear.py": {
+    "from": "repo",
+    "sha256": "8ba53ee0cb9ce7bcf0f1c93e7da24abb10c8ad8bada730366147c8b869cf334a"
+  },
+  "deepinfer/model_executor/models/v4_modules/mhc_modeling.py": {
+    "from": "repo",
+    "sha256": "97d52d87b262bffe3970a0b46c329cdcc1c514c09ec48b32008269b225d5de4d"
+  },
+  "deepinfer/model_executor/models/v4_modules/mhc_ops.py": {
+    "from": "repo",
+    "sha256": "43c676593e8d1b865eddb4732aa185375be650b46cf17fa71074a0a942139f8d"
+  },
+  "deepinfer/model_executor/models/v4_modules/mla_attn.py": {
+    "from": "repo",
+    "sha256": "7cf38a5bfa3800577c177a83e4cfecc1d0cf2b48b5bbadcfa1039b71ae882789"
+  },
+  "deepinfer/model_executor/models/v4_modules/mlp.py": {
+    "base_sha256": "2541bcc83b178a9e2f18b387b301d60111d6d603e18e2d31df38196b03d290dd",
+    "from": "patch",
+    "patch_sha256": "4f72ac3649e228e01f698c5e769549937b28a666f5db7c03b2f59f15390c150e",
+    "sha256": "c8aba543ea1d0074cd358179e5cb313ba4ae0cc3c5b9af7f84e09695cb319329"
+  },
+  "deepinfer/model_executor/models/v4_modules/moe.py": {
+    "from": "repo",
+    "sha256": "4e154e1536e5926bf4e4b7b58d5ccc71a692b46c8d26d7edcc56827bfe540de3"
+  },
+  "deepinfer/model_executor/models/v4_modules/norm.py": {
+    "from": "repo",
+    "sha256": "8b8e9defe8b587a5574ded543512690b881420fa7488f8b552422a1976807562"
+  },
+  "deepinfer/model_executor/models/v4_modules/rope.py": {
+    "from": "repo",
+    "sha256": "df59daa787408247204f543bd3c8f02ce8a15b38c970f30da7883a949d5ab686"
+  },
+  "deepinfer/model_executor/models/v4_modules/utils.py": {
+    "from": "repo",
+    "sha256": "3a9be644dbcbd068bf4f5d28afd6b96ade1054d2cc6497597e473eeb4512013d"
+  },
+  "deepinfer/model_executor/models/v4_modules/yoco.py": {
+    "from": "repo",
+    "sha256": "7dc8ad7b6ca4902bcef67b1cbc4804592995c5b6af9ebaa00b59cc338c1aa6ec"
+  },
+  "deepinfer/model_executor/models/vision_encoder/__init__.py": {
+    "from": "repo",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "deepinfer/model_executor/models/vision_encoder/mlp_projector.py": {
+    "from": "repo",
+    "sha256": "5691a4861bdc55f0c692bd0807ec70c1b794a243f1ed824bdb5cd93440e69ac7"
+  },
+  "deepinfer/model_executor/models/vision_encoder/vit.py": {
+    "base_sha256": "9da68b1c8ac2eeab6a331e0ce91bfae241c7ea3ebddc897a3abf3d933e70dc94",
+    "from": "patch",
+    "patch_sha256": "30ccff353b802d390fa786d3de1018d1f572982c77fde2228dcdff3c1ee7aa80",
+    "sha256": "b6ff06d95c34cd348346aad6f8e3bb107036d0282e540705b124bdbdcf6ea43a"
+  },
+  "deepinfer/model_executor/models/vision_encoder/vl_aligner.py": {
+    "from": "repo",
+    "sha256": "aee2eb1b94bb298680aacc0a9e5431cdee635e3ca6dbd7144befa6df4cb5b561"
+  },
+  "deepinfer/model_executor/parallel_utils/__init__.py": {
+    "from": "repo",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "deepinfer/model_executor/parallel_utils/communication_op.py": {
+    "from": "repo",
+    "sha256": "4d7ca2d66717a4da7f280bb2d48159aff5cc7ba0ced2f1fd6f00a11b7e8a188a"
+  },
+  "deepinfer/model_executor/parallel_utils/cp.py": {
+    "from": "repo",
+    "sha256": "beef76a3047051af30ba16d0c163fb0ca7793b86670492bd86b20e568f55af23"
+  },
+  "deepinfer/model_executor/parallel_utils/nccl_memory.py": {
+    "from": "repo",
+    "sha256": "9948fd7a1d2937848ed4d9ed4f2df250172353fe8088defdbec53e1182e7a1c0"
+  },
+  "deepinfer/model_executor/parallel_utils/parallel_state.py": {
+    "from": "repo",
+    "sha256": "3565b2449abff4df0df2f979061a73364886c93602218b43c2f86c70f2629801"
+  },
+  "deepinfer/model_executor/parallel_utils/userbuffer.py": {
+    "from": "repo",
+    "sha256": "580331d0e6d6b013189b1d482b242b0bf3d60be46cad1108896b4830202d33bf"
+  },
+  "deepinfer/model_executor/sampling_inputs.py": {
+    "from": "repo",
+    "sha256": "a6a4ecf738528e946ceee76915ceda154a27fd00bf718df4a3bbb6b324d2c7b8"
+  },
+  "deepinfer/model_executor/utils.py": {
+    "from": "repo",
+    "sha256": "171451e25c45116994751900758ae103609b1e3818d47d8146f7da0d18867c83"
+  },
+  "deepinfer/multimodal_tokens.py": {
+    "from": "repo",
+    "sha256": "6f13772f6b58aac5f64288ba2a76593ab37d91665755e15cfacc65a59b241e01"
+  },
+  "deepinfer/npu_ops/__init__.py": {
+    "from": "repo",
+    "sha256": "543745c9c200ec70261a70adef4f2ee51244f661bd82138e1b3347b628272099"
+  },
+  "deepinfer/npu_ops/deep_select.py": {
+    "from": "repo",
+    "sha256": "cf75fa43e445858813890698813ea5dc90f334d044e22f25efdba48c4c24fd05"
+  },
+  "deepinfer/npu_ops/patch_imports.py": {
+    "from": "repo",
+    "sha256": "e7cf0fb2a0f16ec2544d3c38cd8b831293d260d79babd4fb5a1a6484cc9704bc"
+  },
+  "deepinfer/npu_ops/vit_attn.py": {
+    "from": "repo",
+    "sha256": "d574dbea63ca39ddaa142d7cf3054148839c0243afa196ee3de6e618f5179fa6"
+  },
+  "deepinfer/platform.py": {
+    "base_sha256": "0f15b8455f9dfe56290a882a0842bb49ed31953eddcd0b0b2b68ff048a010b30",
+    "from": "patch",
+    "patch_sha256": "0b1832ad9ffa1393dec5f94c7b9c950df51495010a1535e4a2e110d89b751ce1",
+    "sha256": "8aacd99352c39555239e63b4ea1b231b1a10b999168379517de66f63723cec08"
+  },
+  "deepinfer/py.typed": {
+    "from": "repo",
+    "sha256": "5dd1780368016b57965417c2d68301dd1fa66b2f0da2ff40d2db451b4cff29ad"
+  },
+  "deepinfer/sampling_params.py": {
+    "from": "repo",
+    "sha256": "f800034efdebe1b21620660a51fa9122d3d7f138d8e60cd738f33d643c3116f8"
+  },
+  "deepinfer/sequence.py": {
+    "from": "repo",
+    "sha256": "ba8973ff5dbb681a1af0533b8ca1ade85a10204c891cc944a795e72dc89419f9"
+  },
+  "deepinfer/shared_memory.py": {
+    "from": "repo",
+    "sha256": "1aff9ee8f589c59e9b982707fe518bc4a8722814f971f741631d07d8a1319ce0"
+  },
+  "deepinfer/structure_output/__init__.py": {
+    "from": "repo",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "deepinfer/structure_output/compiler.py": {
+    "from": "repo",
+    "sha256": "05ae22caf6faddff075102f33e6e77aff32391c9f60f2f99047dfc68f104bbe8"
+  },
+  "deepinfer/structure_output/mask.py": {
+    "from": "repo",
+    "sha256": "000ea48e5a0d6fd19474b443137cbd034a347c0ed31a36907fe93c45933bea92"
+  },
+  "deepinfer/structure_output/matcher.py": {
+    "from": "repo",
+    "sha256": "83b69010567a4306d6d435c88d019a302e7ee2d89af01eb037a59e40c0e67ce1"
+  },
+  "deepinfer/structure_output/so_matcher_builder.py": {
+    "from": "repo",
+    "sha256": "1f26aea5205c2f6953ba7ca21079c84b888115ed44c158a120536a17517f1ee0"
+  },
+  "deepinfer/testing.py": {
+    "from": "repo",
+    "sha256": "1c6cc1fa7bb1e1be7aa89f8b03f6bb1c59d4bcf20152de1d42c4f9782872c5e7"
+  },
+  "deepinfer/timer.py": {
+    "from": "repo",
+    "sha256": "ed40611395c78df0d1e3240615212f9a83688b5c145ce5c1a037a1aae1fe84df"
+  },
+  "deepinfer/utils.py": {
+    "from": "repo",
+    "sha256": "8a0049b98ea6f7ef98555ad8b38b9e8dac2292c0d2a89c2090bbdb5e5ee7295a"
+  },
+  "deepinfer/ve/__init__.py": {
+    "from": "repo",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "deepinfer/ve/multimodal_processor.py": {
+    "from": "repo",
+    "sha256": "f6b0e03a9138eddead7adfe424d4818a937c5ffbac2bff07d27dc96dd20d75cb"
+  },
+  "deepinfer/ve/prepare_tensor_input_vl.py": {
+    "from": "repo",
+    "sha256": "37ac02d70519622eddcf6209530519546a92571be0e6276019ebe7e2cf4ea84a"
+  },
+  "deepinfer/ve/processor/__init__.py": {
+    "from": "repo",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "deepinfer/ve/processor/common.py": {
+    "from": "repo",
+    "sha256": "2a9de67c82c624ebe8f87247d4d49cd1a86196cc878ea212d023048906c19da1"
+  },
+  "deepinfer/ve/processor/image_processor.py": {
+    "from": "repo",
+    "sha256": "8b8a0a021795b6648ac372ccc7e6ca935ffb71d5d92313c9b6fcd4833761ba21"
+  },
+  "deepinfer/ve/processor/mm_processor.py": {
+    "from": "repo",
+    "sha256": "f4cf3c1136fad6c49398b8a108f70aca2321f5777c03646be1261d2aac4a790d"
+  },
+  "deepinfer/ve/processor/text_processor.py": {
+    "from": "repo",
+    "sha256": "b7eb5b27f6bf5d5c438bdc7a55d3f9fbd6374579888324ef5065c6ba26cb8930"
+  },
+  "deepinfer/ve/schema.py": {
+    "from": "repo",
+    "sha256": "6c2a481bb6ebb51df61968a619835e6a840db90fcf723ed4817f2451c6925485"
+  },
+  "deepinfer/worker/__init__.py": {
+    "from": "repo",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "deepinfer/worker/base.py": {
+    "from": "repo",
+    "sha256": "40e6ca29aebd9d475eaad4b86326783f76dba2b73feaa51d86a200b7704a05ed"
+  },
+  "deepinfer/worker/cache_engine.py": {
+    "from": "repo",
+    "sha256": "ca3d80120fe6bc50971b180278dd575d585e1a6c7a3c2174a8a6fd6213454161"
+  },
+  "deepinfer/worker/cuda_graph_runner.py": {
+    "from": "repo",
+    "sha256": "9f559e88d60d057d23243852616aa9cd7264a59841d580731bec1f8cb8bd57b0"
+  },
+  "deepinfer/worker/decode_perf_cache.py": {
+    "from": "repo",
+    "sha256": "472ff10a43df0e4b5b91becb51b13e651df62ca928032c2752c39df99f40e55e"
+  },
+  "deepinfer/worker/dflash_cuda_graph_runner.py": {
+    "from": "repo",
+    "sha256": "e98d48d305de788a68eb899e8ae9d621ccefe8cda107dfeefe0c4ded732dbfc3"
+  },
+  "deepinfer/worker/model_runner.py": {
+    "from": "preserved",
+    "sha256": "4b7ed922cc2fad214943992415214862751a98aef6e8ef0db96d00a512cd6923",
+    "source": "experiments/redknot_preserved_20261111/remote_pr148_modified/deepinfer/worker/model_runner.py"
+  },
+  "deepinfer/worker/runtime_config.py": {
+    "from": "repo",
+    "sha256": "1b24e906ad44ee0906683f0c0567a0802346e657180d7d9e1e2fe9f7a7dcca59"
+  },
+  "deepinfer/worker/worker.py": {
+    "from": "repo",
+    "sha256": "ad32e595d9ab289dff1a7709136431ac60dae709e9e5123ae42eb0ebf7c30cbb"
+  },
+  "deepinfer/worker/zos_status.py": {
+    "from": "repo",
+    "sha256": "2acfc184627812ffb23d6b7f1b55d2261e8ff006043488594208a7e88fce1b39"
+  },
+  "examples/_config.py": {
+    "from": "repo",
+    "sha256": "a671d83fa5becac257722e67facec2f33743a1263e0b2e6355dcdb00984f4f42"
+  },
+  "examples/_launch.py": {
+    "from": "preserved",
+    "sha256": "9fc6ad9a672cca855bce9eac2ef3d51cade84d49149d0cb57ba0c6fb405b7451",
+    "source": "experiments/redknot_preserved_20261111/remote_pr148_modified/examples/_launch.py"
+  },
+  "pyproject.toml": {
+    "from": "repo",
+    "sha256": "30de7579a8df8b3b4c4fe6efa957e5bdf3ac39a0a87ddfff3c76836f95f530d0"
+  },
+  "requirements-dev.txt": {
+    "from": "repo",
+    "sha256": "ff1d8438df5a35604424fc78fa4965fe36c733c47643eaffffb5b15d06e07b51"
+  },
+  "requirements-nvidia.txt": {
+    "from": "repo",
+    "sha256": "f76510c5b75dc9633669596d03534a537b9f14241718b8fc93fdff9e4b795162"
+  },
+  "requirements.txt": {
+    "from": "repo",
+    "sha256": "6b7eb923377c7fa34ea950d5f8fb8c917a240b325494e13a83b3852d7d479db9"
+  },
+  "scripts/build_deepselect.py": {
+    "from": "new",
+    "sha256": "cf6eae008f04a37c07d8a6d42b7a81241446d8b1df08a87bd9e12d08fa8483fc"
+  },
+  "setup.py": {
+    "from": "repo",
+    "sha256": "c9e99ee64a51fe57a97bbf81729be711b403c49e5fbb856f388e3e5dbe696ec4"
+  }
+}

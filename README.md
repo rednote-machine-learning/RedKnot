@@ -8,7 +8,7 @@ The DeepInfer-based development track of **RedKnot**, an open-source project for
 
 [Website](https://rednote-machine-learning.github.io/RedKnot/) · [RedKnot paper](https://arxiv.org/abs/2606.06256) · [Upstream DeepInfer](https://github.com/deepseek-ai/DeepInfer) · [Apache-2.0 license](LICENSE)
 
-**Status:** This branch starts from the complete [DeepInfer baseline at `5537415`](https://github.com/deepseek-ai/DeepInfer/commit/553741557a57df44a46fb3ab72b6aafeaf945337), including its pinned submodules. The [RedKnot benchmark harness](benchmarks/redknot/README.md) now migrates the SGLang release datasets and suites to frozen target-tokenizer inputs, with a native DeepSeek-V4.1-Flash baseline runner. RedKnot's optimized native execution and additional model implementations remain pending. The DeepInfer sections below describe the upstream baseline.
+**Status:** This branch starts from the complete [DeepInfer baseline at `5537415`](https://github.com/deepseek-ai/DeepInfer/commit/553741557a57df44a46fb3ab72b6aafeaf945337), including its pinned submodules. The [RedKnot benchmark harness](benchmarks/redknot/README.md) now migrates the SGLang release datasets and suites to frozen target-tokenizer inputs, with a native DeepSeek-V4.1-Flash baseline runner. The paired LongBench QA benchmark below includes RedKnot S1.6 and its Hopper runtime. The DeepInfer sections below describe the upstream baseline.
 
 ## Framework branches
 
@@ -22,6 +22,8 @@ RedKnot belongs to its contributors. We welcome issues, bug reports, suggestions
 
 ## Reproduce the RedKnot workloads
 
+[Full and RedKnot S1.6 on 300 LongBench questions](test/longbench300/README.md) runs paired four-request batches on eight H200s, with local inputs and side-by-side answers. Run `python test/benchmark_rag_redknot.py --reference` to inspect all recorded answers and timings on CPU.
+
 The [benchmark guide](benchmarks/redknot/README.md) covers the 64K / 128K / 256K / 440K release suites, five LongBench-derived datasets, model support status, native TTFT and QA scoring, and validation commands. Preparation and result checks work without importing the GPU runtime.
 
 ```bash
@@ -31,7 +33,7 @@ bash scripts/run_redknot_benchmarks.sh \
   --output-root benchmark-output/v41-release --prepare-only
 ```
 
-Remove `--prepare-only` to launch the baseline on a compatible, installed native runtime. This checkout targets NVIDIA SM100 for GPU execution; an H200/SM90 port must be selected explicitly with `--runtime-root`. Migrating the benchmark does not establish GPU performance or a RedKnot speedup.
+Remove `--prepare-only` to launch the baseline on a compatible, installed native runtime. That release-suite launcher targets NVIDIA SM100 by default. Select an H200/SM90 runtime there with `--runtime-root`. Migrating the benchmark does not establish GPU performance or a RedKnot speedup.
 
 The [independent reproduction check](benchmarks/redknot/validation/v41-reproduction-check.json) rebuilt all frozen V4.1 inputs and reproduced the existing single-question native smoke's output in the external SM90 environment. Its timing differed substantially between runs; full-suite performance, additional native models, and clean-public SM90 reproduction remain pending. See the [validation scope and observations](benchmarks/redknot/README.md#validation-and-remaining-work).
 
