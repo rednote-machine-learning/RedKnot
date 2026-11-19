@@ -20,9 +20,23 @@ The DeepInfer-based development track of **RedKnot**, an open-source project for
 
 RedKnot belongs to its contributors. We welcome issues, bug reports, suggestions, and pull requests across all framework branches.
 
-## Reproduce the RedKnot workloads
+## LongBench RAG benchmark
 
-[Full and RedKnot on 21 LongBench datasets](test/longbench21/README.md) replays 2,100 local targets in 527 B4 groups. Run `python test/benchmark_rag_redknot_21.py --model-path /models/DeepSeek-V4.1-Flash-1017` for fresh measurements or [open the archived 500-question answer comparison](test/longbench21/recorded/index.html).
+Run Full and RedKnot on all 2,100 questions (21 datasets × 100 questions each). From the repository root on a Linux host with eight H200 (SM90) GPUs and the DeepInfer dependencies installed, run the following command with your local checkpoint path.
+
+```bash
+python3.12 test/benchmark_rag_redknot_21.py --model-path /models/DeepSeek-V4.1-Flash-1017
+```
+
+| Resource | Location in this repository |
+| --- | --- |
+| One-command benchmark entry point | [test/benchmark_rag_redknot_21.py](test/benchmark_rag_redknot_21.py) |
+| Frozen inputs for all 2,100 questions, with one ZIP per dataset | [test/longbench21/frozen/](test/longbench21/frozen/) |
+| Recorded results for 500 questions, one JSONL row per question with references, complete Full and RedKnot answers, scores and TTFT | [test/longbench21/recorded/answers.jsonl](test/longbench21/recorded/answers.jsonl) |
+
+The recorded log covers 100 questions each from HotpotQA, 2WikiMultihopQA, MuSiQue, DuReader and NarrativeQA. To rebuild the comparison on CPU, run `python3 test/benchmark_rag_redknot_21.py --reference`. [Benchmark setup and resume instructions](test/longbench21/README.md) · [Side-by-side HTML report](test/longbench21/recorded/index.html)
+
+## Reproduce the RedKnot workloads
 
 [Full and RedKnot S1.6 on 300 LongBench questions](test/longbench300/README.md) runs paired four-request batches on eight H200s, with local inputs and side-by-side answers. Run `python test/benchmark_rag_redknot.py --reference` to inspect all recorded answers and timings on CPU.
 
