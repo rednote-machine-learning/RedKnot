@@ -10,6 +10,7 @@ There is no network transport. CPU preflight never requests GPU ownership.
 from __future__ import annotations
 
 import argparse
+import ctypes
 import fcntl
 import functools
 import hashlib
@@ -237,22 +238,58 @@ def rank_worker(options, locations, contract, attempt, world, rank):
     producer.worker(options, contract, attempt, world, rank)
 
 
+def driver_compute_capabilities():
+    """Read all CUDA-visible devices through the driver without creating a CUDA context."""
+    driver = ctypes.CDLL("libcuda.so.1")
+    int_pointer = ctypes.POINTER(ctypes.c_int)
+    signatures = {
+        "cuInit": [ctypes.c_uint],
+        "cuDeviceGetCount": [int_pointer],
+        "cuDeviceGet": [int_pointer, ctypes.c_int],
+        "cuDeviceGetAttribute": [int_pointer, ctypes.c_int, ctypes.c_int],
+    }
+    for name, arguments in signatures.items():
+        function = getattr(driver, name)
+        function.argtypes = arguments
+        function.restype = ctypes.c_int
+
+    def call(name, *arguments):
+        result = getattr(driver, name)(*arguments)
+        if result != 0:
+            raise RuntimeError(f"CUDA driver {name} failed with CUresult {result}")
+
+    call("cuInit", 0)
+    count = ctypes.c_int()
+    call("cuDeviceGetCount", ctypes.byref(count))
+    require(count.value == 8, f"CUDA driver sees {count.value} devices; this benchmark requires eight")
+    capabilities = []
+    for ordinal in range(count.value):
+        device, major, minor = ctypes.c_int(), ctypes.c_int(), ctypes.c_int()
+        call("cuDeviceGet", ctypes.byref(device), ordinal)
+        # CU_DEVICE_ATTRIBUTE_COMPUTE_CAPABILITY_MAJOR / _MINOR from cuda.h.
+        call("cuDeviceGetAttribute", ctypes.byref(major), 75, device)
+        call("cuDeviceGetAttribute", ctypes.byref(minor), 76, device)
+        capabilities.append((major.value, minor.value))
+    return capabilities
+
+
 def ensure_eight_idle():
     def query(field):
         cmd = ["nvidia-smi", field, "--format=csv,noheader,nounits"]
         return subprocess.check_output(cmd, text=True, timeout=12).splitlines()
-    physical = {i: (u, cc) for i, u, cc in (map(str.strip, row.split(","))
-                for row in query("--query-gpu=index,uuid,compute_cap"))}
+    physical = dict(map(str.strip, row.split(",")) for row in query("--query-gpu=index,uuid"))
     # The pinned native launcher assigns rank r to CUDA device r. Its environment
     # setup replaces CUDA_VISIBLE_DEVICES; validate exactly the devices it will use.
-    require(len(physical) == 8 and int(os.environ.get("DEVICE_OFFSET", "0")) == 0,
+    require(len(physical) == len(set(physical.values())) == 8 and int(os.environ.get("DEVICE_OFFSET", "0")) == 0,
             "Expose exactly eight assigned GPUs to nvidia-smi and use DEVICE_OFFSET=0")
     visible = os.environ.get("CUDA_VISIBLE_DEVICES")
     request = [s.strip() for s in visible.split(",")] if visible is not None else list(physical)
-    uuids = {u: cc for u, cc in physical.values()}
-    selected = [physical[x][0] if x in physical else x for x in request]
-    require(len(selected) == 8 and set(selected) == set(uuids) and all(cc == "9.0" for cc in uuids.values()),
-            "This benchmark requires exactly eight visible SM90 GPUs; check CUDA_VISIBLE_DEVICES")
+    selected = [physical.get(x, x) for x in request]
+    require(len(selected) == 8 and set(selected) == set(physical.values()),
+            "This benchmark requires exactly eight visible GPUs; check CUDA_VISIBLE_DEVICES")
+    capabilities = driver_compute_capabilities()
+    require(all(cc == (9, 0) for cc in capabilities),
+            f"This benchmark requires SM90 on all eight devices; CUDA driver reports {capabilities}")
     active = [(pid, uuid) for pid, uuid in (map(str.strip, line.split(","))
               for line in query("--query-compute-apps=pid,gpu_uuid")) if uuid in selected]
     require(not active, f"Selected GPUs are busy. No jobs were stopped. Active compute processes: {active}")
