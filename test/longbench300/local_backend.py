@@ -450,12 +450,12 @@ def main():
     cli.add_argument("--output", required=True, type=Path)
     cli.add_argument("--model-path", required=True, type=Path)
     cli.add_argument("--check-only", action="store_true")
-    cli.add_argument("--preset", choices=("two-stage", "single-stage"), default="two-stage")
+    cli.add_argument("--keep-pct", type=str, default="9+3")
     cli.add_argument("--host-prefix-offload", choices=("auto", "on", "off"), default="auto")
     opt = cli.parse_args()
     v2_cls = load_v2_policy_config_class()
     v2_cfg = v2_cls.from_cli(
-        preset=opt.preset,
+        keep_pct=opt.keep_pct,
         host_prefix_offload=opt.host_prefix_offload,
     )
     print(json.dumps(run_local(opt.runtime_root, opt.model_path, opt.data, opt.output, opt.check_only, v2_config=v2_cfg)))

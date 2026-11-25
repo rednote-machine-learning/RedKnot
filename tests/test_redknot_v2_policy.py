@@ -155,15 +155,18 @@ def _make_random_docs(rng: random.Random, *, min_docs=2, max_docs=6, min_len=260
 
 
 class TestRedKnotV2Core(unittest.TestCase):
-    def test_policy_routing_two_stage_single_stage_and_legacy(self) -> None:
-        cfg_two = v2_policy.V2PolicyConfig.default()
-        cfg_single = v2_policy.V2PolicyConfig.from_cli(preset="single-stage")
-        self.assertEqual(cfg_two.preset, "two-stage")
-        self.assertTrue(cfg_two.two_stage_l14)
+    def test_policy_routing_keep_pct_two_stage_single_stage_and_legacy(self) -> None:
+        cfg_default = v2_policy.V2PolicyConfig.default()
+        cfg_single = v2_policy.V2PolicyConfig.from_cli(keep_pct="20+0")
+        cfg_shorthand = v2_policy.V2PolicyConfig.from_cli(keep_pct="20")
+        cfg_12p3 = v2_policy.V2PolicyConfig.from_cli(keep_pct="12+3")
+        self.assertEqual(cfg_default.keep_pct, "9+3")
+        self.assertTrue(cfg_default.two_stage_l14 and cfg_12p3.two_stage_l14)
+        self.assertEqual(cfg_single, cfg_shorthand)
         self.assertFalse(cfg_single.two_stage_l14)
 
-        # Two-stage default: <48K -> single-stage 20% NoSpan Head64; >=48K -> 9%+3%=12% Span Head64/128; >=192K -> offload
-        expected_two = [
+        # Default 9+3: <48K -> single-stage 20% NoSpan Head64; >=48K -> 9%+3%=12% Span Head64/128; >=192K -> offload
+        expected_9p3 = [
             (15_800, "16k", "single-stage", 0.20, 0.20, 64, (0, 0), False, False),
             (47_999, "32k", "single-stage", 0.20, 0.20, 64, (0, 0), False, False),
             (48_000, "64k", "two-stage", 0.09, 0.12, 64, (8, 24), True, False),
@@ -171,31 +174,38 @@ class TestRedKnotV2Core(unittest.TestCase):
             (191_999, "128k", "two-stage", 0.09, 0.12, 128, (8, 24), True, False),
             (192_000, "256k", "two-stage", 0.09, 0.12, 128, (8, 24), True, True),
         ]
-        for toks, band, mode, s1, frac, hw, win, ts, offload in expected_two:
-            p = cfg_two.resolve(toks)
+        for toks, band, mode, s1, frac, hw, win, ts, offload in expected_9p3:
+            p = cfg_default.resolve(toks)
             self.assertEqual((p.band, p.mode, p.stage1_fraction, p.fraction, p.head_width, p.window, p.two_stage_l14, p.host_prefix_offload),
                              (band, mode, s1, frac, hw, win, ts, offload))
             self.assertTrue(p.is_v2 and p.minimal_cone and p.suffix_only and p.gpu_select and p.static_metadata_cache and p.direct_halo_copy)
 
-        # Single-stage optimal: 20% everywhere, never two-stage, never host offload
+        # Custom 12+3 works with zero code edits (<48K stays 20% single-stage; >=48K -> 0.12 / 0.15)
+        self.assertEqual((cfg_12p3.resolve(32_000).stage1_fraction, cfg_12p3.resolve(32_000).fraction), (0.20, 0.20))
+        p_12p3 = cfg_12p3.resolve(128_000)
+        self.assertEqual((p_12p3.stage1_fraction, p_12p3.fraction, p_12p3.two_stage_l14), (0.12, 0.15, True))
+
+        # Single-stage 20+0 (and custom 15+0): stage2==0 -> single-stage everywhere, 0 extra cache (never offload)
         for toks, hw, win in ((32_000, 64, (0, 0)), (64_000, 64, (8, 24)), (128_000, 128, (8, 24)), (250_000, 128, (8, 24))):
             p = cfg_single.resolve(toks)
             self.assertEqual((p.mode, p.stage1_fraction, p.fraction, p.head_width, p.window), ("single-stage", 0.20, 0.20, hw, win))
             self.assertFalse(p.two_stage_l14 or p.host_prefix_offload)
+        p_15 = v2_policy.V2PolicyConfig(keep_pct="15+0").resolve(128_000)
+        self.assertEqual((p_15.mode, p_15.stage1_fraction, p_15.fraction, p_15.two_stage_l14), ("single-stage", 0.15, 0.15, False))
 
         # Explicit host_prefix_offload overrides and configurable span_min_tokens
-        self.assertTrue(v2_policy.V2PolicyConfig.from_cli(preset="two-stage", host_prefix_offload="on").resolve(128_000).host_prefix_offload)
-        self.assertFalse(v2_policy.V2PolicyConfig.from_cli(preset="two-stage", host_prefix_offload="off").resolve(250_000).host_prefix_offload)
-        self.assertEqual(v2_policy.V2PolicyConfig(preset="single-stage", span_min_tokens=96_000).resolve(65_000).window, (0, 0))
-        self.assertEqual(v2_policy.V2PolicyConfig(preset="single-stage", span_min_tokens=96_000).resolve(96_000).window, (8, 24))
+        self.assertTrue(v2_policy.V2PolicyConfig.from_cli(keep_pct="9+3", host_prefix_offload="on").resolve(128_000).host_prefix_offload)
+        self.assertFalse(v2_policy.V2PolicyConfig.from_cli(keep_pct="9+3", host_prefix_offload="off").resolve(250_000).host_prefix_offload)
+        self.assertEqual(v2_policy.V2PolicyConfig(keep_pct="20+0", span_min_tokens=96_000).resolve(65_000).window, (0, 0))
+        self.assertEqual(v2_policy.V2PolicyConfig(keep_pct="20+0", span_min_tokens=96_000).resolve(96_000).window, (8, 24))
 
-        # Internal legacy S1.6 compatibility & invalid preset rejection
+        # Internal legacy S1.6 compatibility & invalid keep_pct rejection
         p_s16 = v2_policy.V2PolicyConfig.legacy_s16().resolve(128_000)
         self.assertTrue(p_s16.is_legacy_s16 and not p_s16.is_v2 and p_s16.fraction == 0.15 and p_s16.head_width == 0)
         self.assertFalse(p_s16.minimal_cone or p_s16.suffix_only or p_s16.gpu_select or p_s16.two_stage_l14)
-        for bad in ("v2.3_10", "short20_long15", "unknown"):
+        for bad in ("", "0+3", "-5+0", "80+30", "9+3+1", "unknown"):
             with self.assertRaises(ValueError):
-                v2_policy.V2PolicyConfig(preset=bad)
+                v2_policy.V2PolicyConfig(keep_pct=bad)
 
     def test_span_gpu_vs_cpu_equivalence_and_doc_isolation(self) -> None:
         torch_mod = _torch_mod()
@@ -279,16 +289,18 @@ class TestRedKnotV2Core(unittest.TestCase):
                 heads, tails = set(range(d["start"], d["start"] + hw)), set(range(d["end"] - 128, d["end"]))
                 self.assertTrue(heads.isdisjoint(tails) and heads <= sel_set and tails <= sel_set)
 
-        # Budget admission: legacy 0.15 only; single-stage 0.20; two-stage 0.09 & 0.12; rejects short docs & unapproved fracs
+        # Budget admission: legacy 0.15 only; V2 admits exact policy stage1/target (e.g. 20+0, 9+3, 12+3)
         b_docs = [{"start": 10, "end": 4010, "key": "d0"}, {"start": 4020, "end": 8020, "key": "d1"}]
         self.assertEqual(fixed_pack_policy.budget_admission(b_docs, 8200, 0.15)["body_fraction"], 0.15)
         with self.assertRaises(ValueError):
             fixed_pack_policy.budget_admission(b_docs, 8200, 0.20)
-        p_single = v2_policy.V2PolicyConfig(preset="single-stage").resolve(64_000)
-        p_two = v2_policy.V2PolicyConfig(preset="two-stage").resolve(64_000)
+        p_single = v2_policy.V2PolicyConfig(keep_pct="20+0").resolve(64_000)
+        p_two = v2_policy.V2PolicyConfig(keep_pct="9+3").resolve(64_000)
+        p_12p3 = v2_policy.V2PolicyConfig(keep_pct="12+3").resolve(64_000)
         self.assertEqual(fixed_pack_policy.budget_admission(b_docs, 8200, 0.20, policy=p_single)["head_width"], 64)
         self.assertTrue(fixed_pack_policy.budget_admission(b_docs, 8200, 0.09, policy=p_two)["two_stage_l14"])
         self.assertTrue(fixed_pack_policy.budget_admission(b_docs, 8200, 0.12, policy=p_two)["two_stage_l14"])
+        self.assertTrue(fixed_pack_policy.budget_admission(b_docs, 8200, 0.15, policy=p_12p3)["two_stage_l14"])
         with self.assertRaises(ValueError):
             fixed_pack_policy.budget_admission(b_docs, 8200, 0.10, policy=p_two)
         with self.assertRaises(ValueError):
@@ -362,8 +374,8 @@ class TestRedKnotV2Core(unittest.TestCase):
                 l2_scores[k] = rng.uniform(6.0, 10.0)
         counts = [1] * n_keys
 
-        # Recipe 1: single-stage (20%)
-        p_single = v2_policy.V2PolicyConfig(preset="single-stage").resolve(total)
+        # Recipe 1: single-stage (20+0)
+        p_single = v2_policy.V2PolicyConfig(keep_pct="20+0").resolve(total)
         sel_single, _ = index20_selector.select_from_reduced_scores_gpu(
             docs, total, torch_mod.as_tensor(l2_scores, dtype=torch_mod.float32),
             torch_mod.as_tensor(counts, dtype=torch_mod.int64),
@@ -372,8 +384,8 @@ class TestRedKnotV2Core(unittest.TestCase):
         )
         index20_selector.validate_frame_capacity(sel_single["selected_positions"], total)
 
-        # Recipe 2: two-stage (9% Stage-1 + 3% L14 bridge promotion = 12% target)
-        p_two = v2_policy.V2PolicyConfig(preset="two-stage").resolve(total)
+        # Recipe 2: two-stage (9+3 = 9% Stage-1 + 3% L14 bridge promotion = 12% target)
+        p_two = v2_policy.V2PolicyConfig(keep_pct="9+3").resolve(total)
         sel_s1, target_body = index20_selector.select_from_reduced_scores_gpu(
             docs, total, torch_mod.as_tensor(l2_scores, dtype=torch_mod.float32),
             torch_mod.as_tensor(counts, dtype=torch_mod.int64),
@@ -524,23 +536,19 @@ class TestRepositoryContractsAndCLI(unittest.TestCase):
         self.assertEqual(run_s16.compact_controller(make_report(0.15, None))["sparse_method"], "Cone15")
         with self.assertRaises(ValueError):
             run_s16.compact_controller(make_report(0.20, None))
-        p_single = v2_policy.V2PolicyConfig(preset="single-stage").resolve(65_000).to_dict()
+        p_single = v2_policy.V2PolicyConfig(keep_pct="20+0").resolve(65_000).to_dict()
         self.assertEqual(run_s16.compact_controller(make_report(0.20, p_single))["v2_policy"]["mode"], "single-stage")
-        p_two = v2_policy.V2PolicyConfig(preset="two-stage").resolve(65_000).to_dict()
+        p_two = v2_policy.V2PolicyConfig(keep_pct="9+3").resolve(65_000).to_dict()
         self.assertTrue(run_s16.compact_controller(make_report(0.12, p_two, two_stage=True))["v2_policy"]["two_stage_l14"])
         with self.assertRaises(ValueError):
             run_s16.compact_controller(make_report(0.20, p_two, two_stage=True))
 
         # CLI checks across benchmark_rag_redknot.py, benchmark_rag_redknot_21.py, and examples/redknot_v2_demo.py
-        for script, expected in (
-            ("test/benchmark_rag_redknot.py", "{two-stage,single-stage}"),
-            ("test/benchmark_rag_redknot_21.py", "{two-stage,single-stage}"),
-            ("examples/redknot_v2_demo.py", "{two-stage,single-stage,both}"),
-        ):
+        for script in ("test/benchmark_rag_redknot.py", "test/benchmark_rag_redknot_21.py", "examples/redknot_v2_demo.py"):
             help_proc = subprocess.run([sys.executable, str(REPO_ROOT / script), "--help"], capture_output=True, text=True)
             self.assertEqual(help_proc.returncode, 0, help_proc.stderr)
-            self.assertIn(expected, help_proc.stdout)
-            bad_proc = subprocess.run([sys.executable, str(REPO_ROOT / script), "--preset", "invalid"], capture_output=True, text=True)
+            self.assertIn("--keep-pct", help_proc.stdout)
+            bad_proc = subprocess.run([sys.executable, str(REPO_ROOT / script), "--keep-pct", "0+3"], capture_output=True, text=True)
             self.assertNotEqual(bad_proc.returncode, 0)
 
     @unittest.skipIf(sys.version_info < (3, 11), "local_backend.hash_file uses hashlib.file_digest (Python 3.11+)")
@@ -557,11 +565,12 @@ with tempfile.TemporaryDirectory() as tmp:
     model.mkdir(); out.mkdir()
     v2_cls = lb.load_v2_policy_config_class()
     with patch.object(lb, 'verify_checkpoint', return_value=None):
-        cfg_single, loc = lb.bundled_runtime(model, out, v2_config=v2_cls.from_cli(preset='single-stage'))
-        cfg_two, _ = lb.bundled_runtime(model, out, v2_config=v2_cls.from_cli(preset='two-stage'))
+        cfg_single, loc = lb.bundled_runtime(model, out, v2_config=v2_cls.from_cli(keep_pct='20+0'))
+        cfg_two, _ = lb.bundled_runtime(model, out, v2_config=v2_cls.from_cli(keep_pct='9+3'))
+        cfg_12p3, _ = lb.bundled_runtime(model, out, v2_config=v2_cls.from_cli(keep_pct='12+3'))
         cfg_s16, _ = lb.bundled_runtime(model, out, v2_config=v2_cls.legacy_s16())
-    assert len({{cfg_single['sha256'], cfg_two['sha256'], cfg_s16['sha256']}}) == 3
-    assert (cfg_single['redknot_v2']['preset'], cfg_two['redknot_v2']['preset'], cfg_s16['redknot_v2']['preset']) == ('single-stage', 'two-stage', 's1.6')
+    assert len({{cfg_single['sha256'], cfg_two['sha256'], cfg_12p3['sha256'], cfg_s16['sha256']}}) == 4
+    assert (cfg_single['redknot_v2']['keep_pct'], cfg_two['redknot_v2']['keep_pct'], cfg_12p3['redknot_v2']['keep_pct'], cfg_s16['redknot_v2']['keep_pct']) == ('20+0', '9+3', '12+3', 's1.6')
     lb.prepare_native(cfg_two)
     base, producer = lb.local_modules(cfg_two, loc)
     assert callable(base.compact_controller) and callable(producer.identity)

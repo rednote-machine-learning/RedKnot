@@ -2,7 +2,6 @@
 import math
 
 ARM_FRACTIONS = {'Cone15': .15, 'Fixed15Opt': .15}
-V2_APPROVED_FRACTIONS = (.09, .12, .20)
 
 
 def require(value, message):
@@ -28,7 +27,7 @@ def fraction_for_method(method, policy=None):
 def budget_admission(documents, total, fraction, *, policy=None):
     v2 = policy is not None and getattr(policy, 'is_v2', False)
     if v2:
-        approved = set(V2_APPROVED_FRACTIONS) | {float(policy.fraction), float(policy.stage1_fraction)}
+        approved = (float(policy.fraction), float(policy.stage1_fraction))
         require(any(abs(float(fraction) - x) < 1e-9 for x in approved) and 0 < float(fraction) <= 1,
                 f'Unapproved RedKnot V2 body fraction: {fraction}')
         head_width = int(policy.head_width)

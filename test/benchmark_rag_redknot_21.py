@@ -106,17 +106,17 @@ def main():
     parser.add_argument("--cache", type=Path, help="persistent local input and evaluator cache")
     parser.add_argument("--model-path", type=Path, default=os.environ.get("REDKNOT_MODEL_PATH"), help="local DeepSeek-V4.1-Flash-1017 checkpoint")
     parser.add_argument("--runtime-root", type=Path, default=os.environ.get("REDKNOT_RUNTIME_ROOT"), help="optional external runtime in place of the bundled implementation")
-    parser.add_argument("--preset", choices=("two-stage", "single-stage"), default=None,
-                        help="RedKnot V2 recipe: two-stage (default, L2->L14 9%%+3%% >=48K / 20%% <48K) "
-                             "or single-stage (20%%, zero extra cache VRAM)")
+    parser.add_argument("--keep-pct", type=str, default=None,
+                        help="token keep percentage as Stage1+Stage2 (default: 9+3 two-stage; "
+                             "20+0 for zero-extra-cache single-stage; custom e.g. 12+3)")
     parser.add_argument("--host-prefix-offload", choices=("auto", "on", "off"), default=None,
                         help="pinned CPU offload for L3..L8 residuals in two-stage mode (auto: >=192K)")
     args = parser.parse_args()
     from longbench300.local_backend import load_v2_policy_config_class
     v2_cls = load_v2_policy_config_class()
-    explicit_v2_cli = args.preset is not None or args.host_prefix_offload is not None
+    explicit_v2_cli = args.keep_pct is not None or args.host_prefix_offload is not None
     v2_config = v2_cls.from_cli(
-        preset=args.preset or "two-stage",
+        keep_pct=args.keep_pct or "9+3",
         host_prefix_offload="auto" if args.host_prefix_offload is None else args.host_prefix_offload,
     )
     cache = (args.cache or DEFAULT_OUTPUT / "cache").expanduser().resolve()
