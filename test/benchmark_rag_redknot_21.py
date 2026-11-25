@@ -152,13 +152,21 @@ def main():
                 raise ValueError(f"Run identity changed: {attr}")
             setattr(args, attr, Path(original) if original is not None else None)
         saved_v2 = binding.get("redknot_v2")
-        if saved_v2 is not None:
-            saved_cfg = v2_cls.from_dict(saved_v2)
-            if not args.report_only and explicit_v2_cli and v2_config != saved_cfg:
+        saved_cfg = v2_cls.from_dict(saved_v2) if saved_v2 is not None else v2_cls.legacy_s16()
+        if not args.report_only and explicit_v2_cli:
+            merged_cfg = v2_cls.from_cli(
+                keep_pct=saved_cfg.keep_pct if args.keep_pct is None else args.keep_pct,
+                host_prefix_offload=(
+                    saved_cfg.host_prefix_offload
+                    if args.host_prefix_offload is None
+                    else args.host_prefix_offload
+                ),
+                span_min_tokens=saved_cfg.span_min_tokens,
+                audit_halo=saved_cfg.audit_halo,
+            )
+            if merged_cfg != saved_cfg:
                 raise ValueError("Run identity changed: redknot_v2")
-            v2_config = saved_cfg
-        elif not explicit_v2_cli:
-            v2_config = v2_cls.legacy_s16()
+        v2_config = saved_cfg
     else:
         binding = dict(schema=schema, cache=str(cache),
                        model_path=str(args.model_path.expanduser().resolve()),

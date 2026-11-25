@@ -319,7 +319,8 @@ def cone15_controller_class(base):
             report['cone15_ffn']=dict(method=mode,minimal_cone=use_minimal,worker_guards=self._cone_world,groups=self._cone_groups,
                 qualification_cache_bytes=self._cone_qualified_cache,extra_native_collectives=0,
                 expert_statistics='physical_dispatched_rows',query_axes='absolute selected position order',
-                new_and_tail_full_ffn_each_layer=True,all_input_lastkv_physical_replay=True,
+                post20_ffn_policy='minimal_causal_cone' if use_minimal else 'new_and_tail_full_each_layer',
+                new_and_tail_full_ffn_each_layer=not use_minimal,all_input_lastkv_physical_replay=True,
                 raw_dead_intermediate_and_final_kv_numerical_equality_claim=False)
             return report
     return ConeController

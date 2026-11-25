@@ -221,12 +221,49 @@ def load_runtime(root, model, output, *, v2_config=None, selected_groups=None):
     return config, locations
 
 
+def verify_v2_runtime_capability(config, adapter):
+    """Fail fast during CPU preflight if an external runtime lacks requested RedKnot V2 support."""
+    v2_raw = config.get("redknot_v2")
+    if not v2_raw:
+        return
+    v2_cfg = load_v2_policy_config_class().from_dict(v2_raw)
+    if v2_cfg.is_legacy_s16:
+        return
+    fixed_root = Path(config["fixed_pack_runtime_root"]).resolve()
+    own_files = set(getattr(adapter, "OWN_FILES", ()))
+    require(
+        (fixed_root / "v2_policy.py").is_file() and "v2_policy.py" in own_files,
+        "Selected runtime does not support RedKnot V2 (missing v2_policy.py). "
+        "Omit --runtime-root to use the bundled RedKnot V2 runtime.",
+    )
+    ctrl_mod = sys.modules.get("fixed_pack_controller")
+    ctrl_cls = (
+        ctrl_mod.fixed_pack_controller_class(object)
+        if ctrl_mod is not None
+        and getattr(ctrl_mod, "__file__", None)
+        and Path(ctrl_mod.__file__).resolve().parent == fixed_root
+        and hasattr(ctrl_mod, "fixed_pack_controller_class")
+        else None
+    )
+    require(
+        ctrl_cls is not None and hasattr(ctrl_cls, "configure_v2_policy"),
+        "Selected runtime controller does not support RedKnot V2 (missing configure_v2_policy). "
+        "Omit --runtime-root to use the bundled RedKnot V2 runtime.",
+    )
+    if v2_cfg.two_stage_l14:
+        require(
+            (fixed_root / "two_stage_l14.py").is_file() and "two_stage_l14.py" in own_files,
+            "Selected runtime does not support two-stage L2->L14 (missing two_stage_l14.py).",
+        )
+
+
 def prepare_native(config):
     native = Path(config["native_source_root"])
     sys.path[:0] = [str(native/"NativeSnapshot"), str(native), str(native/"GatedEngram"), config["fixed_pack_runtime_root"]]
     import fixed_pack_runtime_adapter as adapter
     preserved, _ = adapter.load_dependencies(config)
     adapter.private_preserved_module(preserved)
+    verify_v2_runtime_capability(config, adapter)
     require("torch" not in sys.modules and "deepinfer" not in sys.modules, "Model import before GPU release")
 
 
@@ -384,8 +421,12 @@ def native_child(config_path, locations_path, data, output, attempt):
     terminal = read(output/"run.json")
     selected_groups = cfg.get("selected_groups")
     if selected_groups is not None:
-        require((terminal["status"], terminal["group_count"], terminal["contract_id"])
-                == ("complete", len(selected_groups), contract), "Incomplete native GPU subset run")
+        expected_targets = len({
+            idx for gid in selected_groups
+            for idx in read(data / "groups" / f"{gid}.json")["target_indices"]
+        })
+        require((terminal["status"], terminal["group_count"], terminal["target_count"], terminal["contract_id"])
+                == ("complete", len(selected_groups), expected_targets, contract), "Incomplete native GPU subset run")
     else:
         manifest = read(data/"complete.json")
         require((terminal["status"], terminal["group_count"], terminal["target_count"], terminal["contract_id"])
@@ -480,7 +521,15 @@ def run_local(runtime_root, model_path, data, output, check_only=False, *, targe
         prepare_native(cfg)
         base, producer = local_modules(cfg, loc)
         group_count = check_dataset(base, data, target_count)
-        effective_groups = len(selected_groups) if selected_groups is not None else group_count
+        if selected_groups is not None:
+            effective_groups = len(selected_groups)
+            effective_targets = len({
+                idx for gid in selected_groups
+                for idx in read(data / "groups" / f"{gid}.json")["target_indices"]
+            })
+        else:
+            effective_groups = group_count
+            effective_targets = target_count
         contract = base.digest(producer.identity(base, Path(loc["runner"]), Path(loc["kernel"]), data))
         if __package__:
             from .sm90_source import build_extension, extension_path
@@ -490,7 +539,7 @@ def run_local(runtime_root, model_path, data, output, check_only=False, *, targe
         extension = extension_path(snapshot)
         extension_ready = extension.is_file() and extension.stat().st_size > 0
         if check_only:
-            return dict(status="cpu_pass", group_count=effective_groups, target_count=target_count, model_calls=0, contract_id=contract,
+            return dict(status="cpu_pass", group_count=effective_groups, target_count=effective_targets, model_calls=0, contract_id=contract,
                         sm90_extension_ready=extension_ready, redknot_v2=cfg.get("redknot_v2"), selected_groups=selected_groups)
         if not extension_ready and runtime_root is None:
             build_extension(snapshot)
@@ -500,7 +549,7 @@ def run_local(runtime_root, model_path, data, output, check_only=False, *, targe
         save(config_path, cfg)
         save(locations_path, loc)
         release_child(config_path, locations_path, data, out, contract)
-        return dict(status="complete", group_count=effective_groups, target_count=target_count, contract_id=contract,
+        return dict(status="complete", group_count=effective_groups, target_count=effective_targets, contract_id=contract,
                     results=str(out), redknot_v2=cfg.get("redknot_v2"), selected_groups=selected_groups)
 
 

@@ -107,18 +107,39 @@ def promote_stage2(
     body_set = set(stage1_choice["selected_body_positions"])
     body_tokens = int(stage1_choice["body_tokens"])
 
-    eligible = [
+    raw_scores = list(scores_list)
+    eligible_pairs = [
         valid_list[k] and (2 * k not in start_set) and (2 * k + 1 not in start_set)
         for k in range(n_keys)
     ]
-    counts = [1 if ok else 0 for ok in eligible]
+    counts = [1 if ok else 0 for ok in eligible_pairs]
     left, right = span_window
     if left or right:
         scores_list, counts = span_values(docs, scores_list, counts, left, right)
 
-    available = [p for k, ok in enumerate(eligible) if ok for p in (2 * k, 2 * k + 1)]
-    require(all(p not in start_set for p in available), "Eligible promotion token already in Stage-1")
-    ranked = sorted(available, key=lambda p: (-scores_list[p // 2], p))
+    primary = [p for k, ok in enumerate(eligible_pairs) if ok for p in (2 * k, 2 * k + 1)]
+    primary_set = set(primary)
+    # Include remaining unselected in-document body tokens (half-occupied C2 pairs and
+    # odd-boundary edge tokens) as a lower-priority fallback tier so extreme budgets up
+    # to 100% (e.g. 50+50) never exhaust candidates, while keeping normal budgets exact.
+    fallback = [
+        p
+        for doc in docs
+        for p in range(doc["start"], doc["end"])
+        if p not in start_set and p not in primary_set
+    ]
+    require(all(p not in start_set for p in primary), "Eligible promotion token already in Stage-1")
+    ranked = sorted(primary, key=lambda p: (-scores_list[p // 2], p))
+    if fallback:
+        ranked.extend(
+            sorted(
+                fallback,
+                key=lambda p: (
+                    -(raw_scores[p // 2] if (p // 2 < n_keys and valid_list[p // 2]) else -math.inf),
+                    p,
+                ),
+            )
+        )
 
     if target_body_tokens is not None:
         budget = max(len(body_set), int(target_body_tokens))
@@ -126,7 +147,7 @@ def promote_stage2(
         budget = max(len(body_set), math.ceil(float(target_fraction) * body_tokens))
     needed = budget - len(body_set)
     require(len(ranked) >= needed,
-            f"Not enough eligible C2 tokens ({len(ranked)}) to promote {needed} rows")
+            f"Not enough eligible document body tokens ({len(ranked)}) to promote {needed} rows")
 
     extra = sorted(ranked[:needed])
     extra_set = set(extra)

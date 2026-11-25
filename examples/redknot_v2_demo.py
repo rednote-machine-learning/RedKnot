@@ -29,6 +29,7 @@ import gzip
 import json
 import os
 from pathlib import Path
+import subprocess
 import sys
 from tempfile import mkdtemp
 
@@ -108,6 +109,55 @@ def score_subset_results(data_dir: Path, results_dir: Path, groups: list[str], l
     return dict(keep_pct=label, groups=groups, overall=overall, rows=rows)
 
 
+def _run_multi_config_subprocesses(args, configs, run_dir: Path) -> None:
+    """Run each --keep-pct config in an isolated child process so sys.modules/native roots stay isolated."""
+    summaries: dict[str, dict] = {}
+    preflight: dict[str, dict] = {}
+    for cfg in configs:
+        label = cfg.keep_pct
+        sub_dir = run_dir / f"run-{_slug(label)}"
+        cmd = [
+            sys.executable,
+            str(Path(__file__).resolve()),
+            "--model-path", str(args.model_path),
+            "--keep-pct", label,
+            "--host-prefix-offload", args.host_prefix_offload,
+            "--cache", str(args.cache.expanduser().resolve()),
+            "--output", str(sub_dir),
+        ]
+        if args.all:
+            cmd.append("--all")
+        else:
+            cmd.extend(["--groups", args.groups])
+        if args.check_runtime:
+            cmd.append("--check-runtime")
+            proc = subprocess.run(cmd, capture_output=True, text=True, check=False)
+            if proc.returncode != 0:
+                raise RuntimeError(proc.stderr.strip() or proc.stdout.strip() or f"Preflight failed for {label}")
+            preflight[label] = json.loads((sub_dir / "preflight.json").read_text(encoding="utf-8"))
+        else:
+            proc = subprocess.run(cmd, check=False)
+            if proc.returncode != 0:
+                raise RuntimeError(f"Demo child run failed for --keep-pct {label} (exit {proc.returncode})")
+            summaries[label] = json.loads((sub_dir / "demo-summary.json").read_text(encoding="utf-8"))
+
+    if args.check_runtime:
+        (run_dir / "preflight.json").write_text(json.dumps(preflight, indent=2, ensure_ascii=False), encoding="utf-8")
+        print(json.dumps(preflight, indent=2, ensure_ascii=False))
+        return
+
+    print("\nCombined Comparison across --keep-pct settings:")
+    print(f"{'Keep Pct':<12} {'N':>4} {'Full F1':>9} {'RedKnot F1':>11} {'Delta':>8} {'Full TTFT':>10} {'RK TTFT':>10} {'Speedup':>8}")
+    for name, item in summaries.items():
+        ov = item["overall"]
+        print(
+            f"{name:<12} {ov['n']:>4} {ov['full_f1']:>9.2f} {ov['redknot_f1']:>11.2f} "
+            f"{ov['delta_f1']:>+8.2f} {ov['full_ttft_s']:>9.3f}s {ov['redknot_ttft_s']:>9.3f}s {ov['speedup']:>7.2f}x"
+        )
+    (run_dir / "demo-summary.json").write_text(json.dumps(summaries, indent=2, ensure_ascii=False), encoding="utf-8")
+    print(f"\nSaved JSON summary: {run_dir / 'demo-summary.json'}")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--model-path", type=Path, default=os.environ.get("REDKNOT_MODEL_PATH"),
@@ -136,13 +186,6 @@ def main() -> None:
     if args.model_path is None:
         parser.error("Set --model-path /path/to/DeepSeek-V4.1-Flash-1017 (or REDKNOT_MODEL_PATH).")
 
-    from longbench300.dataset import prepare_data
-    from longbench300.local_backend import run_local
-    from longbench300.score_longbench300 import score_cohort
-
-    data = prepare_data(ASSETS / "redknot_s16_longbench_300.zip", args.cache.expanduser().resolve())
-    selected_groups = None if args.all else [g.strip() for g in args.groups.split(",") if g.strip()]
-
     if args.output:
         run_dir = args.output.expanduser().resolve()
         run_dir.mkdir(parents=True, exist_ok=False)
@@ -153,55 +196,49 @@ def main() -> None:
         run_dir = Path(mkdtemp(prefix=f"demo-{tag}-{stamp}-", dir=DEFAULT_OUTPUT))
 
     print(f"Demo run directory: {run_dir}", flush=True)
-    if selected_groups is not None and len(selected_groups) <= 5:
-        print("Note: small subset run is for fast end-to-end smoke/speedup validation; use --all (300Q) for full accuracy.", flush=True)
-    summaries: dict[str, dict] = {}
-    preflight: dict[str, dict] = {}
-
-    for cfg in configs:
-        label = cfg.keep_pct
-        slug = _slug(label)
-        sub_results = run_dir / (f"results-{slug}" if len(configs) > 1 else "results")
-        sub_report = run_dir / (f"report-{slug}" if len(configs) > 1 else "report")
-        print(f"\n[{label}] Policy config: {json.dumps(cfg.to_dict(), ensure_ascii=False)}", flush=True)
-        result = run_local(
-            None, args.model_path, data, sub_results,
-            check_only=args.check_runtime, v2_config=cfg, selected_groups=selected_groups,
-        )
-        if args.check_runtime:
-            preflight[label] = result
-            continue
-        if selected_groups is None:
-            ov = score_cohort(data, sub_results, sub_report, expected_contract=result["contract_id"])["overall"]
-            full, sparse = ov["Full"], ov["S1.6"]
-            summaries[label] = dict(
-                keep_pct=label,
-                overall=dict(
-                    n=ov["paired"], full_f1=full["score_100"], redknot_f1=sparse["score_100"],
-                    delta_f1=sparse["score_100"] - full["score_100"],
-                    full_ttft_s=full["mean_ttft_s"], redknot_ttft_s=sparse["mean_ttft_s"],
-                    speedup=ov["speedup_ratio_of_mean_ttft"],
-                ),
-                report=str(sub_report / "index.html"),
-            )
-        else:
-            summaries[label] = score_subset_results(data, sub_results, selected_groups, label)
-
-    if args.check_runtime:
-        print(json.dumps(preflight if len(configs) > 1 else preflight[configs[0].keep_pct], indent=2, ensure_ascii=False))
+    if len(configs) > 1:
+        _run_multi_config_subprocesses(args, configs, run_dir)
         return
 
-    if len(summaries) > 1:
-        print("\nCombined Comparison across --keep-pct settings:")
-        print(f"{'Keep Pct':<12} {'N':>4} {'Full F1':>9} {'RedKnot F1':>11} {'Delta':>8} {'Full TTFT':>10} {'RK TTFT':>10} {'Speedup':>8}")
-        for name, item in summaries.items():
-            ov = item["overall"]
-            print(
-                f"{name:<12} {ov['n']:>4} {ov['full_f1']:>9.2f} {ov['redknot_f1']:>11.2f} "
-                f"{ov['delta_f1']:>+8.2f} {ov['full_ttft_s']:>9.3f}s {ov['redknot_ttft_s']:>9.3f}s {ov['speedup']:>7.2f}x"
-            )
-    payload = summaries if len(summaries) > 1 else summaries[configs[0].keep_pct]
-    (run_dir / "demo-summary.json").write_text(json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8")
+    from longbench300.dataset import prepare_data
+    from longbench300.local_backend import run_local
+    from longbench300.score_longbench300 import score_cohort
+
+    cfg = configs[0]
+    label = cfg.keep_pct
+    data = prepare_data(ASSETS / "redknot_s16_longbench_300.zip", args.cache.expanduser().resolve())
+    selected_groups = None if args.all else [g.strip() for g in args.groups.split(",") if g.strip()]
+    if selected_groups is not None and len(selected_groups) <= 5:
+        print("Note: small subset run is for fast end-to-end smoke/speedup validation; use --all (300Q) for full accuracy.", flush=True)
+
+    sub_results = run_dir / "results"
+    sub_report = run_dir / "report"
+    print(f"\n[{label}] Policy config: {json.dumps(cfg.to_dict(), ensure_ascii=False)}", flush=True)
+    result = run_local(
+        None, args.model_path, data, sub_results,
+        check_only=args.check_runtime, v2_config=cfg, selected_groups=selected_groups,
+    )
+    if args.check_runtime:
+        (run_dir / "preflight.json").write_text(json.dumps(result, indent=2, ensure_ascii=False), encoding="utf-8")
+        print(json.dumps(result, indent=2, ensure_ascii=False))
+        return
+
+    if selected_groups is None:
+        ov = score_cohort(data, sub_results, sub_report, expected_contract=result["contract_id"])["overall"]
+        full, sparse = ov["Full"], ov["S1.6"]
+        summary = dict(
+            keep_pct=label,
+            overall=dict(
+                n=ov["paired"], full_f1=full["score_100"], redknot_f1=sparse["score_100"],
+                delta_f1=sparse["score_100"] - full["score_100"],
+                full_ttft_s=full["mean_ttft_s"], redknot_ttft_s=sparse["mean_ttft_s"],
+                speedup=ov["speedup_ratio_of_mean_ttft"],
+            ),
+            report=str(sub_report / "index.html"),
+        )
+    else:
+        summary = score_subset_results(data, sub_results, selected_groups, label)
+    (run_dir / "demo-summary.json").write_text(json.dumps(summary, indent=2, ensure_ascii=False), encoding="utf-8")
     print(f"\nSaved JSON summary: {run_dir / 'demo-summary.json'}")
 
 

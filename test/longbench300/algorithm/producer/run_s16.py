@@ -95,7 +95,10 @@ def compact_controller(report):
         v2=pack.get('v2_policy')
         if v2 and v2.get('mode')!='s1.6':
             expected_fraction=float(v2['fraction'])
-            check(sparse['method']=='Cone15' and sparse['new_and_tail_full_ffn_each_layer']
+            expected_minimal=bool(v2.get('minimal_cone',False))
+            check(sparse['method']=='Cone15'
+                  and bool(sparse.get('minimal_cone',False))==expected_minimal
+                  and sparse['new_and_tail_full_ffn_each_layer']==(not expected_minimal)
                   and sparse['all_input_lastkv_physical_replay']
                   and sparse['qualification_cache_bytes'] is None
                   and choice['strategy']=='max'
@@ -105,6 +108,7 @@ def compact_controller(report):
                   'Wrong RedKnot V2 online path')
         else:
             check(sparse['method']=='Cone15' and sparse['new_and_tail_full_ffn_each_layer']
+                  and not sparse.get('minimal_cone',False)
                   and sparse['all_input_lastkv_physical_replay']
                   and sparse['qualification_cache_bytes'] is None
                   and choice['strategy']=='max' and choice['fraction']==.15
@@ -120,6 +124,7 @@ def compact_controller(report):
         if v2:
             out['v2_policy']=v2
             out['minimal_cone']=bool(sparse.get('minimal_cone',False))
+            out['post20_ffn_policy']=sparse.get('post20_ffn_policy','minimal_causal_cone' if out['minimal_cone'] else 'new_and_tail_full_each_layer')
             if 'two_stage_l14' in report:
                 out['two_stage_l14']=report['two_stage_l14']
     return out
@@ -293,11 +298,18 @@ def process(native,data,out,contract_id,selected_groups=None):
             native.driver.barrier()
 
 
-def worker(template,data,out,attempt,contract_id,world,rank):
+def worker(template,data,out,attempt,contract_id,world,rank,*,redknot_v2=None):
     out,attempt,data=Path(out),Path(attempt),Path(data)
     try:
         check(world==8,'Expected actual EP8/DP8 world')
         cfg=load_template(template)
+        override_path=attempt/'redknot-v2.json'
+        if redknot_v2 is not None:
+            cfg['redknot_v2']=dict(redknot_v2)
+        elif override_path.is_file() and 'redknot_v2' not in cfg:
+            saved=read(override_path);seal=saved.pop('sha256')
+            check(seal==digest(saved),'Changed persisted redknot_v2 override')
+            cfg['redknot_v2']=saved
         sys.path.insert(0,cfg['fixed_pack_runtime_root']);import fixed_pack_runtime_adapter as adapter
         with adapter.create_runtime(cfg,rank=rank,output_dir=attempt/'native') as rt:
             native=getattr(rt,'runtime',rt)
@@ -349,7 +361,9 @@ def main():
         check(sha(launcher)==cfg['source_sha256'][str(launcher)],'Native launcher changed')
         sys.path.insert(0,str(root));from quality_process_group import launch
         attempt=out/'attempts'/f'run-{time.time_ns()}';attempt.mkdir(parents=True)
-        launch(functools.partial(worker,str(p),str(data),str(out),str(attempt),contract_id),8,attempt)
+        if cfg.get('redknot_v2') is not None:
+            save(attempt/'redknot-v2.json',cfg['redknot_v2'])
+        launch(functools.partial(worker,str(p),str(data),str(out),str(attempt),contract_id,redknot_v2=cfg.get('redknot_v2')),8,attempt)
 
 
 if __name__=='__main__':main()

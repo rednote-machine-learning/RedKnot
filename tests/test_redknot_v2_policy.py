@@ -516,17 +516,21 @@ class TestRepositoryContractsAndCLI(unittest.TestCase):
         self.assertEqual(proc.returncode, 0, proc.stderr)
 
     def test_compact_controller_and_cli_preflight(self) -> None:
-        def make_report(fraction: float, policy_dict=None, *, two_stage=False):
+        def make_report(fraction: float, policy_dict=None, *, two_stage=False, full_ffn_override=None):
             layers = [dict(layer=l, actual_ffn_rows=10, dispatch_rows=10, live_ffn_rows=10,
                            core=dict(actual_attention_rows=10, input_axis_rows=20)) for l in range(21, 40)]
             pack = dict(enabled=True, canonical_method="Cone15")
             if policy_dict is not None:
                 pack["v2_policy"] = policy_dict
+            is_minimal = bool(policy_dict and policy_dict.get("minimal_cone"))
+            full_ffn = (not is_minimal) if full_ffn_override is None else full_ffn_override
             return dict(
                 input_ids_sha256="a" * 64, full_input_tokens=65_000, mode="sensitive",
                 model_boundary_restored=True, decode_native=True,
-                cone15_ffn=dict(method="Cone15", minimal_cone=bool(policy_dict and policy_dict.get("minimal_cone")),
-                                new_and_tail_full_ffn_each_layer=True, all_input_lastkv_physical_replay=True,
+                cone15_ffn=dict(method="Cone15", minimal_cone=is_minimal,
+                                new_and_tail_full_ffn_each_layer=full_ffn,
+                                post20_ffn_policy="minimal_causal_cone" if is_minimal else "new_and_tail_full_each_layer",
+                                all_input_lastkv_physical_replay=True,
                                 qualification_cache_bytes=None, groups=[dict(layers=layers)]),
                 index20=dict(selection=dict(strategy="max", fraction=fraction, two_stage_l14=two_stage,
                                             selected_positions=[0, 1, 2, 3])),
@@ -537,11 +541,35 @@ class TestRepositoryContractsAndCLI(unittest.TestCase):
         with self.assertRaises(ValueError):
             run_s16.compact_controller(make_report(0.20, None))
         p_single = v2_policy.V2PolicyConfig(keep_pct="20+0").resolve(65_000).to_dict()
-        self.assertEqual(run_s16.compact_controller(make_report(0.20, p_single))["v2_policy"]["mode"], "single-stage")
+        out_single = run_s16.compact_controller(make_report(0.20, p_single))
+        self.assertEqual(out_single["v2_policy"]["mode"], "single-stage")
+        self.assertEqual(out_single["post20_ffn_policy"], "minimal_causal_cone")
+        # Contradictory MinimalCone report claiming new_and_tail_full_ffn_each_layer=True must fail
+        with self.assertRaises(ValueError):
+            run_s16.compact_controller(make_report(0.20, p_single, full_ffn_override=True))
         p_two = v2_policy.V2PolicyConfig(keep_pct="9+3").resolve(65_000).to_dict()
         self.assertTrue(run_s16.compact_controller(make_report(0.12, p_two, two_stage=True))["v2_policy"]["two_stage_l14"])
         with self.assertRaises(ValueError):
             run_s16.compact_controller(make_report(0.20, p_two, two_stage=True))
+
+        # Extreme 50+50 (100%) two-stage promotion with odd document boundaries must not exhaust candidates
+        odd_docs = [{"start": 11, "end": 412, "key": "d0"}, {"start": 415, "end": 918, "key": "d1"}]
+        odd_total = 1024
+        n_keys = odd_total // 2
+        sel_50 = index20_selector.select_from_reduced_scores(
+            odd_docs, odd_total, [0.5] * n_keys, [1] * n_keys,
+            fraction=0.50, strategy="max", span_window=(8, 24), head_width=64, allow_budget_floor=True,
+        )
+        valid_odd = [False] * n_keys
+        for d in odd_docs:
+            for k in range((d["start"] + 1) // 2, d["end"] // 2):
+                valid_odd[k] = True
+        sel_100, extra_100 = two_stage_l14.promote_stage2(
+            sel_50, odd_docs, odd_total, [1.0] * n_keys, valid_odd,
+            target_fraction=1.0, span_window=(8, 24),
+        )
+        self.assertEqual(sel_100["selected_body_tokens"], sel_50["body_tokens"])
+        self.assertTrue(set(extra_100).isdisjoint(set(sel_50["selected_positions"])))
 
         # CLI checks across benchmark_rag_redknot.py, benchmark_rag_redknot_21.py, and examples/redknot_v2_demo.py
         for script in ("test/benchmark_rag_redknot.py", "test/benchmark_rag_redknot_21.py", "examples/redknot_v2_demo.py"):
@@ -554,14 +582,16 @@ class TestRepositoryContractsAndCLI(unittest.TestCase):
     @unittest.skipIf(sys.version_info < (3, 11), "local_backend.hash_file uses hashlib.file_digest (Python 3.11+)")
     def test_bundled_runtime_prepare_native_preflight(self) -> None:
         code = f"""
-import sys, tempfile
+import json, os, subprocess, sys, tempfile
 from pathlib import Path
+from types import SimpleNamespace
 from unittest.mock import patch
 sys.path.insert(0, {str(REPO_ROOT / 'test')!r})
 from longbench300 import local_backend as lb
 assert not hasattr(lb, 'PINS')
 with tempfile.TemporaryDirectory() as tmp:
-    model, out = Path(tmp) / 'model', Path(tmp) / 'out'
+    root = Path(tmp)
+    model, out = root / 'model', root / 'out'
     model.mkdir(); out.mkdir()
     v2_cls = lb.load_v2_policy_config_class()
     with patch.object(lb, 'verify_checkpoint', return_value=None):
@@ -575,6 +605,97 @@ with tempfile.TemporaryDirectory() as tmp:
     base, producer = lb.local_modules(cfg_two, loc)
     assert callable(base.compact_controller) and callable(producer.identity)
     assert not ({{'torch', 'triton', 'deepinfer'}} & set(sys.modules))
+
+    # P1: external runtime without v2_policy/configure_v2_policy must be rejected for V2, allowed for legacy s1.6
+    legacy_root = root / 'legacy_fixed'
+    legacy_root.mkdir()
+    legacy_adapter = SimpleNamespace(OWN_FILES=('cone15_ffn.py', 'fixed_pack_controller.py'))
+    try:
+        lb.verify_v2_runtime_capability(dict(fixed_pack_runtime_root=str(legacy_root), redknot_v2=cfg_single['redknot_v2']), legacy_adapter)
+        raise AssertionError('Legacy external runtime should be rejected for V2')
+    except ValueError as exc:
+        assert 'does not support RedKnot V2' in str(exc)
+    lb.verify_v2_runtime_capability(dict(fixed_pack_runtime_root=str(legacy_root), redknot_v2=cfg_s16['redknot_v2']), legacy_adapter)
+
+    # P1 + P2: multi-config demo (20+0,9+3) runs cleanly in isolated subprocesses & reports exact target_count=12
+    site_dir = root / 'site_patch'
+    site_dir.mkdir()
+    (site_dir / 'sitecustomize.py').write_text(
+        'import sys\\n'
+        'sys.path.insert(0, ' + repr({str(REPO_ROOT / 'test')!r}) + ')\\n'
+        'from longbench300 import local_backend as _lb\\n'
+        '_lb.verify_checkpoint = lambda model, service: None\\n',
+        encoding='utf-8',
+    )
+    env = dict(os.environ, PYTHONPATH=str(site_dir) + os.pathsep + os.environ.get('PYTHONPATH', ''))
+    demo_out = root / 'demo_multi'
+    demo_cache = root / 'demo_cache'
+    p = subprocess.run(
+        [sys.executable, {str(REPO_ROOT / 'examples' / 'redknot_v2_demo.py')!r},
+         '--model-path', str(model), '--keep-pct', '20+0,9+3',
+         '--cache', str(demo_cache), '--output', str(demo_out), '--check-runtime'],
+        capture_output=True, text=True, env=env,
+    )
+    assert p.returncode == 0, p.stderr + p.stdout
+    pf = json.loads((demo_out / 'preflight.json').read_text(encoding='utf-8'))
+    assert set(pf.keys()) == {{'20+0', '9+3'}}
+    for key in ('20+0', '9+3'):
+        assert pf[key]['status'] == 'cpu_pass'
+        assert pf[key]['group_count'] == 3 and pf[key]['target_count'] == 12
+        assert pf[key]['redknot_v2']['keep_pct'] == key
+
+    # P2: run_s16.worker propagates persisted/passed redknot_v2 override
+    captured = {{}}
+    fake_attempt = root / 'attempt'
+    fake_attempt.mkdir()
+    base.save(fake_attempt / 'redknot-v2.json', cfg_two['redknot_v2'])
+    fake_tpl = root / 'tpl.json'
+    orig_lt = base.load_template
+    base.load_template = lambda path: dict(fixed_pack_runtime_root=str(Path({str(FIXED_ROOT)!r})))
+    class _Stop(Exception): pass
+    orig_create = sys.modules['fixed_pack_runtime_adapter'].create_runtime
+    def _capture_create(c, **kw):
+        captured.update(c)
+        raise _Stop()
+    sys.modules['fixed_pack_runtime_adapter'].create_runtime = _capture_create
+    try:
+        try:
+            base.worker(str(fake_tpl), str(root), str(out), str(fake_attempt), 'cid', 8, 0)
+        except _Stop:
+            pass
+    finally:
+        base.load_template = orig_lt
+        sys.modules['fixed_pack_runtime_adapter'].create_runtime = orig_create
+    assert captured.get('redknot_v2', {{}}).get('keep_pct') == '9+3'
+
+    # P2: benchmark_rag_redknot_21 --resume accepts single matching flag, rejects changed flag
+    res_dir = root / 'lb21_resume'
+    res_dir.mkdir()
+    (res_dir / 'benchmark.json').write_text(json.dumps(dict(
+        schema='redknot-longbench21-b4-v1', cache=str(root / 'c21'),
+        model_path=str(model), runtime_root=None,
+        redknot_v2=v2_cls.from_cli(keep_pct='12+3', host_prefix_offload='off').to_dict(),
+    )), encoding='utf-8')
+    b21_spec = __import__('importlib.util').util.spec_from_file_location('b21_mod', {str(REPO_ROOT / 'test' / 'benchmark_rag_redknot_21.py')!r})
+    b21_mod = __import__('importlib.util').util.module_from_spec(b21_spec)
+    b21_spec.loader.exec_module(b21_mod)
+    class _Done(Exception): pass
+    def _run_resume(extra_args):
+        with patch.object(sys, 'argv', ['b21', '--resume', '--output', str(res_dir), *extra_args]), \\
+             patch.object(b21_mod, 'prepare_data', side_effect=_Done()):
+            b21_mod.main()
+    for ok_args in ([], ['--keep-pct', '12+3'], ['--host-prefix-offload', 'off'], ['--keep-pct', '12+3', '--host-prefix-offload', 'off']):
+        try:
+            _run_resume(ok_args)
+            raise AssertionError(f'expected _Done for {{ok_args}}')
+        except _Done:
+            pass
+    for bad_args in (['--keep-pct', '20+0'], ['--host-prefix-offload', 'on']):
+        try:
+            _run_resume(bad_args)
+            raise AssertionError(f'expected ValueError for {{bad_args}}')
+        except ValueError as exc:
+            assert 'Run identity changed: redknot_v2' in str(exc)
 """
         proc = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True, check=False)
         self.assertEqual(proc.returncode, 0, proc.stderr)
