@@ -32,9 +32,9 @@ RedKnot V2 upgrades the training-free runtime in [test/longbench300/algorithm/](
 *\*Same-host Opt-1/2/3 measurements show `single-stage` is also faster than legacy S1.6 across 16K–128K (`1.57× / 1.35× / 1.17× / 1.02×`).*
 
 ```bash
-# 1. Offline CPU walkthrough & unit tests (no GPU or checkpoint needed)
-python3 examples/redknot_v2_demo.py --cpu-demo --preset both
+# 1. Offline CPU unit tests & dataset integrity check (no GPU or checkpoint needed)
 python3 -m unittest tests/test_redknot_v2_policy.py -v
+python3 test/benchmark_rag_redknot.py --check
 
 # 2. Quick 8xH200 comparison on 12 representative 128K multi-hop QA prompts (~3-8 min)
 python3.12 examples/redknot_v2_demo.py --model-path /models/DeepSeek-V4.1-Flash-1017 --preset two-stage
