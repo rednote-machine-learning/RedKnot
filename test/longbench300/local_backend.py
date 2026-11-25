@@ -450,21 +450,13 @@ def main():
     cli.add_argument("--output", required=True, type=Path)
     cli.add_argument("--model-path", required=True, type=Path)
     cli.add_argument("--check-only", action="store_true")
-    cli.add_argument("--redknot-mode", "--mode", dest="redknot_mode", choices=("v2.1-fast", "s1.6"), default="v2.1-fast")
-    cli.add_argument("--two-stage-l14", action="store_true", default=False)
-    cli.add_argument("--preset", choices=("v2.1-fast", "short20_long15", "v2.3_12", "v2.3_10", "m16", "s1.6"), default=None)
-    cli.add_argument("--span-min-tokens", type=int, default=48_000)
+    cli.add_argument("--preset", choices=("two-stage", "single-stage"), default="two-stage")
     cli.add_argument("--host-prefix-offload", choices=("auto", "on", "off"), default="auto")
-    cli.add_argument("--audit-halo", action="store_true", default=False)
     opt = cli.parse_args()
     v2_cls = load_v2_policy_config_class()
     v2_cfg = v2_cls.from_cli(
-        mode=opt.redknot_mode,
-        two_stage_l14=opt.two_stage_l14,
         preset=opt.preset,
-        span_min_tokens=opt.span_min_tokens,
         host_prefix_offload=opt.host_prefix_offload,
-        audit_halo=opt.audit_halo,
     )
     print(json.dumps(run_local(opt.runtime_root, opt.model_path, opt.data, opt.output, opt.check_only, v2_config=v2_cfg)))
 

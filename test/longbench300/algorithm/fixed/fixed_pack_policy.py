@@ -2,7 +2,7 @@
 import math
 
 ARM_FRACTIONS = {'Cone15': .15, 'Fixed15Opt': .15}
-V2_APPROVED_FRACTIONS = (.07, .09, .10, .12, .15, .16, .20)
+V2_APPROVED_FRACTIONS = (.09, .12, .20)
 
 
 def require(value, message):

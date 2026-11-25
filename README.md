@@ -20,6 +20,32 @@ The DeepInfer-based development track of **RedKnot**, an open-source project for
 
 RedKnot belongs to its contributors. We welcome issues, bug reports, suggestions, and pull requests across all framework branches.
 
+## RedKnot V2 quickstart
+
+RedKnot V2 upgrades the training-free runtime in [test/longbench300/algorithm/](test/longbench300/algorithm/) (keeping upstream `deepinfer/` untouched) with two optimal presets selectable via `--preset`:
+
+| Preset | `<48K` policy | `>=48K` policy | Extra PrefixBank VRAM | 8×H200 500Q F1 (Full `51.52`) | 8×H200 900Q F1 | Mean TTFT (Full `35.08s`) |
+| --- | --- | --- | --- | ---: | ---: | ---: |
+| **`two-stage`** (default) | Single-stage `20%`, NoSpan, Head64 | L2→L14 `9%+3%=12%`, Span `[-8,+24]`, Head64/128 (auto CPU offload `>=192K`) | 64K `+3.2G` · 128K `+6.4G` · 256K `+7.2G` GPU + `5.3G` Host | **`51.85`** (`+0.33`) | **`53.63`** | **`14.46s`** (`2.43×`) |
+| **`single-stage`** | Single-stage `20%`, NoSpan, Head64 | Single-stage `20%`, Span `[-8,+24]`, Head64/128 | **`0.00 GiB`** (no host offload) | **`51.78`** (`+0.26`) | `53.30` | `17.36s` (`2.02×`*) |
+
+*\*Same-host Opt-1/2/3 measurements show `single-stage` is also faster than legacy S1.6 across 16K–128K (`1.57× / 1.35× / 1.17× / 1.02×`).*
+
+```bash
+# 1. Offline CPU walkthrough & unit tests (no GPU or checkpoint needed)
+python3 examples/redknot_v2_demo.py --cpu-demo --preset both
+python3 -m unittest tests/test_redknot_v2_policy.py -v
+
+# 2. Quick 8xH200 comparison on 12 representative 128K multi-hop QA prompts (~3-8 min)
+python3.12 examples/redknot_v2_demo.py --model-path /models/DeepSeek-V4.1-Flash-1017 --preset two-stage
+python3.12 examples/redknot_v2_demo.py --model-path /models/DeepSeek-V4.1-Flash-1017 --preset single-stage
+python3.12 examples/redknot_v2_demo.py --model-path /models/DeepSeek-V4.1-Flash-1017 --preset both
+
+# 3. Full 300-question or 2,100-question paired benchmarks (switch --preset two-stage / single-stage)
+python3.12 test/benchmark_rag_redknot.py --model-path /models/DeepSeek-V4.1-Flash-1017 --preset two-stage
+python3.12 test/benchmark_rag_redknot_21.py --model-path /models/DeepSeek-V4.1-Flash-1017 --preset single-stage
+```
+
 ## LongBench RAG benchmark
 
 Run Full and RedKnot on all 2,100 questions (21 datasets × 100 questions each). From the repository root on a Linux host with eight H200 (SM90) GPUs and the DeepInfer dependencies installed, run the following command with your local checkpoint path.

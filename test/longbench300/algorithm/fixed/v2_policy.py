@@ -1,18 +1,26 @@
-"""Length-adaptive RedKnot V2.1 / V2.2 / V2.3 policy routing and preset definitions.
+"""Length-adaptive RedKnot V2 policy routing with two optimal recipes.
 
 Pure Python, CPU-only module with zero accelerator imports so it can be loaded
 safely during preflight before GPU ownership release.
 
-Generalization law ("Short-Wide, Long-Tight"):
-  - <48K (16K / 32K, recall-limited):
-      single-stage 20% body budget, NoSpan (0, 0), Online_Head=64.
-  - >=48K (64K / 128K / 256K, distractor-limited):
-      asymmetric intra-document C2 Span [-8, +24] (configurable via span_min_tokens),
-      Online_Head=64 (<96K) / 128 (>=96K), and optional L2->L14 two-stage progressive
-      selection with automatic 256K (>=192K) pinned host residual offload.
-  - Legacy `--mode s1.6`:
-      100% bit-exact original Cone15 15% path (no MinimalCone, no suffix-only,
-      no Online_Head, no Span, no Opt-1/2/3, no two-stage).
+Two public open-source recipes (both follow "Short-Wide, Long-Tight"):
+  1. `two-stage` (default — best overall accuracy, generalization, and speed):
+       - <48K (16K / 32K): single-stage 20%, NoSpan (0, 0), Online_Head=64,
+         0 GiB extra PrefixBank VRAM.
+       - >=48K (64K / 128K / 256K): L2->L14 two-stage 9%+3%=12% (Stage-1 9%,
+         L14 promotes +3% multi-hop bridges), Span[-8, +24], Online_Head=64/128,
+         auto pinned host offload of L3..L8 residuals at >=192K (256K).
+       - 8xH200 benchmark: 500Q 51.85 (vs Full 51.52, +0.33), 900Q 53.63,
+         mean TTFT 14.46s (2.43x), 256K 37.61 (vs Full 37.65).
+  2. `single-stage` (zero extra PrefixBank VRAM, simplest execution path):
+       - All lengths: single-stage 20% body budget, 0 GiB extra cache VRAM.
+       - <48K: NoSpan (0, 0), Online_Head=64.
+       - >=48K: Span[-8, +24], Online_Head=64 (<96K) / 128 (>=96K).
+       - 8xH200 benchmark: 500Q 51.78 (vs Full 51.52, +0.26), 900Q 53.30.
+
+Internal legacy compatibility:
+  - `V2PolicyConfig.legacy_s16()` preserves the original 15% Cone15 path
+    (for resuming legacy run directories without altering existing code paths).
 """
 from __future__ import annotations
 
@@ -20,22 +28,21 @@ from dataclasses import dataclass
 from typing import Any, Dict, Mapping, Optional, Tuple, Union
 
 VALID_BANDS: Tuple[str, ...] = ("16k", "32k", "64k", "128k", "256k")
-VALID_MODES: Tuple[str, ...] = ("v2.1-fast", "s1.6")
-TWO_STAGE_PRESETS: Dict[str, Tuple[float, float]] = {
-    # preset_name: (stage1_fraction, target_fraction) for >=48K
-    "short20_long15": (0.12, 0.15),  # Eq-12p3 (H200 500Q accuracy-speed champion)
-    "v2.3_12": (0.09, 0.12),         # Eq-9p3  (extreme speed while beating Full)
-    "v2.3_10": (0.07, 0.10),         # Eq-7p3  (faster than S1.6 across 16K-256K)
-    "m16": (0.16, 0.20),             # Eq-16p4 (20% equal-budget high generalization)
-}
-VALID_PRESETS: Tuple[str, ...] = ("v2.1-fast", *TWO_STAGE_PRESETS.keys(), "s1.6")
+PRESET_TWO_STAGE = "two-stage"
+PRESET_SINGLE_STAGE = "single-stage"
+PRESET_LEGACY_S16 = "s1.6"
+PUBLIC_PRESETS: Tuple[str, ...] = (PRESET_TWO_STAGE, PRESET_SINGLE_STAGE)
+VALID_PRESETS: Tuple[str, ...] = (PRESET_TWO_STAGE, PRESET_SINGLE_STAGE, PRESET_LEGACY_S16)
 
 SHORT_LONG_THRESHOLD = 48_000        # <48K stays single-stage 20% + NoSpan.
-DEFAULT_SPAN_MIN_TOKENS = 48_000     # Default H200 V2.1/V2.2/V2.3 span cutoff (96_000 for B300 Policy B).
+DEFAULT_SPAN_MIN_TOKENS = 48_000     # Default H200 Span[-8, +24] cutoff.
 HEAD128_THRESHOLD = 96_000           # Midpoint between 64K and 128K frames.
 HOST_OFFLOAD_THRESHOLD = 192_000     # Automatic 256K pinned host offload cutoff.
 DEFAULT_SPAN_WINDOW: Tuple[int, int] = (8, 24)  # C2 keys: [-8, +24] -> [-16, +48] tokens.
-SHORT_DEFAULT_FRACTION = 0.20
+
+SINGLE_STAGE_FRACTION = 0.20
+TWO_STAGE_STAGE1_FRACTION = 0.09
+TWO_STAGE_TARGET_FRACTION = 0.12
 LEGACY_S16_FRACTION = 0.15
 TWO_STAGE_MID_LAYER = 14
 
@@ -88,7 +95,7 @@ class V2Policy:
 
     @property
     def is_legacy_s16(self) -> bool:
-        return self.mode == "s1.6"
+        return self.preset == PRESET_LEGACY_S16
 
     @property
     def is_v2(self) -> bool:
@@ -136,66 +143,76 @@ class V2Policy:
 class V2PolicyConfig:
     """Request-independent configuration carried in runtime cfg and CLI options."""
 
-    mode: str = "v2.1-fast"
-    two_stage_l14: bool = False
-    preset: Optional[str] = None
+    preset: str = PRESET_TWO_STAGE
     span_min_tokens: int = DEFAULT_SPAN_MIN_TOKENS
     host_prefix_offload: Optional[bool] = None
     audit_halo: bool = False
 
     def __post_init__(self) -> None:
-        require(self.mode in VALID_MODES,
-                f"Unsupported RedKnot mode {self.mode!r}; expected one of {VALID_MODES}")
-        require(type(self.two_stage_l14) is bool, "two_stage_l14 must be a bool")
+        require(self.preset in VALID_PRESETS,
+                f"Unsupported RedKnot preset {self.preset!r}; expected one of {PUBLIC_PRESETS}")
         require(type(self.span_min_tokens) is int and self.span_min_tokens > 0,
                 f"span_min_tokens must be a positive int, got {self.span_min_tokens!r}")
         require(self.host_prefix_offload is None or type(self.host_prefix_offload) is bool,
                 "host_prefix_offload must be None or bool")
         require(type(self.audit_halo) is bool, "audit_halo must be a bool")
 
-        preset = self.preset
-        if self.mode == "s1.6":
-            require(not self.two_stage_l14, "Legacy --mode s1.6 cannot be combined with --two-stage-l14")
-            require(preset in (None, "s1.6"),
-                    f"Legacy --mode s1.6 cannot be combined with V2 preset {preset!r}")
-            object.__setattr__(self, "preset", "s1.6")
-            return
+    @property
+    def mode(self) -> str:
+        return self.preset
 
-        if preset is None:
-            resolved_preset = "short20_long15" if self.two_stage_l14 else "v2.1-fast"
-            object.__setattr__(self, "preset", resolved_preset)
-            return
+    @property
+    def two_stage_l14(self) -> bool:
+        return self.preset == PRESET_TWO_STAGE
 
-        require(preset in VALID_PRESETS,
-                f"Unsupported RedKnot preset {preset!r}; expected one of {VALID_PRESETS}")
-        if preset == "s1.6":
-            require(not self.two_stage_l14, "Preset 's1.6' cannot be combined with --two-stage-l14")
-            object.__setattr__(self, "mode", "s1.6")
-        elif preset == "v2.1-fast":
-            require(not self.two_stage_l14,
-                    "Single-stage preset 'v2.1-fast' cannot be combined with --two-stage-l14")
-        else:
-            # Two-stage preset selected explicitly.
-            require(preset in TWO_STAGE_PRESETS, f"Unknown two-stage preset {preset!r}")
-            object.__setattr__(self, "two_stage_l14", True)
-
-    @classmethod
-    def legacy_s16(cls) -> "V2PolicyConfig":
-        return cls(mode="s1.6", two_stage_l14=False, preset="s1.6")
+    @property
+    def is_legacy_s16(self) -> bool:
+        return self.preset == PRESET_LEGACY_S16
 
     @classmethod
     def default(cls) -> "V2PolicyConfig":
-        return cls(mode="v2.1-fast", two_stage_l14=False, preset="v2.1-fast")
+        return cls(preset=PRESET_TWO_STAGE)
+
+    @classmethod
+    def two_stage(
+        cls,
+        *,
+        host_prefix_offload: Optional[bool] = None,
+        span_min_tokens: int = DEFAULT_SPAN_MIN_TOKENS,
+        audit_halo: bool = False,
+    ) -> "V2PolicyConfig":
+        return cls(
+            preset=PRESET_TWO_STAGE,
+            span_min_tokens=span_min_tokens,
+            host_prefix_offload=host_prefix_offload,
+            audit_halo=audit_halo,
+        )
+
+    @classmethod
+    def single_stage(
+        cls,
+        *,
+        span_min_tokens: int = DEFAULT_SPAN_MIN_TOKENS,
+        audit_halo: bool = False,
+    ) -> "V2PolicyConfig":
+        return cls(
+            preset=PRESET_SINGLE_STAGE,
+            span_min_tokens=span_min_tokens,
+            host_prefix_offload=False,
+            audit_halo=audit_halo,
+        )
+
+    @classmethod
+    def legacy_s16(cls) -> "V2PolicyConfig":
+        return cls(preset=PRESET_LEGACY_S16)
 
     @classmethod
     def from_cli(
         cls,
         *,
-        mode: str = "v2.1-fast",
-        two_stage_l14: bool = False,
-        preset: Optional[str] = None,
-        span_min_tokens: int = DEFAULT_SPAN_MIN_TOKENS,
+        preset: str = PRESET_TWO_STAGE,
         host_prefix_offload: Union[str, bool, None] = "auto",
+        span_min_tokens: int = DEFAULT_SPAN_MIN_TOKENS,
         audit_halo: bool = False,
     ) -> "V2PolicyConfig":
         if host_prefix_offload in (None, "auto"):
@@ -207,25 +224,19 @@ class V2PolicyConfig:
         else:
             raise ValueError(f"Invalid host_prefix_offload setting: {host_prefix_offload!r}")
         return cls(
-            mode=mode,
-            two_stage_l14=bool(two_stage_l14),
             preset=preset,
             span_min_tokens=int(span_min_tokens),
             host_prefix_offload=offload,
             audit_halo=bool(audit_halo),
         )
 
-    @property
-    def is_legacy_s16(self) -> bool:
-        return self.mode == "s1.6"
-
     def resolve(self, input_tokens: int) -> V2Policy:
         """Resolve concrete per-request V2Policy from prompt token count."""
         band = band_from_input_tokens(input_tokens)
-        if self.mode == "s1.6":
+        if self.is_legacy_s16:
             return V2Policy(
-                mode="s1.6",
-                preset="s1.6",
+                mode=PRESET_LEGACY_S16,
+                preset=PRESET_LEGACY_S16,
                 band=band,
                 input_tokens=input_tokens,
                 fraction=LEGACY_S16_FRACTION,
@@ -252,16 +263,15 @@ class V2PolicyConfig:
         long_regime = input_tokens >= SHORT_LONG_THRESHOLD
 
         if self.two_stage_l14 and long_regime:
-            require(self.preset in TWO_STAGE_PRESETS,
-                    f"Two-stage mode requires a two-stage preset, got {self.preset!r}")
-            stage1_fraction, target_fraction = TWO_STAGE_PRESETS[self.preset]
+            stage1_fraction = TWO_STAGE_STAGE1_FRACTION
+            target_fraction = TWO_STAGE_TARGET_FRACTION
             two_stage_active = True
-            mode_name = "two-stage-l14"
+            mode_name = PRESET_TWO_STAGE
         else:
-            stage1_fraction = SHORT_DEFAULT_FRACTION
-            target_fraction = SHORT_DEFAULT_FRACTION
+            stage1_fraction = SINGLE_STAGE_FRACTION
+            target_fraction = SINGLE_STAGE_FRACTION
             two_stage_active = False
-            mode_name = "v2.1-fast"
+            mode_name = PRESET_SINGLE_STAGE
 
         if not two_stage_active:
             offload = False
@@ -272,7 +282,7 @@ class V2PolicyConfig:
 
         return V2Policy(
             mode=mode_name,
-            preset=self.preset or "v2.1-fast",
+            preset=self.preset,
             band=band,
             input_tokens=input_tokens,
             fraction=target_fraction,
@@ -296,9 +306,7 @@ class V2PolicyConfig:
 
     def to_dict(self) -> Dict[str, Any]:
         return {
-            "schema": "redknot-v2-policy-config-v1",
-            "mode": self.mode,
-            "two_stage_l14": self.two_stage_l14,
+            "schema": "redknot-v2-policy-config-v2",
             "preset": self.preset,
             "span_min_tokens": self.span_min_tokens,
             "host_prefix_offload": self.host_prefix_offload,
@@ -310,10 +318,11 @@ class V2PolicyConfig:
         if data is None:
             return None
         require(isinstance(data, Mapping), "V2 policy config must be a mapping")
+        preset = data.get("preset")
+        if preset is None:
+            preset = PRESET_LEGACY_S16 if data.get("mode") == PRESET_LEGACY_S16 else PRESET_TWO_STAGE
         return cls(
-            mode=str(data.get("mode", "v2.1-fast")),
-            two_stage_l14=bool(data.get("two_stage_l14", False)),
-            preset=data.get("preset"),
+            preset=str(preset),
             span_min_tokens=int(data.get("span_min_tokens", DEFAULT_SPAN_MIN_TOKENS)),
             host_prefix_offload=data.get("host_prefix_offload", None),
             audit_halo=bool(data.get("audit_halo", False)),
@@ -323,9 +332,7 @@ class V2PolicyConfig:
 def resolve_v2_policy(
     band: str,
     *,
-    mode: str = "v2.1-fast",
-    two_stage_l14: bool = False,
-    preset: Optional[str] = None,
+    preset: str = PRESET_TWO_STAGE,
     span_min_tokens: int = DEFAULT_SPAN_MIN_TOKENS,
     host_prefix_offload: Optional[bool] = None,
     audit_halo: bool = False,
@@ -341,8 +348,6 @@ def resolve_v2_policy(
     require(band in representative,
             f"Unsupported length band {band!r}; expected one of {VALID_BANDS}")
     cfg = V2PolicyConfig(
-        mode=mode,
-        two_stage_l14=two_stage_l14,
         preset=preset,
         span_min_tokens=span_min_tokens,
         host_prefix_offload=host_prefix_offload,
@@ -354,17 +359,13 @@ def resolve_v2_policy(
 def resolve_v2_policy_for_tokens(
     input_tokens: int,
     *,
-    mode: str = "v2.1-fast",
-    two_stage_l14: bool = False,
-    preset: Optional[str] = None,
+    preset: str = PRESET_TWO_STAGE,
     span_min_tokens: int = DEFAULT_SPAN_MIN_TOKENS,
     host_prefix_offload: Optional[bool] = None,
     audit_halo: bool = False,
 ) -> V2Policy:
     """Resolve V2Policy directly from raw prompt token length."""
     cfg = V2PolicyConfig(
-        mode=mode,
-        two_stage_l14=two_stage_l14,
         preset=preset,
         span_min_tokens=span_min_tokens,
         host_prefix_offload=host_prefix_offload,

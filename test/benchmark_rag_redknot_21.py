@@ -106,36 +106,18 @@ def main():
     parser.add_argument("--cache", type=Path, help="persistent local input and evaluator cache")
     parser.add_argument("--model-path", type=Path, default=os.environ.get("REDKNOT_MODEL_PATH"), help="local DeepSeek-V4.1-Flash-1017 checkpoint")
     parser.add_argument("--runtime-root", type=Path, default=os.environ.get("REDKNOT_RUNTIME_ROOT"), help="optional external runtime in place of the bundled implementation")
-    parser.add_argument("--redknot-mode", "--mode", dest="redknot_mode", choices=("v2.1-fast", "s1.6"), default=None,
-                        help="RedKnot execution mode: v2.1-fast (default) or legacy s1.6")
-    parser.add_argument("--two-stage-l14", action="store_true", default=False,
-                        help="enable opt-in L2->L14 two-stage progressive selection for >=48K prompts")
-    parser.add_argument("--preset", choices=("v2.1-fast", "short20_long15", "v2.3_12", "v2.3_10", "m16", "s1.6"), default=None,
-                        help="RedKnot V2 preset (short20_long15, v2.3_12, v2.3_10, m16, v2.1-fast, s1.6)")
-    parser.add_argument("--span-min-tokens", type=int, default=None,
-                        help="minimum prompt token length to enable asymmetric C2 Span [-8,+24] (default: 48000)")
+    parser.add_argument("--preset", choices=("two-stage", "single-stage"), default=None,
+                        help="RedKnot V2 recipe: two-stage (default, L2->L14 9%%+3%% >=48K / 20%% <48K) "
+                             "or single-stage (20%%, zero extra cache VRAM)")
     parser.add_argument("--host-prefix-offload", choices=("auto", "on", "off"), default=None,
-                        help="pinned host offload for L3..L8 residuals in two-stage mode (auto: >=192K)")
-    parser.add_argument("--audit-halo", action="store_true", default=False,
-                        help="enable Opt-2 DirectCopy byte-exact SWA halo audit")
+                        help="pinned CPU offload for L3..L8 residuals in two-stage mode (auto: >=192K)")
     args = parser.parse_args()
     from longbench300.local_backend import load_v2_policy_config_class
     v2_cls = load_v2_policy_config_class()
-    explicit_v2_cli = any((
-        args.redknot_mode is not None,
-        args.two_stage_l14,
-        args.preset is not None,
-        args.span_min_tokens is not None,
-        args.host_prefix_offload is not None,
-        args.audit_halo,
-    ))
+    explicit_v2_cli = args.preset is not None or args.host_prefix_offload is not None
     v2_config = v2_cls.from_cli(
-        mode=args.redknot_mode or "v2.1-fast",
-        two_stage_l14=args.two_stage_l14,
-        preset=args.preset,
-        span_min_tokens=48_000 if args.span_min_tokens is None else args.span_min_tokens,
+        preset=args.preset or "two-stage",
         host_prefix_offload="auto" if args.host_prefix_offload is None else args.host_prefix_offload,
-        audit_halo=args.audit_halo,
     )
     cache = (args.cache or DEFAULT_OUTPUT / "cache").expanduser().resolve()
     if not (args.reference or args.check or args.report_only or args.resume or args.model_path):

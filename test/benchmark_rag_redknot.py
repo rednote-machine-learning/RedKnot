@@ -39,27 +39,16 @@ def main():
                         help="local DeepSeek checkpoint (also REDKNOT_MODEL_PATH)")
     parser.add_argument("--cache", type=Path, default=DEFAULT_OUTPUT / "cache", help="verified local dataset cache")
     parser.add_argument("--output", type=Path, help="new directory for one run (default: a unique benchmark-output subdirectory)")
-    parser.add_argument("--redknot-mode", "--mode", dest="redknot_mode", choices=("v2.1-fast", "s1.6"), default="v2.1-fast",
-                        help="RedKnot execution mode: v2.1-fast (default) or legacy s1.6")
-    parser.add_argument("--two-stage-l14", action="store_true", default=False,
-                        help="enable opt-in L2->L14 two-stage progressive selection for >=48K prompts")
-    parser.add_argument("--preset", choices=("v2.1-fast", "short20_long15", "v2.3_12", "v2.3_10", "m16", "s1.6"), default=None,
-                        help="RedKnot V2 preset (short20_long15, v2.3_12, v2.3_10, m16, v2.1-fast, s1.6)")
-    parser.add_argument("--span-min-tokens", type=int, default=48_000,
-                        help="minimum prompt token length to enable asymmetric C2 Span [-8,+24] (default: 48000)")
+    parser.add_argument("--preset", choices=("two-stage", "single-stage"), default="two-stage",
+                        help="RedKnot V2 recipe: two-stage (default, L2->L14 9%%+3%% >=48K / 20%% <48K) "
+                             "or single-stage (20%%, zero extra cache VRAM)")
     parser.add_argument("--host-prefix-offload", choices=("auto", "on", "off"), default="auto",
-                        help="pinned host offload for L3..L8 residuals in two-stage mode (auto: >=192K)")
-    parser.add_argument("--audit-halo", action="store_true", default=False,
-                        help="enable Opt-2 DirectCopy byte-exact SWA halo audit")
+                        help="pinned CPU offload for L3..L8 residuals in two-stage mode (auto: >=192K)")
     args = parser.parse_args()
     from longbench300.local_backend import load_v2_policy_config_class
     v2_config = load_v2_policy_config_class().from_cli(
-        mode=args.redknot_mode,
-        two_stage_l14=args.two_stage_l14,
         preset=args.preset,
-        span_min_tokens=args.span_min_tokens,
         host_prefix_offload=args.host_prefix_offload,
-        audit_halo=args.audit_halo,
     )
     if not args.check and not args.reference and args.model_path is None:
         parser.error("GPU replay requires local DeepSeek-V4.1-Flash-1017 weights. Set --model-path or REDKNOT_MODEL_PATH. "

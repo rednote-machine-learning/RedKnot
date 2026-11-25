@@ -185,11 +185,13 @@ def _make_random_docs(rng: random.Random, *, min_docs=2, max_docs=6, min_len=260
 
 
 class TestV2PolicyRouting(unittest.TestCase):
-    def test_v21_fast_default_band_boundaries(self) -> None:
-        # <48K: single-stage 20%, NoSpan, Head64
+    def test_single_stage_optimal_recipe_all_bands(self) -> None:
+        # Optimal single-stage recipe: 20% everywhere, 0 GiB extra cache VRAM.
+        # <48K: NoSpan, Head64
         for tokens, band in ((15_800, "16k"), (23_999, "16k"), (24_000, "32k"), (47_999, "32k")):
-            p = v2_policy.resolve_v2_policy_for_tokens(tokens)
-            self.assertEqual(p.mode, "v2.1-fast")
+            p = v2_policy.resolve_v2_policy_for_tokens(tokens, preset="single-stage")
+            self.assertEqual(p.mode, "single-stage")
+            self.assertEqual(p.preset, "single-stage")
             self.assertEqual(p.band, band)
             self.assertEqual(p.fraction, 0.20)
             self.assertEqual(p.stage1_fraction, 0.20)
@@ -207,17 +209,20 @@ class TestV2PolicyRouting(unittest.TestCase):
 
         # [48K, 96K): Span[-8,+24], Head64
         for tokens in (48_000, 65_000, 95_999):
-            p = v2_policy.resolve_v2_policy_for_tokens(tokens)
+            p = v2_policy.resolve_v2_policy_for_tokens(tokens, preset="single-stage")
             self.assertEqual(p.band, "64k")
+            self.assertEqual(p.fraction, 0.20)
             self.assertEqual(p.head_width, 64)
             self.assertEqual(p.window, (8, 24))
             self.assertTrue(p.span_enabled)
             self.assertFalse(p.two_stage_l14)
+            self.assertFalse(p.host_prefix_offload)
 
-        # [96K, 192K) and >=192K: Span[-8,+24], Head128
+        # [96K, 192K) and >=192K: Span[-8,+24], Head128, still 0 extra cache (no offload)
         for tokens, band in ((96_000, "128k"), (128_908, "128k"), (191_999, "128k"), (192_000, "256k"), (253_592, "256k")):
-            p = v2_policy.resolve_v2_policy_for_tokens(tokens)
+            p = v2_policy.resolve_v2_policy_for_tokens(tokens, preset="single-stage")
             self.assertEqual(p.band, band)
+            self.assertEqual(p.fraction, 0.20)
             self.assertEqual(p.head_width, 128)
             self.assertEqual(p.window, (8, 24))
             self.assertTrue(p.span_enabled)
@@ -225,70 +230,60 @@ class TestV2PolicyRouting(unittest.TestCase):
             self.assertFalse(p.host_prefix_offload)
 
     def test_configurable_span_min_tokens_b300_policy_b_alignment(self) -> None:
-        p64 = v2_policy.resolve_v2_policy_for_tokens(65_000, span_min_tokens=96_000)
+        p64 = v2_policy.resolve_v2_policy_for_tokens(65_000, preset="single-stage", span_min_tokens=96_000)
         self.assertEqual(p64.window, (0, 0))
         self.assertEqual(p64.head_width, 64)
-        p128 = v2_policy.resolve_v2_policy_for_tokens(96_000, span_min_tokens=96_000)
+        p128 = v2_policy.resolve_v2_policy_for_tokens(96_000, preset="single-stage", span_min_tokens=96_000)
         self.assertEqual(p128.window, (8, 24))
         self.assertEqual(p128.head_width, 128)
 
-    def test_two_stage_presets_and_256k_host_offload_boundaries(self) -> None:
-        expected_long = {
-            "short20_long15": (0.12, 0.15),
-            "v2.3_12": (0.09, 0.12),
-            "v2.3_10": (0.07, 0.10),
-            "m16": (0.16, 0.20),
-        }
-        for preset, (s1, tgt) in expected_long.items():
-            # <48K MUST stay single-stage 20%, NoSpan, Head64, no offload
-            for short_tokens in (16_000, 32_000, 47_999):
-                p_short = v2_policy.resolve_v2_policy_for_tokens(
-                    short_tokens, two_stage_l14=True, preset=preset
-                )
-                self.assertFalse(p_short.two_stage_l14)
-                self.assertEqual(p_short.mode, "v2.1-fast")
-                self.assertEqual((p_short.stage1_fraction, p_short.fraction), (0.20, 0.20))
-                self.assertEqual(p_short.window, (0, 0))
-                self.assertEqual(p_short.head_width, 64)
-                self.assertFalse(p_short.host_prefix_offload)
+    def test_two_stage_optimal_recipe_all_bands_and_host_offload(self) -> None:
+        # Default config is the optimal two-stage recipe (9%+3%=12% >=48K, 20% <48K).
+        cfg_default = v2_policy.V2PolicyConfig.default()
+        self.assertEqual(cfg_default.preset, "two-stage")
+        self.assertTrue(cfg_default.two_stage_l14)
 
-            # 64K & 128K: two-stage active, Span[-8,+24], offload OFF by default
-            p64 = v2_policy.resolve_v2_policy_for_tokens(48_000, two_stage_l14=True, preset=preset)
-            self.assertTrue(p64.two_stage_l14)
-            self.assertEqual((p64.stage1_fraction, p64.fraction), (s1, tgt))
-            self.assertEqual(p64.head_width, 64)
-            self.assertEqual(p64.window, (8, 24))
-            self.assertFalse(p64.host_prefix_offload)
+        # <48K MUST stay single-stage 20%, NoSpan, Head64, no offload
+        for short_tokens in (16_000, 32_000, 47_999):
+            p_short = v2_policy.resolve_v2_policy_for_tokens(short_tokens, preset="two-stage")
+            self.assertFalse(p_short.two_stage_l14)
+            self.assertEqual(p_short.mode, "single-stage")
+            self.assertEqual((p_short.stage1_fraction, p_short.fraction), (0.20, 0.20))
+            self.assertEqual(p_short.window, (0, 0))
+            self.assertEqual(p_short.head_width, 64)
+            self.assertFalse(p_short.host_prefix_offload)
 
-            p128 = v2_policy.resolve_v2_policy_for_tokens(191_999, two_stage_l14=True, preset=preset)
-            self.assertTrue(p128.two_stage_l14)
-            self.assertEqual((p128.stage1_fraction, p128.fraction), (s1, tgt))
-            self.assertEqual(p128.head_width, 128)
-            self.assertFalse(p128.host_prefix_offload)
+        # 64K & 128K: two-stage 9%+3%=12% active, Span[-8,+24], offload OFF by default
+        p64 = v2_policy.resolve_v2_policy_for_tokens(48_000, preset="two-stage")
+        self.assertTrue(p64.two_stage_l14)
+        self.assertEqual(p64.mode, "two-stage")
+        self.assertEqual((p64.stage1_fraction, p64.fraction), (0.09, 0.12))
+        self.assertEqual(p64.head_width, 64)
+        self.assertEqual(p64.window, (8, 24))
+        self.assertFalse(p64.host_prefix_offload)
 
-            # >=192K (256K): host_prefix_offload auto-triggers ON
-            p256 = v2_policy.resolve_v2_policy_for_tokens(192_000, two_stage_l14=True, preset=preset)
-            self.assertTrue(p256.two_stage_l14)
-            self.assertEqual(p256.band, "256k")
-            self.assertEqual(p256.head_width, 128)
-            self.assertTrue(p256.host_prefix_offload)
+        p128 = v2_policy.resolve_v2_policy_for_tokens(191_999, preset="two-stage")
+        self.assertTrue(p128.two_stage_l14)
+        self.assertEqual((p128.stage1_fraction, p128.fraction), (0.09, 0.12))
+        self.assertEqual(p128.head_width, 128)
+        self.assertFalse(p128.host_prefix_offload)
+
+        # >=192K (256K): host_prefix_offload auto-triggers ON
+        p256 = v2_policy.resolve_v2_policy_for_tokens(192_000, preset="two-stage")
+        self.assertTrue(p256.two_stage_l14)
+        self.assertEqual(p256.band, "256k")
+        self.assertEqual((p256.stage1_fraction, p256.fraction), (0.09, 0.12))
+        self.assertEqual(p256.head_width, 128)
+        self.assertTrue(p256.host_prefix_offload)
 
         # Explicit host_prefix_offload overrides on 128K and 256K
-        p128_on = v2_policy.resolve_v2_policy_for_tokens(
-            128_000, two_stage_l14=True, preset="short20_long15", host_prefix_offload=True
-        )
+        p128_on = v2_policy.resolve_v2_policy_for_tokens(128_000, preset="two-stage", host_prefix_offload=True)
         self.assertTrue(p128_on.host_prefix_offload)
-        p256_off = v2_policy.resolve_v2_policy_for_tokens(
-            250_000, two_stage_l14=True, preset="short20_long15", host_prefix_offload=False
-        )
+        p256_off = v2_policy.resolve_v2_policy_for_tokens(250_000, preset="two-stage", host_prefix_offload=False)
         self.assertFalse(p256_off.host_prefix_offload)
 
-        # Default preset when --two-stage-l14 is set without --preset
-        cfg = v2_policy.V2PolicyConfig.from_cli(two_stage_l14=True)
-        self.assertEqual(cfg.preset, "short20_long15")
-
-    def test_legacy_s16_and_invalid_combinations(self) -> None:
-        p = v2_policy.resolve_v2_policy_for_tokens(128_000, mode="s1.6")
+    def test_legacy_s16_internal_compat_and_invalid_presets(self) -> None:
+        p = v2_policy.V2PolicyConfig.legacy_s16().resolve(128_000)
         self.assertTrue(p.is_legacy_s16)
         self.assertFalse(p.is_v2)
         self.assertEqual(p.fraction, 0.15)
@@ -303,11 +298,9 @@ class TestV2PolicyRouting(unittest.TestCase):
         self.assertEqual(p.opts, ())
 
         with self.assertRaises(ValueError):
-            v2_policy.V2PolicyConfig(mode="s1.6", two_stage_l14=True)
+            v2_policy.V2PolicyConfig(preset="v2.3_10")
         with self.assertRaises(ValueError):
-            v2_policy.V2PolicyConfig(mode="s1.6", preset="short20_long15")
-        with self.assertRaises(ValueError):
-            v2_policy.V2PolicyConfig(mode="v2.1-fast", two_stage_l14=True, preset="v2.1-fast")
+            v2_policy.V2PolicyConfig(preset="unknown")
         with self.assertRaises(ValueError):
             v2_policy.resolve_v2_policy("512k")
 
@@ -494,16 +487,24 @@ class TestGeometryAndFrameInvariants(unittest.TestCase):
         with self.assertRaises(ValueError):
             fixed_pack_policy.budget_admission(docs, total, 0.20)
 
-        # V2 allows 0.20 / 0.15 / 0.12 / 0.10
-        p20 = v2_policy.resolve_v2_policy_for_tokens(64_000)
+        # V2 allows single-stage (0.20) and two-stage (0.09 stage1 / 0.12 target)
+        p20 = v2_policy.resolve_v2_policy_for_tokens(64_000, preset="single-stage")
         adm_v2 = fixed_pack_policy.budget_admission(docs, total, 0.20, policy=p20)
         self.assertEqual(adm_v2["body_fraction"], 0.20)
         self.assertEqual(adm_v2["head_width"], 64)
+        self.assertFalse(adm_v2["two_stage_l14"])
 
-        p10 = v2_policy.resolve_v2_policy_for_tokens(64_000, two_stage_l14=True, preset="v2.3_10")
-        adm_10 = fixed_pack_policy.budget_admission(docs, total, 0.10, policy=p10)
-        self.assertEqual(adm_10["body_fraction"], 0.10)
-        self.assertTrue(adm_10["two_stage_l14"])
+        p12 = v2_policy.resolve_v2_policy_for_tokens(64_000, preset="two-stage")
+        adm_09 = fixed_pack_policy.budget_admission(docs, total, 0.09, policy=p12)
+        self.assertEqual(adm_09["body_fraction"], 0.09)
+        self.assertTrue(adm_09["two_stage_l14"])
+        adm_12 = fixed_pack_policy.budget_admission(docs, total, 0.12, policy=p12)
+        self.assertEqual(adm_12["body_fraction"], 0.12)
+        self.assertTrue(adm_12["two_stage_l14"])
+
+        # Reject unapproved fraction
+        with self.assertRaises(ValueError):
+            fixed_pack_policy.budget_admission(docs, total, 0.10, policy=p12)
 
         # Reject doc shorter than 256 (would risk head/tail overlap)
         bad_docs = [{"start": 0, "end": 200, "key": "short"}]
@@ -713,8 +714,96 @@ class TestRepositoryIntegrityAndAST(unittest.TestCase):
         self.assertIn("two_stage_l14.py", fixed_pack_runtime_adapter.OWN_FILES)
         self.assertIn("runtime/halo_direct_copy.py", fixed_pack_runtime_adapter.SHARED_FILES)
 
+    def test_reproduce_both_single_stage_and_two_stage_recipes(self) -> None:
+        # Reproduce both optimal RedKnot V2 recipes end-to-end on a 128K multi-hop RAG prompt:
+        #   1) single-stage: 20% L2 selection, Online_Head128, Span[-8,+24], MinimalCone, 0 extra cache
+        #   2) two-stage:    9% L2 + 3% L14 bridge promotion (12% total), strict L14 locality backfill, MinimalCone
+        rng = random.Random(2026)
+        total = 128_000
+        docs = [{"start": 64 + i * 12_600, "end": 64 + i * 12_600 + 12_400, "key": f"doc-{i}"} for i in range(10)]
+        n_keys = total // 2
+        l2_scores = [rng.uniform(-1.5, 1.5) for _ in range(n_keys)]
+        for rel in (docs[2], docs[7]):
+            peak = (rel["start"] + 4_000) // 2
+            for k in range(peak, peak + 40):
+                l2_scores[k] = rng.uniform(6.0, 10.0)
+        counts = [1] * n_keys
+
+        # Recipe 1: single-stage (20%)
+        pol_single = v2_policy.resolve_v2_policy_for_tokens(total, preset="single-stage")
+        self.assertFalse(pol_single.two_stage_l14)
+        self.assertEqual(pol_single.fraction, 0.20)
+        sel_single = index20_selector.select_from_reduced_scores(
+            docs, total, l2_scores, counts,
+            fraction=pol_single.fraction, strategy="max",
+            span_window=pol_single.window, head_width=pol_single.head_width,
+            allow_budget_floor=True,
+        )
+        index20_selector.validate_frame_capacity(sel_single["selected_positions"], total)
+
+        # Recipe 2: two-stage (L2 9% -> L14 +3% = 12%)
+        pol_two = v2_policy.resolve_v2_policy_for_tokens(total, preset="two-stage")
+        self.assertTrue(pol_two.two_stage_l14)
+        self.assertEqual((pol_two.stage1_fraction, pol_two.fraction), (0.09, 0.12))
+        sel_s1 = index20_selector.select_from_reduced_scores(
+            docs, total, l2_scores, counts,
+            fraction=pol_two.stage1_fraction, strategy="max",
+            span_window=pol_two.window, head_width=pol_two.head_width,
+            allow_budget_floor=True,
+        )
+        sel_target = index20_selector.select_from_reduced_scores(
+            docs, total, l2_scores, counts,
+            fraction=pol_two.fraction, strategy="max",
+            span_window=pol_two.window, head_width=pol_two.head_width,
+            allow_budget_floor=True,
+        )
+        valid_l14 = [False] * n_keys
+        for d in docs:
+            for k in range((d["start"] + 1) // 2, d["end"] // 2):
+                valid_l14[k] = True
+        l14_scores = [rng.uniform(-1.0, 2.0) for _ in range(n_keys)]
+        bridge_start = docs[5]["start"] + 5_000
+        for k in range(bridge_start // 2, (bridge_start + 160) // 2):
+            l14_scores[k] = rng.uniform(9.0, 14.0)
+        sel_two, extra = two_stage_l14.promote_stage2(
+            sel_s1, docs, total, l14_scores, valid_l14,
+            target_fraction=pol_two.fraction,
+            target_body_tokens=sel_target["selected_body_tokens"],
+            span_window=pol_two.window,
+        )
+        index20_selector.validate_frame_capacity(sel_two["selected_positions"], total)
+        affected = two_stage_l14.affected_positions(
+            sel_s1["selected_positions"], extra, sel_two["selected_positions"], mid=14, total=total
+        )
+
+        # Two-stage uses ~40% fewer total selected tokens than single-stage (12% vs 20%)
+        self.assertLess(len(sel_two["selected_positions"]), len(sel_single["selected_positions"]))
+        # L14 Stage-2 captures the multi-hop bridge evidence in doc-5
+        two_set = set(sel_two["selected_positions"])
+        self.assertTrue(all(p in two_set for p in range(bridge_start, bridge_start + 160)))
+        # Strict L14 locality: L3..L13 backfill computes ONLY promoted extra rows
+        for layer in range(3, 14):
+            self.assertEqual(affected[layer], set(extra))
+            self.assertTrue(affected[layer].isdisjoint(set(sel_s1["selected_positions"])))
+
+        # Both recipes achieve >80% Post-20 MinimalCone FFN row savings
+        final_frame_start = (total - 1) // 8192 * 8192
+        ranges = [(0, 65_536), (65_536, total)]
+        for sel in (sel_single, sel_two):
+            legacy = cone15_plan.Cone15Plan(
+                total, sel["selected_positions"], sel["mandatory_positions"],
+                last_frame_start=final_frame_start, group_ranges=ranges,
+            )
+            minimal = cone15_plan.Cone15Plan(
+                total, sel["selected_positions"], (),
+                last_frame_start=final_frame_start, group_ranges=ranges,
+            )
+            leg_q = sum(len(legacy.group(l, a, b).queries) for a, b in ranges for l in range(21, 40))
+            min_q = sum(len(minimal.group(l, a, b).queries) for a, b in ranges for l in range(21, 40))
+            self.assertLess(min_q, leg_q * 0.25)
+
     def test_examples_redknot_v2_demo_cpu_walkthrough_runs(self) -> None:
-        for preset in ("short20_long15", "v2.1-fast"):
+        for preset in ("single-stage", "two-stage", "both"):
             proc = subprocess.run(
                 [sys.executable, str(REPO_ROOT / "examples" / "redknot_v2_demo.py"), "--cpu-demo", "--preset", preset],
                 capture_output=True,
@@ -724,6 +813,8 @@ class TestRepositoryIntegrityAndAST(unittest.TestCase):
             self.assertEqual(proc.returncode, 0, proc.stderr)
             self.assertIn("MinimalCone (Layers 21..39 FFN rows)", proc.stdout)
             self.assertIn("Opt-2 Post-20 Offline Halo rows", proc.stdout)
+            if preset == "both":
+                self.assertIn("Side-by-Side 128K Recipe Comparison", proc.stdout)
 
     def test_fixed_runtime_rewrite_ast_assertions_remain_11111(self) -> None:
         import multiowner_runtime
@@ -797,15 +888,15 @@ class TestRepositoryIntegrityAndAST(unittest.TestCase):
         with self.assertRaises(ValueError):
             run_s16.compact_controller(make_report(0.20, None))
 
-        # V2.1-Fast (20%): passes
-        v2_fast = v2_policy.resolve_v2_policy_for_tokens(65_000).to_dict()
-        out_v2 = run_s16.compact_controller(make_report(0.20, v2_fast))
+        # Single-stage optimal recipe (20%): passes
+        v2_single = v2_policy.resolve_v2_policy_for_tokens(65_000, preset="single-stage").to_dict()
+        out_v2 = run_s16.compact_controller(make_report(0.20, v2_single))
         self.assertTrue(out_v2["minimal_cone"])
-        self.assertEqual(out_v2["v2_policy"]["mode"], "v2.1-fast")
+        self.assertEqual(out_v2["v2_policy"]["mode"], "single-stage")
 
-        # Two-Stage L14 (short20_long15 @ 65K -> 15%): passes with two_stage=True, fails if fraction mismatches
-        v2_ts = v2_policy.resolve_v2_policy_for_tokens(65_000, two_stage_l14=True, preset="short20_long15").to_dict()
-        out_ts = run_s16.compact_controller(make_report(0.15, v2_ts, two_stage=True))
+        # Two-stage optimal recipe (9%+3%=12% @ 65K): passes with two_stage=True, fails if fraction mismatches
+        v2_ts = v2_policy.resolve_v2_policy_for_tokens(65_000, preset="two-stage").to_dict()
+        out_ts = run_s16.compact_controller(make_report(0.12, v2_ts, two_stage=True))
         self.assertTrue(out_ts["v2_policy"]["two_stage_l14"])
         with self.assertRaises(ValueError):
             run_s16.compact_controller(make_report(0.20, v2_ts, two_stage=True))
@@ -944,16 +1035,25 @@ class TestRepositoryIntegrityAndAST(unittest.TestCase):
         finally:
             rag.natural_documents = orig_natural
 
-    def test_benchmark_cli_rejects_invalid_s16_two_stage_combo(self) -> None:
+    def test_benchmark_cli_supports_both_presets_and_rejects_invalid(self) -> None:
         for script in ("test/benchmark_rag_redknot.py", "test/benchmark_rag_redknot_21.py"):
-            proc = subprocess.run(
-                [sys.executable, str(REPO_ROOT / script), "--mode", "s1.6", "--two-stage-l14", "--check"],
+            proc_bad = subprocess.run(
+                [sys.executable, str(REPO_ROOT / script), "--preset", "invalid-recipe", "--check"],
                 capture_output=True,
                 text=True,
                 check=False,
             )
-            self.assertNotEqual(proc.returncode, 0, f"{script} should reject --mode s1.6 --two-stage-l14")
-            self.assertIn("s1.6", proc.stderr)
+            self.assertNotEqual(proc_bad.returncode, 0, f"{script} should reject unknown --preset")
+            self.assertIn("invalid choice", proc_bad.stderr)
+            proc_help = subprocess.run(
+                [sys.executable, str(REPO_ROOT / script), "--help"],
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+            self.assertEqual(proc_help.returncode, 0, proc_help.stderr)
+            self.assertIn("{two-stage,single-stage}", proc_help.stdout)
+            self.assertNotIn("--redknot-mode", proc_help.stdout)
 
     @unittest.skipIf(sys.version_info < (3, 11), "local_backend.hash_file uses hashlib.file_digest (Python 3.11+)")
     def test_end_to_end_bundled_runtime_prepare_native_preflight(self) -> None:
@@ -972,15 +1072,15 @@ with tempfile.TemporaryDirectory() as tmp:
     model.mkdir(); out.mkdir()
     v2_cls = lb.load_v2_policy_config_class()
     with patch.object(lb, 'verify_checkpoint', return_value=None):
-        cfg_fast, loc = lb.bundled_runtime(model, out, v2_config=v2_cls.from_cli(mode='v2.1-fast'))
-        cfg_ts, _ = lb.bundled_runtime(model, out, v2_config=v2_cls.from_cli(two_stage_l14=True, preset='short20_long15'))
-        cfg_s16, _ = lb.bundled_runtime(model, out, v2_config=v2_cls.from_cli(mode='s1.6'))
-    assert len({{cfg_fast['sha256'], cfg_ts['sha256'], cfg_s16['sha256']}}) == 3
-    assert cfg_fast['redknot_v2']['mode'] == 'v2.1-fast'
-    assert cfg_ts['redknot_v2']['preset'] == 'short20_long15'
-    assert cfg_s16['redknot_v2']['mode'] == 's1.6'
-    lb.prepare_native(cfg_fast)
-    base, producer = lb.local_modules(cfg_fast, loc)
+        cfg_single, loc = lb.bundled_runtime(model, out, v2_config=v2_cls.from_cli(preset='single-stage'))
+        cfg_two, _ = lb.bundled_runtime(model, out, v2_config=v2_cls.from_cli(preset='two-stage'))
+        cfg_s16, _ = lb.bundled_runtime(model, out, v2_config=v2_cls.legacy_s16())
+    assert len({{cfg_single['sha256'], cfg_two['sha256'], cfg_s16['sha256']}}) == 3
+    assert cfg_single['redknot_v2']['preset'] == 'single-stage'
+    assert cfg_two['redknot_v2']['preset'] == 'two-stage'
+    assert cfg_s16['redknot_v2']['preset'] == 's1.6'
+    lb.prepare_native(cfg_two)
+    base, producer = lb.local_modules(cfg_two, loc)
     assert callable(base.compact_controller) and callable(producer.identity)
     assert not ({{'torch', 'triton', 'deepinfer'}} & set(sys.modules))
 """

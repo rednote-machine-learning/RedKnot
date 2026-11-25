@@ -319,19 +319,13 @@ def main():
     parser=argparse.ArgumentParser()
     for k in ('template','manifest','output-dir'):parser.add_argument('--'+k,required=True,type=Path)
     parser.add_argument('--ready-file',type=Path);parser.add_argument('--release-file',type=Path)
-    parser.add_argument('--redknot-mode','--mode',dest='redknot_mode',choices=('v2.1-fast','s1.6'),default=None)
-    parser.add_argument('--two-stage-l14',action='store_true',default=False)
-    parser.add_argument('--preset',choices=('v2.1-fast','short20_long15','v2.3_12','v2.3_10','m16','s1.6'),default=None)
-    parser.add_argument('--span-min-tokens',type=int,default=48000)
+    parser.add_argument('--preset',choices=('two-stage','single-stage'),default=None)
     parser.add_argument('--host-prefix-offload',choices=('auto','on','off'),default='auto')
-    parser.add_argument('--audit-halo',action='store_true',default=False)
     action=parser.add_mutually_exclusive_group(required=True);action.add_argument('--check-only',action='store_true');action.add_argument('--run',action='store_true')
     a=parser.parse_args();p=a.template.resolve();data=a.manifest.resolve();out=a.output_dir.resolve();cfg=load_template(p)
-    if a.redknot_mode is not None or a.two_stage_l14 or a.preset is not None or a.audit_halo:
+    if a.preset is not None or a.host_prefix_offload!='auto':
         sys.path.insert(0,cfg['fixed_pack_runtime_root']);from v2_policy import V2PolicyConfig
-        v2_obj=V2PolicyConfig.from_cli(mode=a.redknot_mode or 'v2.1-fast',two_stage_l14=a.two_stage_l14,
-            preset=a.preset,span_min_tokens=a.span_min_tokens,
-            host_prefix_offload=a.host_prefix_offload,audit_halo=a.audit_halo)
+        v2_obj=V2PolicyConfig.from_cli(preset=a.preset or 'two-stage',host_prefix_offload=a.host_prefix_offload)
         cfg['redknot_v2']=v2_obj.to_dict()
     contract_id=digest(dict(template=ARTIFACT,runner_sha256=sha(__file__),data_root=str(data),methods=ARMS,owner_count=4,redknot_v2=cfg.get('redknot_v2')))
     check(data.is_dir(),'Manifest data directory must exist')
