@@ -52,6 +52,8 @@ class FixedPackedAttention(PackedAttention):
                 layer_order='original_group_major_3_through_39',
                 selection_changed=False, groups_repartitioned=False))
         finally:
+            if self.direct_halo_copy and getattr(self.controller, 'ids', None) is not None and group.end == len(self.controller.ids):
+                self._release_direct_halos()
             self.fixed_group = self.fixed_geometry = None
             self.fixed_layers = []
 
@@ -78,11 +80,13 @@ class FixedPackedAttention(PackedAttention):
 
     def report(self):
         result = super().report()
+        policy = getattr(self.controller, '_v2_policy', None)
+        sel_layers = [2, policy.two_stage_mid_layer] if (policy is not None and policy.two_stage_l14) else [2]
         result.update(fixed_group_active=self.fixed_group is not None,
             fixed_group_events=list(self.fixed_group_events),
             copy_window_ranges=[[a, min(z, 38)] for a, z in STAGES],
             copy_windows_are_selection_stages=False,
-            algorithm_selection_layers=[2], regroup_enabled=False)
+            algorithm_selection_layers=sel_layers, regroup_enabled=False)
         return result
 
     def close(self):

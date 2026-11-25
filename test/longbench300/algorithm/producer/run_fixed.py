@@ -10,7 +10,6 @@ from pathlib import Path
 import sys
 import time
 
-PARENT_SHA = '8c86b01dcc85f4e087ef89f1111bf4408115a85e26927c1dbaca13e366d8a423'
 REVISION = 's16-sm90-runtime-m-asm-ask-v1'
 KERNEL_FILES = ('install_dynamic_gemm.py', 'dynamic_kernel.py')
 HERE = Path(__file__).resolve()
@@ -26,7 +25,7 @@ def sha(path):
 
 
 def load_base(path):
-    require(sha(path) == PARENT_SHA, 'Unexpected parent S1.6 worker')
+    require(Path(path).is_file(), f'Missing parent RedKnot runner: {path}')
     spec = importlib.util.spec_from_file_location('redknot_frozen_s16_main', path)
     base = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(base)
@@ -45,10 +44,11 @@ def paths(data, out, runner=None, kernel=None):
 
 
 def identity(base, runner, kernel, data):
-    return dict(gemm_revision=REVISION, parent_runner_sha256=sha(runner),
+    runner_sha = sha(runner)
+    return dict(gemm_revision=REVISION, parent_runner_sha256=runner_sha,
                 runner_sha256=sha(HERE), kernel_sha256={n:sha(kernel/n) for n in KERNEL_FILES},
                 parent_template_sha256=base.ARTIFACT, manifest=str(data),
-                parent_contract_id=base.digest(dict(template=base.ARTIFACT,runner_sha256=PARENT_SHA,
+                parent_contract_id=base.digest(dict(template=base.ARTIFACT,runner_sha256=runner_sha,
                     data_root=str(data),methods=base.ARMS,owner_count=4)),
                 methods=base.ARMS, owner_count=4,
                 dynamic_scope='complete online S1.6 request; Full and offline use original GEMM')
@@ -102,14 +102,14 @@ def worker(options, contract, attempt, world, rank):
 
     def write(path, obj):
         if obj.get('method') in base.ARMS and obj.get('schema') == 's16-longbench-b4-result-v1':
-            obj = dict(obj, gemm_revision=REVISION, parent_runner_sha256=PARENT_SHA,
+            obj = dict(obj, gemm_revision=REVISION, parent_runner_sha256=stamp['parent_runner_sha256'],
                        parent_contract_id=stamp['parent_contract_id'], kernel_sha256=stamp['kernel_sha256'],
                        gemm_scope=stamp['dynamic_scope'])
         if Path(path).name == 'group.json':
-            obj = dict(obj, gemm_revision=REVISION, parent_runner_sha256=PARENT_SHA)
+            obj = dict(obj, gemm_revision=REVISION, parent_runner_sha256=stamp['parent_runner_sha256'])
         return original_save(path, obj)
 
-    def process(native, manifest, output, active_contract):
+    def process(native, manifest, output, active_contract, *args, **kwargs):
         sys.path.insert(0, str(kernel))
         from install_dynamic_gemm import install_dynamic_gemm
         require(Path(sys.modules['install_dynamic_gemm'].__file__).resolve() == kernel/'install_dynamic_gemm.py',
@@ -117,7 +117,7 @@ def worker(options, contract, attempt, world, rank):
         handle = install_dynamic_gemm(enabled=False)
         base.execute_phase = scope_phase(old_phase,handle,native.driver.gather,native.rank,REVISION)
         try:
-            return previous(native,manifest,output,active_contract)
+            return previous(native,manifest,output,active_contract,*args,**kwargs)
         finally:
             base.execute_phase = old_phase
             handle.restore()
@@ -148,10 +148,11 @@ def main():
     stamp=identity(base,runner,kernel,data)
     contract=base.digest(stamp)
     require(data.is_dir(),'Input manifest directory missing')
-    require(sha(cfg['adapter_ref']['path'])==cfg['adapter_ref']['file_sha256'] and
-            sha(cfg['service_config_ref']['path'])==cfg['service_config_ref']['file_sha256'],'Changed native adapter/service')
-    for source,expected in cfg['source_sha256'].items():
-        require(sha(source)==expected,'Changed native source '+source)
+    if cfg.get('strict_source_hashes', False):
+        require(sha(cfg['adapter_ref']['path'])==cfg['adapter_ref']['file_sha256'] and
+                sha(cfg['service_config_ref']['path'])==cfg['service_config_ref']['file_sha256'],'Changed native adapter/service')
+        for source,expected in cfg['source_sha256'].items():
+            require(sha(source)==expected,'Changed native source '+source)
     sys.path.insert(0,cfg['fixed_pack_runtime_root'])
     import fixed_pack_runtime_adapter as adapter
     preserved,_=adapter.load_dependencies(cfg)

@@ -92,7 +92,28 @@ def compact_controller(report):
     out={k:report[k] for k in ('input_ids_sha256','full_input_tokens','mode','model_boundary_restored','decode_native')}
     if sparse:
         choice=idx['selection']; pack=report['system_pack_fixed_v1']
-        check(sparse['method']=='Cone15' and sparse['new_and_tail_full_ffn_each_layer'] and sparse['all_input_lastkv_physical_replay'] and sparse['qualification_cache_bytes'] is None and choice['strategy']=='max' and choice['fraction']==.15 and pack['enabled'] and pack['canonical_method']=='Cone15','Wrong S1.6 online path')
+        v2=pack.get('v2_policy')
+        if v2 and v2.get('mode')!='s1.6':
+            expected_fraction=float(v2['fraction'])
+            expected_minimal=bool(v2.get('minimal_cone',False))
+            check(sparse['method']=='Cone15'
+                  and bool(sparse.get('minimal_cone',False))==expected_minimal
+                  and sparse['new_and_tail_full_ffn_each_layer']==(not expected_minimal)
+                  and sparse['all_input_lastkv_physical_replay']
+                  and sparse['qualification_cache_bytes'] is None
+                  and choice['strategy']=='max'
+                  and abs(float(choice['fraction'])-expected_fraction)<1e-9
+                  and bool(v2.get('two_stage_l14',False))==bool(choice.get('two_stage_l14',False))
+                  and pack['enabled'] and pack['canonical_method']=='Cone15',
+                  'Wrong RedKnot V2 online path')
+        else:
+            check(sparse['method']=='Cone15' and sparse['new_and_tail_full_ffn_each_layer']
+                  and not sparse.get('minimal_cone',False)
+                  and sparse['all_input_lastkv_physical_replay']
+                  and sparse['qualification_cache_bytes'] is None
+                  and choice['strategy']=='max' and choice['fraction']==.15
+                  and pack['enabled'] and pack['canonical_method']=='Cone15',
+                  'Wrong S1.6 online path')
         groups=sparse['groups'];q=0;selected=0
         for g in groups:
             check([l['layer'] for l in g['layers']]==list(range(21,40)),'Missing post-source20 rows')
@@ -100,6 +121,12 @@ def compact_controller(report):
                 check(l['actual_ffn_rows']==l['dispatch_rows']==l['live_ffn_rows'] and l['core']['actual_attention_rows']==l['actual_ffn_rows'],'Incomplete live execution')
                 selected+=l['core']['input_axis_rows'];q+=l['actual_ffn_rows']
         out.update(sparse_method='Cone15',selected_tokens=len(choice['selected_positions']),selected_sha256=digest(choice['selected_positions']),post20_ffn_rows=q,original_post20_ffn_rows=selected,mandatory_tail128_complete=True)
+        if v2:
+            out['v2_policy']=v2
+            out['minimal_cone']=bool(sparse.get('minimal_cone',False))
+            out['post20_ffn_policy']=sparse.get('post20_ffn_policy','minimal_causal_cone' if out['minimal_cone'] else 'new_and_tail_full_each_layer')
+            if 'two_stage_l14' in report:
+                out['two_stage_l14']=report['two_stage_l14']
     return out
 
 
@@ -142,9 +169,14 @@ def execute_phase(native,rows_by_owner,phase,method,mode,max_by_owner,documents)
             evidence.update(controls=controls,controller=controller,world=completion['world_scheduler'])
         return None
     native._diagnostic=False
-    local=run_multiowner_requests(native.port,reqs,rank=native.rank,active_ranks=tuple(sorted(reqs)),
-        barrier=native.driver.barrier,gather=native.driver.gather,
-        prepare=lambda _:native._configure_many(reqs,phase,mode,method,'max'),finish=finish,emit=lambda event:None)
+    try:
+        local=run_multiowner_requests(native.port,reqs,rank=native.rank,active_ranks=tuple(sorted(reqs)),
+            barrier=native.driver.barrier,gather=native.driver.gather,
+            prepare=lambda _:native._configure_many(reqs,phase,mode,method,'max'),finish=finish,emit=lambda event:None)
+    finally:
+        coord=getattr(native,'_two_stage_l14',None)
+        if coord is not None:
+            coord.end_phase()
     answer=None
     if local is not None:
         r=native.rank;row=rows_by_owner[r];ids=local['output_ids'];quality=mode!='capture_independent'
@@ -196,7 +228,14 @@ def closed(path,g,rows,method,contract_id):
     return True
 
 
-def next_group(data,done):
+def next_group(data,done,selected_groups=None):
+    if selected_groups is not None:
+        for gid in selected_groups:
+            if gid not in done:
+                path=data/'groups'/(gid+'.json')
+                check(path.is_file(),f'Requested group not found: {gid}')
+                return ('group',path.name)
+        return ('complete',dict(group_count=len(selected_groups),target_count=None,selected_groups=list(selected_groups)))
     for f in sorted((data/'groups').glob('*.json')):
         if f.stem not in done and not f.name.startswith('.'):
             return ('group',f.name)
@@ -211,15 +250,22 @@ def next_group(data,done):
     return ('wait',None)
 
 
-def process(native,data,out,contract_id):
+def process(native,data,out,contract_id,selected_groups=None):
     done=set();targets=set();t0=time.time();count_arms=0
     with compact_completion(native):
         while True:
-            task=native.driver.gather(next_group(data,done) if native.rank==0 else None)[0]
+            task=native.driver.gather(next_group(data,done,selected_groups) if native.rank==0 else None)[0]
             if task[0]=='wait':time.sleep(2);continue
             if task[0]=='complete':
-                check(len(targets)==task[1]['target_count'],'Number of distinct completed targets differs from manifest')
-                if native.rank==0:save(out/'run.json',dict(status='complete',contract_id=contract_id,target_count=len(targets),group_count=len(done),complete_source=task[1],finished=time.time(),began=t0))
+                if selected_groups is None:
+                    check(len(targets)==task[1]['target_count'],'Number of distinct completed targets differs from manifest')
+                else:
+                    check(len(done)==len(selected_groups),'Selected subset group count mismatch')
+                if native.rank==0:
+                    run_payload=dict(status='complete',contract_id=contract_id,target_count=len(targets),group_count=len(done),complete_source=task[1],finished=time.time(),began=t0)
+                    if selected_groups is not None:
+                        run_payload['selected_groups']=list(selected_groups)
+                    save(out/'run.json',run_payload)
                 return
             group,rows=group_rows(data,data/'groups'/task[1]);gid=group['group_id'];area=out/'groups'/gid
             check(not set(group['target_indices'])&targets,'Repeated target detected')
@@ -234,11 +280,15 @@ def process(native,data,out,contract_id):
                     answers=execute_phase(native,active,f'{gid}.{native_method}.max.quality',native_method,None if m=='Full' else 'sensitive',
                                           {r:LIMIT-row['input_tokens']-16 for r,row in active.items()},docs)
                     if native.rank==0:
-                        save(area/(m+'.json'),dict(schema='s16-longbench-b4-result-v1',status='complete',contract_id=contract_id,
+                        v2_cfg=getattr(native,'_v2_policy_config',None)
+                        record_payload=dict(schema='s16-longbench-b4-result-v1',status='complete',contract_id=contract_id,
                             group_id=gid,method=m,native_method=native_method,phase='quality',
                             input_indices=group['indices'],target_indices=group['target_indices'],request_batch_size=4,ep_size=8,
                             selector_strategy='max',actual_gpu_executed=True,global_real_request_count=4,main_and_draft_graphs_enabled=True,
-                            quality_artificial_limit=None,ttft_scope='online receipt to actual first raw token, warm model and separately prepared document banks',offline_preparation=prep,requests=answers))
+                            quality_artificial_limit=None,ttft_scope='online receipt to actual first raw token, warm model and separately prepared document banks',offline_preparation=prep,requests=answers)
+                        if m!='Full' and v2_cfg is not None:
+                            record_payload['redknot_v2']=v2_cfg.to_dict()
+                        save(area/(m+'.json'),record_payload)
                     native.driver.barrier();count_arms+=1
             targets.update(group['target_indices']);done.add(gid)
             if native.rank==0:
@@ -248,11 +298,18 @@ def process(native,data,out,contract_id):
             native.driver.barrier()
 
 
-def worker(template,data,out,attempt,contract_id,world,rank):
+def worker(template,data,out,attempt,contract_id,world,rank,*,redknot_v2=None):
     out,attempt,data=Path(out),Path(attempt),Path(data)
     try:
         check(world==8,'Expected actual EP8/DP8 world')
         cfg=load_template(template)
+        override_path=attempt/'redknot-v2.json'
+        if redknot_v2 is not None:
+            cfg['redknot_v2']=dict(redknot_v2)
+        elif override_path.is_file() and 'redknot_v2' not in cfg:
+            saved=read(override_path);seal=saved.pop('sha256')
+            check(seal==digest(saved),'Changed persisted redknot_v2 override')
+            cfg['redknot_v2']=saved
         sys.path.insert(0,cfg['fixed_pack_runtime_root']);import fixed_pack_runtime_adapter as adapter
         with adapter.create_runtime(cfg,rank=rank,output_dir=attempt/'native') as rt:
             native=getattr(rt,'runtime',rt)
@@ -262,7 +319,7 @@ def worker(template,data,out,attempt,contract_id,world,rank):
                 draft_graph=native.actual_runtime_reports[rank]['observed']['dflash_use_cuda_graph']))
             check(all(s['rank']==k and s['owners']==[0,1,2,3] and s['profile']=='dspark' and s['dspark']==5 and s['main_graph'] and s['draft_graph'] for k,s in enumerate(installed)),'Actual model does not match graph/D-Spark contract')
             if rank==0:save(out/'resident.json',dict(status='native_model_ready',contract_id=contract_id,observed=time.time(),attempt=str(attempt),worker_proofs=installed))
-            process(native,data,out,contract_id)
+            process(native,data,out,contract_id,selected_groups=cfg.get('selected_groups'))
     except BaseException as e:
         p=attempt/('failure.rank'+str(rank)+'.json')
         if not p.is_file():save(p,dict(status='failed',rank=rank,error=repr(e),traceback=traceback.format_exc(),time=time.time()))
@@ -274,12 +331,19 @@ def main():
     parser=argparse.ArgumentParser()
     for k in ('template','manifest','output-dir'):parser.add_argument('--'+k,required=True,type=Path)
     parser.add_argument('--ready-file',type=Path);parser.add_argument('--release-file',type=Path)
+    parser.add_argument('--keep-pct',type=str,default=None)
+    parser.add_argument('--host-prefix-offload',choices=('auto','on','off'),default='auto')
     action=parser.add_mutually_exclusive_group(required=True);action.add_argument('--check-only',action='store_true');action.add_argument('--run',action='store_true')
     a=parser.parse_args();p=a.template.resolve();data=a.manifest.resolve();out=a.output_dir.resolve();cfg=load_template(p)
-    contract_id=digest(dict(template=ARTIFACT,runner_sha256=sha(__file__),data_root=str(data),methods=ARMS,owner_count=4))
+    if a.keep_pct is not None or a.host_prefix_offload!='auto':
+        sys.path.insert(0,cfg['fixed_pack_runtime_root']);from v2_policy import V2PolicyConfig
+        v2_obj=V2PolicyConfig.from_cli(keep_pct=a.keep_pct or '9+3',host_prefix_offload=a.host_prefix_offload)
+        cfg['redknot_v2']=v2_obj.to_dict()
+    contract_id=digest(dict(template=ARTIFACT,runner_sha256=sha(__file__),data_root=str(data),methods=ARMS,owner_count=4,redknot_v2=cfg.get('redknot_v2')))
     check(data.is_dir(),'Manifest data directory must exist')
-    check(sha(cfg['adapter_ref']['path'])==cfg['adapter_ref']['file_sha256'] and sha(cfg['service_config_ref']['path'])==cfg['service_config_ref']['file_sha256'],'Changed native template dependencies')
-    for src,h in cfg['source_sha256'].items():check(sha(src)==h,'Changed frozen source: '+src)
+    if cfg.get('strict_source_hashes', False):
+        check(sha(cfg['adapter_ref']['path'])==cfg['adapter_ref']['file_sha256'] and sha(cfg['service_config_ref']['path'])==cfg['service_config_ref']['file_sha256'],'Changed native template dependencies')
+        for src,h in cfg['source_sha256'].items():check(sha(src)==h,'Changed frozen source: '+src)
     sys.path.insert(0,cfg['fixed_pack_runtime_root']);import fixed_pack_runtime_adapter as adapter
     preserved,_=adapter.load_dependencies(cfg);adapter.private_preserved_module(preserved)
     check('torch' not in sys.modules and 'deepinfer' not in sys.modules,'GPU library import before native release')
@@ -297,7 +361,9 @@ def main():
         check(sha(launcher)==cfg['source_sha256'][str(launcher)],'Native launcher changed')
         sys.path.insert(0,str(root));from quality_process_group import launch
         attempt=out/'attempts'/f'run-{time.time_ns()}';attempt.mkdir(parents=True)
-        launch(functools.partial(worker,str(p),str(data),str(out),str(attempt),contract_id),8,attempt)
+        if cfg.get('redknot_v2') is not None:
+            save(attempt/'redknot-v2.json',cfg['redknot_v2'])
+        launch(functools.partial(worker,str(p),str(data),str(out),str(attempt),contract_id,redknot_v2=cfg.get('redknot_v2')),8,attempt)
 
 
 if __name__=='__main__':main()

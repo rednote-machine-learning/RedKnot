@@ -6,6 +6,7 @@ layer ordered. No tensors from another request/owner enter a pack lease.
 """
 from types import MethodType
 from fixed15_online import assemble_online, online_counters
+from halo_direct_copy import fill_direct_halos, plan_layer_halo_gather
 from kvpack.pack import KVPackSession, gather_plan_from_cache
 
 STAGES = ((3, 8), (9, 14), (15, 20), (21, 39))
@@ -36,6 +37,8 @@ class PackedAttention:
         self.original_memory = self.attention._memory
         self.original_begin_phase = self.attention.begin_phase
         self.enabled = False
+        self.direct_halo_copy = False
+        self.audit_halo = False
         self.budget_bytes = 512 * 1024**2
         self.checks = None
         self.session = self.lease = self.group = None
@@ -49,11 +52,24 @@ class PackedAttention:
         self._stage_gather_plan = None
         self._gather_stage = None
         self.gather_events = []
+        self._direct_bound = None
+        self._direct_plans = {}
+        self._direct_halos = {}
+        self._direct_stats = self._new_direct_stats()
         self._closed = False
         self.binding_generation = 0
         self.binding_events = []
         self.memory_hook = self.phase_hook = None
         self._attach(self.attention, reason='controller_install')
+
+    @staticmethod
+    def _new_direct_stats():
+        return dict(full_rows=0, materialized_rows=0, layers=0, audited_rows=0, slice_copies=0)
+
+    def _release_direct_halos(self):
+        self._direct_bound = None
+        self._direct_plans.clear()
+        self._direct_halos.clear()
 
     def _attach(self, attention, *, reason):
         require(not self._closed and self.group is None and self.lease is None
@@ -114,12 +130,15 @@ class PackedAttention:
             self._attach(self.controller.attention, reason='native_attention_replaced_before_phase')
         self._assert_binding()
 
-    def configure(self, *, enabled, budget_bytes=512*1024**2):
+    def configure(self, *, enabled, budget_bytes=512*1024**2, direct_halo_copy=False, audit_halo=False):
         require(type(enabled) is bool and type(budget_bytes) is int and budget_bytes > 0, 'Invalid KV pack configuration')
+        require(type(direct_halo_copy) is bool and type(audit_halo) is bool, 'Invalid direct halo copy flags')
         require(self.group is None and self.lease is None and getattr(self, 'fixed_group', None) is None,
                 'Cannot reconfigure an active pack group')
         self.ensure_attached()
         self.enabled, self.budget_bytes = enabled, budget_bytes
+        self.direct_halo_copy = bool(enabled and direct_halo_copy)
+        self.audit_halo = bool(enabled and direct_halo_copy and audit_halo)
         self.fuse_live_rows = enabled and getattr(self.controller, '_fixed_pack_method', None) in ('Fixed15Opt','Cone15')
         if hasattr(self.controller, '_fixed_pack_method'):
             from lastkv_packed_only import install_lastkv
@@ -131,6 +150,8 @@ class PackedAttention:
         if self.session is not None:
             self.session.close()
         self.session = None
+        self._release_direct_halos()
+        self._direct_stats = self._new_direct_stats()
         self.online_stats = online_counters()
         self.events, self.fallbacks = [], []
         self.gather_events = []
@@ -145,6 +166,8 @@ class PackedAttention:
             return
         self.group, self.stage = group, stage
         self._cached_geometry = None
+        if self.direct_halo_copy:
+            return
         if self.session is None:
             c = self.controller
             owner = '|'.join(map(str, (c.rid, c.input_sha, c.phase, self.generation)))
@@ -173,11 +196,133 @@ class PackedAttention:
         self.group = self.stage = None
         self._cached_geometry = None
 
+    def _ensure_direct_bound(self):
+        cache = self.attention.cache
+        c = self.controller
+        t = c.t
+        signature = tuple(cache.index20_offline_positions)
+        if self._direct_bound is not None and self._direct_bound['signature'] == signature:
+            return self._direct_bound
+        self._direct_plans.clear()
+        self._direct_halos.clear()
+
+        def to_gpu(seq, dtype=t.long):
+            with c.allow_sync():
+                return t.tensor(seq, device=cache.device, dtype=dtype)
+
+        pos = list(signature)
+        groups = []
+        for key, dest, src in cache.index20_halo_groups:
+            dest_list = list(dest)
+            src_list = list(src)
+            require(dest_list == list(range(dest_list[0], dest_list[-1] + 1)),
+                    'DirectCopy halo destination indices must be contiguous')
+            groups.append((key, int(dest_list[0]), int(dest_list[-1]) + 1, src_list, to_gpu(src_list)))
+        self._direct_bound = dict(signature=signature, pos=pos, absolute=to_gpu(pos), groups=groups)
+        return self._direct_bound
+
+    def _direct_copy_memory(self, mod, prepared, meta, ctx):
+        from cone15_plan import row_ids
+
+        a, c, layer = self.attention, self.controller, mod.layer_idx
+        cache, t = a.cache, c.t
+        require(self.group is not None and a.enabled,
+                'DirectCopy memory called outside an active fixed group')
+        require((ctx.start, ctx.end, tuple(ctx.positions_cpu)) ==
+                (self.group.start, self.group.end, tuple(self.group.positions_cpu)),
+                'Packed group geometry changed')
+        a._assert_selection_binding()
+        previous_positions, previous = a.previous.get(layer, ([], prepared[:0]))
+        mapping = a._mapping(prepared, meta, ctx, previous_positions)
+        event = mapping['event']
+        bound = self._ensure_direct_bound()
+        universe = bound['pos']
+        mask = None if layer <= 20 else c._cone_plan.layers[layer].offline
+
+        def to_gpu(seq, dtype=t.long):
+            with c.allow_sync():
+                return t.tensor(seq, device=cache.device, dtype=dtype)
+
+        if mask not in self._direct_plans:
+            wanted = None if mask is None else row_ids(mask, 0, cache.total)
+            keep, inv_list, doc_ops = plan_layer_halo_gather(universe, wanted, bound['groups'])
+            gpu_groups = []
+            for key, target_slice, op_mode, payload in doc_ops:
+                if op_mode == 'slice':
+                    gpu_groups.append((key, target_slice, payload))
+                elif op_mode == 'full_gpu':
+                    gpu_groups.append((key, target_slice, payload))
+                else:
+                    src_gpu, local_ids = payload
+                    gpu_groups.append((key, target_slice, src_gpu.index_select(0, to_gpu(local_ids))))
+            inv_gpu = to_gpu(inv_list)
+            keep_gpu = to_gpu(keep)
+            absolute = bound['absolute'].index_select(0, keep_gpu).to(meta.positions.dtype) if keep else bound['absolute'][:0].to(meta.positions.dtype)
+            self._direct_plans[mask] = (keep, keep_gpu, inv_gpu, gpu_groups, absolute)
+
+        keep, keep_gpu, inv_gpu, gpu_groups, absolute = self._direct_plans[mask]
+        if layer not in self._direct_halos:
+            vals = t.empty((len(keep), 512), device=cache.device, dtype=t.bfloat16)
+            for key, target_slice, idx in gpu_groups:
+                source = cache.entry(key, 'swa_full', layer)
+                if isinstance(idx, slice):
+                    vals[target_slice].copy_(source[idx])
+                    self._direct_stats['slice_copies'] += 1
+                else:
+                    vals[target_slice].copy_(source.index_select(0, idx))
+            self._direct_halos[layer] = cache.ops.prepare_swa(mod, vals, absolute) if keep else prepared[:0]
+            self._direct_stats['full_rows'] += len(universe)
+            self._direct_stats['materialized_rows'] += len(keep)
+            self._direct_stats['layers'] += 1
+            if self.audit_halo:
+                with c.allow_sync():
+                    pos_ref, raw_ref = cache.halo(layer)
+                    ref = cache.ops.prepare_swa(mod, raw_ref, to_gpu(pos_ref, meta.positions.dtype)).index_select(0, keep_gpu)
+                    require(t.equal(ref.contiguous().view(t.uint8), self._direct_halos[layer].contiguous().view(t.uint8)),
+                            f'Opt-2 DirectCopy SWA halo byte mismatch at layer {layer}')
+                    self._direct_stats['audited_rows'] += len(keep)
+
+        out = prepared.new_empty((len(event['memory_positions']), 1, 512))
+        fill_direct_halos(self._direct_halos[layer], inv_gpu, mapping, out, torch_module=t)
+        if self.audit_halo:
+            with c.allow_sync():
+                where = [j for j, typ in enumerate(event['source_kinds']) if typ == 'halo']
+                if where:
+                    src_rows = [event['source_rows'][j] for j in where]
+                    indices = inv_gpu[to_gpu(src_rows)]
+                    live = indices >= 0
+                    actual = out.index_select(0, to_gpu(where))
+                    if live.any():
+                        require(
+                            t.equal(
+                                actual[live].contiguous().view(t.uint8),
+                                self._direct_halos[layer].index_select(0, indices[live]).contiguous().view(t.uint8),
+                            ),
+                            f'Opt-2 DirectCopy live output byte mismatch at layer {layer}',
+                        )
+                    dead = ~live
+                    if dead.any():
+                        require(not bool((actual[dead] != 0).any().item()),
+                                f'Opt-2 DirectCopy non-zero dead halo row at layer {layer}')
+                    if layer >= 21:
+                        needed = set(c._cone_plan.group(layer, ctx.start, ctx.end).offline_kv)
+                        live_cpu = live.cpu().tolist()
+                        live_positions = {event['memory_positions'][where[k]] for k, ok in enumerate(live_cpu) if ok}
+                        require(needed <= live_positions,
+                                f'Opt-2 DirectCopy omitted reachable post-20 halo at layer {layer}')
+
+        retained = assemble_online(t, out, prepared, previous, mapping, self.online_stats)
+        a.previous[layer] = (list(mapping['kept_positions']), retained)
+        a._system_counts['optimized_memory_calls'] += 1
+        return out, mapping['positions'], mapping['indices'], event
+
     def memory(self, mod, prepared, meta, ctx):
         self._assert_binding()
         a, c, layer = self.attention, self.controller, mod.layer_idx
         if not self.enabled or layer == 39 or layer < 3:
             return self.original_memory(mod, prepared, meta, ctx)
+        if self.direct_halo_copy:
+            return self._direct_copy_memory(mod, prepared, meta, ctx)
         require(self.group is not None and self.session is not None and a.enabled,
                 'Packed memory called outside the configured progressive stage/group')
         require((ctx.start, ctx.end, tuple(ctx.positions_cpu)) ==
@@ -300,7 +445,7 @@ class PackedAttention:
         return result
 
     def report(self):
-        return dict(schema='s13-packed-attention-runtime-v1', enabled=self.enabled,
+        result = dict(schema='s13-packed-attention-runtime-v1', enabled=self.enabled,
             fixed15_online=dict(getattr(self, 'online_stats', online_counters())),
             attention_binding_generation=self.binding_generation,
             attention_binding_events=list(self.binding_events),
@@ -317,11 +462,16 @@ class PackedAttention:
             selected_online_fill_uses_original_device_indices=True,
             original_native_prepare_swa_and_layer39=True, cross_owner_tensor_sharing=False,
             pure_layer_dependency_order_preserved=True, active_lease=self.lease is not None)
+        if self.direct_halo_copy:
+            result['direct_halo_copy'] = True
+            result['direct_halo_stats'] = dict(self._direct_stats)
+        return result
 
     def close(self):
         if self._closed:
             return
         self._release()
+        self._release_direct_halos()
         if self.session is not None:
             self.session.close()
         self.group = self.stage = None

@@ -20,6 +20,33 @@ The DeepInfer-based development track of **RedKnot**, an open-source project for
 
 RedKnot belongs to its contributors. We welcome issues, bug reports, suggestions, and pull requests across all framework branches.
 
+## RedKnot V2 quickstart
+
+RedKnot V2 upgrades the training-free runtime in [test/longbench300/algorithm/](test/longbench300/algorithm/) (keeping upstream `deepinfer/` untouched) with a unified `--keep-pct Stage1+Stage2` parameter (`Stage2 = 0` runs single-stage with zero extra PrefixBank VRAM; `Stage2 > 0` runs L2→L14 two-stage on `>=48K` prompts and 20% single-stage on `<48K`):
+
+| `--keep-pct` | Mode | `<48K` / `>=48K` policy | Extra PrefixBank VRAM | 8×H200 300Q F1 (Full `62.63`) | 8×H200 500Q F1 (Full `51.52`) | 8×H200 900Q F1 | Mean TTFT (500Q, Full `35.08s`) |
+| --- | --- | --- | --- | ---: | ---: | ---: | ---: |
+| **`9+3`** (default) | Two-stage | `20%` / L2 `9%` + L14 `3%` (auto CPU offload `>=192K`) | 64K `+3.2G` · 128K `+6.4G` · 256K `+7.2G` GPU + `5.3G` Host | `62.81` (`+0.18`) | **`51.85`** (`+0.33`) | **`53.63`** | **`14.46s`** (`2.43×`) |
+| **`20+0`** | Single-stage | `20%` everywhere (`NoSpan <48K`, `Span >=48K`) | **`0.00 GiB`** (no host offload) | `62.73` (`+0.10`) | **`51.78`** (`+0.26`) | `53.30` | `17.36s` (`2.02×`*) |
+| **`12+3`** (optional) | Two-stage | `20%` / L2 `12%` + L14 `3%` (no code edits needed) | 64K `+4.3G` · 128K `+8.5G` · 256K `+9.7G` GPU + `7.1G` Host | **`63.70`** (`+1.07`) | **`52.12`** (`+0.60`) | `53.46` | `15.77s` (`2.23×`) |
+
+*\*Same-host Opt-1/2/3 measurements show `20+0` is also faster than legacy S1.6 across 16K–128K (`1.57× / 1.35× / 1.17× / 1.02×`).*
+
+```bash
+# 1. Offline CPU unit tests & dataset integrity check (no GPU or checkpoint needed)
+python3 -m unittest tests/test_redknot_v2_policy.py -v
+python3 test/benchmark_rag_redknot.py --check
+
+# 2. Quick 8xH200 smoke test on the first 3 sequential groups (lb-0000..lb-0002: 32K/64K/128K, 12Q)
+python3.12 examples/redknot_v2_demo.py --model-path /models/DeepSeek-V4.1-Flash-1017 --keep-pct 9+3
+python3.12 examples/redknot_v2_demo.py --model-path /models/DeepSeek-V4.1-Flash-1017 --keep-pct 20+0
+python3.12 examples/redknot_v2_demo.py --model-path /models/DeepSeek-V4.1-Flash-1017 --keep-pct 20+0,9+3
+
+# 3. Full 300-question or 2,100-question paired benchmarks (pass any Stage1+Stage2 via --keep-pct)
+python3.12 test/benchmark_rag_redknot.py --model-path /models/DeepSeek-V4.1-Flash-1017 --keep-pct 9+3
+python3.12 test/benchmark_rag_redknot_21.py --model-path /models/DeepSeek-V4.1-Flash-1017 --keep-pct 20+0
+```
+
 ## LongBench RAG benchmark
 
 Run Full and RedKnot on all 2,100 questions (21 datasets × 100 questions each). From the repository root on a Linux host with eight H200 (SM90) GPUs and the DeepInfer dependencies installed, run the following command with your local checkpoint path.

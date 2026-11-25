@@ -39,7 +39,17 @@ def main():
                         help="local DeepSeek checkpoint (also REDKNOT_MODEL_PATH)")
     parser.add_argument("--cache", type=Path, default=DEFAULT_OUTPUT / "cache", help="verified local dataset cache")
     parser.add_argument("--output", type=Path, help="new directory for one run (default: a unique benchmark-output subdirectory)")
+    parser.add_argument("--keep-pct", type=str, default="9+3",
+                        help="token keep percentage as Stage1+Stage2 (default: 9+3 two-stage; "
+                             "20+0 for zero-extra-cache single-stage; custom e.g. 12+3)")
+    parser.add_argument("--host-prefix-offload", choices=("auto", "on", "off"), default="auto",
+                        help="pinned CPU offload for L3..L8 residuals in two-stage mode (auto: >=192K)")
     args = parser.parse_args()
+    from longbench300.local_backend import load_v2_policy_config_class
+    v2_config = load_v2_policy_config_class().from_cli(
+        keep_pct=args.keep_pct,
+        host_prefix_offload=args.host_prefix_offload,
+    )
     if not args.check and not args.reference and args.model_path is None:
         parser.error("GPU replay requires local DeepSeek-V4.1-Flash-1017 weights. Set --model-path or REDKNOT_MODEL_PATH. "
                      "For offline historical output comparisons, use --reference.")
@@ -63,7 +73,7 @@ def main():
         summary = render_reference(data, ASSETS / "historical_reference.zip", report)
     else:
         from longbench300.local_backend import run_local
-        result = run_local(args.runtime_root, args.model_path, data, run / "results", args.check_runtime)
+        result = run_local(args.runtime_root, args.model_path, data, run / "results", args.check_runtime, v2_config=v2_config)
         if args.check_runtime:
             print(json.dumps(result, indent=2, ensure_ascii=False))
             return

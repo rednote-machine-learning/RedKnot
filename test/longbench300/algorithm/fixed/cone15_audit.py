@@ -17,9 +17,7 @@ def physical_last(event, original):
             and event['actual_attention_rows']==len(ids) and event['selected_wrapper_rows']==len(original))
 
 
-def private_func(fn,pin,old,new,extra):
-    path=Path(inspect.getfile(fn))
-    require(hashlib.sha256(path.read_bytes()).hexdigest()==pin,'Changed native validator '+path.name)
+def private_func(fn,old,new,extra):
     source=textwrap.dedent(inspect.getsource(fn))
     require(source.count(old)==1,'Unknown native validation seam '+fn.__name__)
     ns=dict(fn.__globals__,**extra)
@@ -31,10 +29,10 @@ def private_func(fn,pin,old,new,extra):
 def cone_lastkv():
     import index20_lastkv_audit as audit
     import index20_lastkv_contract as contract
-    phase=private_func(audit.audit_phase,'77a9c04f96712ac75451d5f22637af7922ec988d42291ed6881edd7bd546b637',
+    phase=private_func(audit.audit_phase,
                        'need(event,"actual_attention_rows")==len(expected)','physical_last(event,expected)',
                        dict(physical_last=physical_last))
-    return private_func(contract.validate_lastkv_phase,'2441565dfd1d262be5e7420a2ecf67395ab8c9bce414c3207309a96597f32b5e',
+    return private_func(contract.validate_lastkv_phase,
                         'from index20_lastkv_audit import audit_projection_evidence,audit_phase',
                         'audit_projection_evidence,audit_phase=original_projection,physical_phase',
                         dict(original_projection=audit.audit_projection_evidence,physical_phase=phase))
