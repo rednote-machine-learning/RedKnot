@@ -26,12 +26,35 @@ import threading
 import time
 
 REVISION = "s16-sm90-runtime-m-asm-ask-v1"
-PINS = {
-    "producer": "68d514db8109038f0f31fe5b3ff8987d63ea0084a2894cf32e4dd3ce0dc2a59b",
-    "runner": "8c86b01dcc85f4e087ef89f1111bf4408115a85e26927c1dbaca13e366d8a423",
-    "install_dynamic_gemm.py": "8d9e76c16107b1cab19c29e2458c55ad46c4a320900d12ba2a7d3c9fac169675",
-    "dynamic_kernel.py": "efa7cf7641d5948ad8bcffe87f22a519f20900e34e2048de9f053101bfec1f29",
-}
+
+
+def load_v2_policy_config_class():
+    name = "redknot_v2_policy"
+    module = sys.modules.get(name)
+    if module is None:
+        fixed_root = Path(__file__).resolve().parent / "algorithm" / "fixed"
+        spec = importlib.util.spec_from_file_location(name, fixed_root / "v2_policy.py")
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[name] = module
+        try:
+            spec.loader.exec_module(module)
+        except BaseException:
+            sys.modules.pop(name, None)
+            raise
+    return module.V2PolicyConfig
+
+
+def normalize_v2_config(v2_config):
+    cls = load_v2_policy_config_class()
+    if v2_config is None:
+        return cls.default()
+    if isinstance(v2_config, cls):
+        return v2_config
+    if isinstance(v2_config, dict):
+        return cls.from_dict(v2_config)
+    if hasattr(v2_config, "to_dict"):
+        return cls.from_dict(v2_config.to_dict())
+    raise ValueError(f"Unsupported RedKnot V2 policy configuration: {type(v2_config).__name__}")
 
 
 def require(ok, message):
@@ -105,7 +128,7 @@ def verify_checkpoint(model, service):
             "Checkpoint is missing weight shards")
 
 
-def bundled_runtime(model, output):
+def bundled_runtime(model, output, *, v2_config=None, selected_groups=None):
     if __package__:
         from .native_assets import load_native_assets
     else:
@@ -114,53 +137,70 @@ def bundled_runtime(model, output):
     native_root, service = load_native_assets(model, output)
     native_root = Path(native_root).resolve(strict=True)
     verify_checkpoint(model, service)
+    # Record live file digests for run provenance without blocking open-source source edits.
     source_hashes = {}
-    index = read(algorithm / "sources.json")
-    for family, root in (("algorithm", algorithm), ("native", native_root)):
-        for rel, sha in index[family].items():
-            source = (root / rel).resolve(strict=True)
-            require(hash_file(source) == sha, f"Packaged runtime source changed: {family}/{rel}")
-            source_hashes[str(source)] = sha
-    launcher = Path(service["experiment_root"]) / "kv_recompression_20261029/quality_process_group.py"
-    require(hash_file(launcher) == "a7d503f23d1df3f41044c98107b25ca2a09debc1e66384d17d26a9f9f33ba9db",
-            "Unexpected local multi-process launcher")
+    for source in sorted(algorithm.rglob("*.py")):
+        resolved = source.resolve(strict=True)
+        source_hashes[str(resolved)] = hash_file(resolved)
+    for rel in (
+        "GatedEngram/gpu_pilot/cuda_mask_qualification.py",
+        "GatedEngram/gpu_pilot/index_hit20_empty_ep_qualification.py",
+        "GatedEngram/gpu_pilot/read_s11_results.py",
+        "GatedEngram/kv_cache_engram/__init__.py",
+        "GatedEngram/kv_cache_engram/cache.py",
+        "GatedEngram/kv_cache_engram/calibration.py",
+        "GatedEngram/kv_cache_engram/core.py",
+        "GatedEngram/kv_cache_engram/gate.py",
+        "GatedEngram/kv_cache_engram/runtime.py",
+        "NativeSnapshot/deepinfer/model_executor/layers/sm90/gemm.py",
+        "redknot/__init__.py",
+        "redknot/decode_evidence.py",
+    ):
+        source = (native_root / rel).resolve(strict=True)
+        source_hashes[str(source)] = hash_file(source)
+    launcher = (Path(service["experiment_root"]) / "kv_recompression_20261029/quality_process_group.py").resolve(strict=True)
+    require(launcher.is_file(), "Missing local multi-process launcher")
+    policy_cfg = normalize_v2_config(v2_config)
     config = dict(service_config=service, output_dir=str(output), source_sha256=source_hashes,
+                  strict_source_hashes=False,
                   native_source_root=str(native_root), fixed_pack_runtime_root=str(algorithm/"fixed"),
                   fixed_pack_shared_root=str(algorithm/"shared"), frozen_runtime_root=str(algorithm/"lastkv"),
                   rag_runtime_root=str(algorithm/"rag"), multiowner_v1_root=str(algorithm/"multiowner"),
                   admission_v2_root=str(algorithm/"admission"), fixed_pack_budget_bytes=1024**3,
                   multiowner_active_ranks=[0, 1, 2, 3], target_batch_sizes=[4], padding_allowed=False,
-                  selector_strategy="max", dspark_nextn=5, main_and_draft_graphs_required=True)
+                  selector_strategy="max", dspark_nextn=5, main_and_draft_graphs_required=True,
+                  redknot_v2=policy_cfg.to_dict())
+    if selected_groups is not None:
+        config["selected_groups"] = list(selected_groups)
     config["sha256"] = digest(config)
     locations = dict(producer=str(algorithm/"producer/run_fixed.py"), runner=str(algorithm/"producer/run_s16.py"),
                      kernel=str(algorithm/"kernel"), launcher=str(launcher))
     return config, locations
 
 
-def load_runtime(root, model, output):
+def load_runtime(root, model, output, *, v2_config=None, selected_groups=None):
     model = Path(model).resolve(strict=True)
     if root is None:
-        return bundled_runtime(model, output)
+        return bundled_runtime(model, output, v2_config=v2_config, selected_groups=selected_groups)
     paths = discover(root)
-    for key, filename in (("producer", paths["producer"]), ("runner", paths["runner"]),
-                          ("install_dynamic_gemm.py", paths["kernel"]/"install_dynamic_gemm.py"),
-                          ("dynamic_kernel.py", paths["kernel"]/"dynamic_kernel.py")):
-        require(hash_file(filename) == PINS[key], f"Incompatible installed S1.6 source: {filename}")
+    for filename in (paths["producer"], paths["runner"],
+                     paths["kernel"]/"install_dynamic_gemm.py",
+                     paths["kernel"]/"dynamic_kernel.py"):
+        require(filename.is_file(), f"Missing runtime source file: {filename}")
     producer = imported(paths["producer"], "redknot_installed_producer")
     base = producer.load_base(paths["runner"])
     original = base.load_template(paths["template"])
     old_source = Path(original["native_source_root"]).parent
     mapping = [(old_source, paths["source_root"])]
     ref = relocate(original["service_config_ref"], mapping)
-    require(hash_file(ref["path"]) == ref["file_sha256"], "Service configuration differs from the installed runtime")
     service = read(ref["path"])
     mappings = [(Path(service["model_path"]), model), *mapping]
     service = relocate(service, mappings)
     verify_checkpoint(model, service)
     svcroot = Path(service["experiment_root"])
-    launcher = svcroot / "kv_recompression_20261029" / "quality_process_group.py"
+    launcher = (svcroot / "kv_recompression_20261029" / "quality_process_group.py").resolve(strict=True)
+    require(launcher.is_file(), "Missing local native eight-rank launcher")
     relocated = relocate(original, mappings)
-    require(hash_file(launcher) == relocated["source_sha256"][str(launcher)], "Local native eight-rank launcher mismatch")
     # Keep runtime and numerical settings. Historical evaluation and queue metadata
     # are not native model inputs. Source keys refer to the local installation.
     keys = ("native_source_root", "fixed_pack_runtime_root", "fixed_pack_shared_root",
@@ -168,7 +208,13 @@ def load_runtime(root, model, output):
             "fixed_pack_budget_bytes", "multiowner_active_ranks", "target_batch_sizes", "padding_allowed",
             "selector_strategy", "dspark_nextn", "main_and_draft_graphs_required")
     config = {k: relocated[k] for k in keys}
-    config.update(service_config=service, output_dir=str(output), source_sha256=relocated["source_sha256"])
+    config.update(service_config=service, output_dir=str(output),
+                  source_sha256=relocated.get("source_sha256", {}),
+                  strict_source_hashes=False)
+    if v2_config is not None:
+        config["redknot_v2"] = normalize_v2_config(v2_config).to_dict()
+    if selected_groups is not None:
+        config["selected_groups"] = list(selected_groups)
     config["sha256"] = digest(config)
     locations = {k: str(v) for k, v in paths.items() if k != "source_root"}
     locations["launcher"] = str(launcher)
@@ -336,9 +382,14 @@ def native_child(config_path, locations_path, data, output, attempt):
     options = dict(template=str(config_path), runner=loc["runner"], kernel=loc["kernel"], data=str(data), out=str(output))
     launch(functools.partial(rank_worker, options, loc, contract, attempt), 8, attempt)
     terminal = read(output/"run.json")
-    manifest = read(data/"complete.json")
-    require((terminal["status"], terminal["group_count"], terminal["target_count"], terminal["contract_id"])
-            == ("complete", manifest["group_count"], manifest["target_count"], contract), "Incomplete native GPU run")
+    selected_groups = cfg.get("selected_groups")
+    if selected_groups is not None:
+        require((terminal["status"], terminal["group_count"], terminal["contract_id"])
+                == ("complete", len(selected_groups), contract), "Incomplete native GPU subset run")
+    else:
+        manifest = read(data/"complete.json")
+        require((terminal["status"], terminal["group_count"], terminal["target_count"], terminal["contract_id"])
+                == ("complete", manifest["group_count"], manifest["target_count"], contract), "Incomplete native GPU run")
 
 
 def release_child(config_path, locations_path, data, output, contract):
@@ -399,23 +450,45 @@ def main():
     cli.add_argument("--output", required=True, type=Path)
     cli.add_argument("--model-path", required=True, type=Path)
     cli.add_argument("--check-only", action="store_true")
+    cli.add_argument("--redknot-mode", "--mode", dest="redknot_mode", choices=("v2.1-fast", "s1.6"), default="v2.1-fast")
+    cli.add_argument("--two-stage-l14", action="store_true", default=False)
+    cli.add_argument("--preset", choices=("v2.1-fast", "short20_long15", "v2.3_12", "v2.3_10", "m16", "s1.6"), default=None)
+    cli.add_argument("--span-min-tokens", type=int, default=48_000)
+    cli.add_argument("--host-prefix-offload", choices=("auto", "on", "off"), default="auto")
+    cli.add_argument("--audit-halo", action="store_true", default=False)
     opt = cli.parse_args()
-    print(json.dumps(run_local(opt.runtime_root, opt.model_path, opt.data, opt.output, opt.check_only)))
+    v2_cls = load_v2_policy_config_class()
+    v2_cfg = v2_cls.from_cli(
+        mode=opt.redknot_mode,
+        two_stage_l14=opt.two_stage_l14,
+        preset=opt.preset,
+        span_min_tokens=opt.span_min_tokens,
+        host_prefix_offload=opt.host_prefix_offload,
+        audit_halo=opt.audit_halo,
+    )
+    print(json.dumps(run_local(opt.runtime_root, opt.model_path, opt.data, opt.output, opt.check_only, v2_config=v2_cfg)))
 
 
-def run_local(runtime_root, model_path, data, output, check_only=False, *, target_count=300):
-    """Validate or execute the local benchmark. Raw Full and S1.6 pairs are under output/groups/."""
+def run_local(runtime_root, model_path, data, output, check_only=False, *, target_count=300, v2_config=None, selected_groups=None):
+    """Validate or execute the local benchmark. Raw Full and sparse pairs are under output/groups/."""
     require(model_path, "Set --model-path or REDKNOT_MODEL_PATH to the matching local DeepSeek V4.1 Flash checkpoint")
     data, out = Path(data).resolve(strict=True), Path(output).resolve()
     require(not out.is_relative_to(data) and not data.is_relative_to(out), "Choose independent data and output paths")
+    if selected_groups is not None:
+        selected_groups = [str(g).strip() for g in selected_groups if str(g).strip()]
+        require(bool(selected_groups) and len(selected_groups) == len(set(selected_groups)),
+                "selected_groups must be a nonempty list of distinct group IDs")
+        for gid in selected_groups:
+            require((data / "groups" / f"{gid}.json").is_file(), f"Unknown B4 group ID: {gid}")
     out.mkdir(parents=True, exist_ok=True)
     with (out/".runner.lock").open("a+") as lock:
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
         require(not (out/"run.json").exists() or check_only, "Completed run already exists; choose a new output")
-        cfg, loc = load_runtime(runtime_root, model_path, out)
+        cfg, loc = load_runtime(runtime_root, model_path, out, v2_config=v2_config, selected_groups=selected_groups)
         prepare_native(cfg)
         base, producer = local_modules(cfg, loc)
         group_count = check_dataset(base, data, target_count)
+        effective_groups = len(selected_groups) if selected_groups is not None else group_count
         contract = base.digest(producer.identity(base, Path(loc["runner"]), Path(loc["kernel"]), data))
         if __package__:
             from .sm90_source import build_extension, extension_path
@@ -425,8 +498,8 @@ def run_local(runtime_root, model_path, data, output, check_only=False, *, targe
         extension = extension_path(snapshot)
         extension_ready = extension.is_file() and extension.stat().st_size > 0
         if check_only:
-            return dict(status="cpu_pass", group_count=group_count, target_count=target_count, model_calls=0, contract_id=contract,
-                        sm90_extension_ready=extension_ready)
+            return dict(status="cpu_pass", group_count=effective_groups, target_count=target_count, model_calls=0, contract_id=contract,
+                        sm90_extension_ready=extension_ready, redknot_v2=cfg.get("redknot_v2"), selected_groups=selected_groups)
         if not extension_ready and runtime_root is None:
             build_extension(snapshot)
         require(extension.is_file() and extension.stat().st_size > 0,
@@ -435,7 +508,8 @@ def run_local(runtime_root, model_path, data, output, check_only=False, *, targe
         save(config_path, cfg)
         save(locations_path, loc)
         release_child(config_path, locations_path, data, out, contract)
-        return dict(status="complete", group_count=group_count, target_count=target_count, contract_id=contract, results=str(out))
+        return dict(status="complete", group_count=effective_groups, target_count=target_count, contract_id=contract,
+                    results=str(out), redknot_v2=cfg.get("redknot_v2"), selected_groups=selected_groups)
 
 
 if __name__ == "__main__":

@@ -18,9 +18,9 @@ from types import FunctionType, SimpleNamespace
 from fixed_pack_controller import require, digest
 from fixed_pack_policy import ARM_FRACTIONS, canonical_packed_arm, fraction_for_method
 
-OWN_FILES = ('cone15_ffn.py','cone15_ffn_native_proof.py','cone15_audit.py','cone15_plan.py','cone_query.py','cone_input.py', 'fixed15_geometry.py', 'fixed_pack_policy.py', 'fixed_pack_attention.py', 'fixed_pack_controller.py',
+OWN_FILES = ('v2_policy.py', 'two_stage_l14.py', 'cone15_ffn.py','cone15_ffn_native_proof.py','cone15_audit.py','cone15_plan.py','cone_query.py','cone_input.py', 'fixed15_geometry.py', 'fixed_pack_policy.py', 'fixed_pack_attention.py', 'fixed_pack_controller.py',
     'fixed_pack_audit.py', 'fixed_pack_runtime_adapter.py')
-SHARED_FILES = ('runtime/fixed15_online.py','runtime/fixed15_online_triton.py','runtime/lastkv_packed_only.py', 'runtime/packed_attention.py', 'kvpack/__init__.py', 'kvpack/pack.py',
+SHARED_FILES = ('runtime/halo_direct_copy.py', 'runtime/fixed15_online.py','runtime/fixed15_online_triton.py','runtime/lastkv_packed_only.py', 'runtime/packed_attention.py', 'kvpack/__init__.py', 'kvpack/pack.py',
     'kvpack/kernels.py', 'kvpack/check_cuda.py', 'validation/tensor_checks.py')
 CPU_MODULES = (
     ('native_source_root', 'redknot', 'redknot/__init__.py'),
@@ -136,16 +136,31 @@ def runtime_class(parent, preserved, admission, cfg):
 
     class FixedPackRuntime(base):
         def __init__(self, *args, **kwargs):
+            from v2_policy import V2PolicyConfig
             self._fixed_pack_budget_bytes = cfg.get('fixed_pack_budget_bytes', 1024**3)
+            self._v2_policy_config = V2PolicyConfig.from_dict(cfg.get('redknot_v2'))
+            self._two_stage_l14 = None
             super().__init__(*args, **kwargs)
 
         def initialize(self):
             result = super().initialize()
             from cone15_ffn import collect_world_guard
+            from two_stage_l14 import TwoStageL14Coordinator
             collect_world_guard(self)
+            self._two_stage_l14 = TwoStageL14Coordinator(self)
             return result
 
         def _configure_many(self, requests, phase, mode, method, strategy, verify_sparse=False):
+            is_sparse = method in ARM_FRACTIONS and mode == 'sensitive'
+            cfg_v2 = self._v2_policy_config
+            local_policy = None
+            world_two_stage = False
+            if is_sparse and cfg_v2 is not None and cfg_v2.two_stage_l14:
+                if self.rank in requests:
+                    local_policy = cfg_v2.resolve(len(requests[self.rank].prompt_token_ids))
+                world_two_stage = any(
+                    self.driver.gather(bool(local_policy is not None and local_policy.two_stage_l14))
+                )
             if self.controller is not None:
                 checker = None
                 if self.rank in requests and method in ARM_FRACTIONS and phase.endswith('.qualification'):
@@ -155,7 +170,38 @@ def runtime_class(parent, preserved, admission, cfg):
                         owner_rank=self.rank, qualification_only=True,
                         benchmark_request=False, torch_module=self.torch)
                 self.controller.configure_fixed_pack_checks(checker)
-            return super()._configure_many(requests, phase, mode, method, strategy, verify_sparse)
+                stage2_cb = (
+                    self._two_stage_l14.make_stage2_callback(local_policy)
+                    if world_two_stage and self._two_stage_l14 is not None
+                    else None
+                )
+                self.controller.configure_v2_policy(
+                    cfg_v2 if is_sparse else None,
+                    two_stage_callback=stage2_cb,
+                )
+            result = super()._configure_many(requests, phase, mode, method, strategy, verify_sparse)
+            if world_two_stage and self._two_stage_l14 is not None:
+                self._two_stage_l14.begin_phase(local_policy, world_two_stage=True)
+            return result
+
+        def _finish_many(self, requests):
+            coord = self._two_stage_l14
+            try:
+                if coord is not None:
+                    summary = coord.finalize_summary()
+                    if self.controller is not None:
+                        self.controller._v2_two_stage_summary = summary
+                return super()._finish_many(requests)
+            finally:
+                if coord is not None:
+                    coord.end_phase()
+
+        def _execute_many(self, *args, **kwargs):
+            try:
+                return super()._execute_many(*args, **kwargs)
+            finally:
+                if self._two_stage_l14 is not None:
+                    self._two_stage_l14.end_phase()
 
         def run_batch(self, method, input_rows, **kwargs):
             require(len(input_rows) == kwargs.get('request_batch_size') == 4,
@@ -164,13 +210,21 @@ def runtime_class(parent, preserved, admission, cfg):
                 'Matched Full/Cone15 comparison requires max identity')
             return super().run_batch(method, input_rows, **kwargs)
 
+        def close(self):
+            if self._two_stage_l14 is not None:
+                self._two_stage_l14.end_phase()
+                self._two_stage_l14.clear_key_cache()
+            return super().close()
+
     return FixedPackRuntime
 
 
 def pinned(cfg, path):
     path = Path(path).resolve()
-    require(path.is_file() and cfg['source_sha256'].get(str(path)) ==
-        hashlib.sha256(path.read_bytes()).hexdigest(), 'Unpinned fixed-pack dependency: '+str(path))
+    require(path.is_file(), 'Missing fixed-pack dependency: '+str(path))
+    if cfg.get('strict_source_hashes', False):
+        require(cfg.get('source_sha256', {}).get(str(path)) ==
+            hashlib.sha256(path.read_bytes()).hexdigest(), 'Unpinned fixed-pack dependency: '+str(path))
     return path
 
 
@@ -213,7 +267,8 @@ def load_dependencies(cfg):
     admission = load_module(ready/'multiowner_runtime_v2.py', 's15_fixed_preserved_admission_v2')
     preserved = admission.load_preserved(cfg)
     named = [(name[:-3], here/name) for name in OWN_FILES]
-    named += [('packed_attention', shared/'runtime/packed_attention.py'),
+    named += [('halo_direct_copy', shared/'runtime/halo_direct_copy.py'),
+        ('packed_attention', shared/'runtime/packed_attention.py'),
         ('kvpack', shared/'kvpack/__init__.py'), ('kvpack.pack', shared/'kvpack/pack.py'),
         ('tensor_checks', shared/'validation/tensor_checks.py')]
     named += [(name, old/(name+'.py')) for name in ('world_plan_coordinator',

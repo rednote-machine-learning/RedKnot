@@ -202,7 +202,15 @@ def cone15_controller_class(base):
                 sel=self._index20_selection
                 chunks=[(a,min(n,a+8192)) for a in range(0,n,8192)]
                 ranges=[(units[0][0],units[-1][1]) for units in partition_native_frames(chunks,sel['selected_positions'])]
-                self._cone_plan=Cone15Plan(n,sel['selected_positions'],sel['mandatory_positions'],last_frame_start=final,group_ranges=ranges)
+                policy=getattr(self,'_v2_policy',None)
+                use_minimal=bool(policy is not None and policy.minimal_cone)
+                if use_minimal:
+                    require(set(sel['mandatory_positions'])<=set(sel['selected_positions']),
+                            'Mandatory Layer-2 rows missing from selected positions')
+                    cone_mandatory=()
+                else:
+                    cone_mandatory=sel['mandatory_positions']
+                self._cone_plan=Cone15Plan(n,sel['selected_positions'],cone_mandatory,last_frame_start=final,group_ranges=ranges)
             plan=self._cone_plan;rows=tuple(group.positions_cpu);a,b=group.start,group.end
             require(plan.selection(a,b)==rows,'Frozen group was not bound to real selected rows')
             qualifies=self.phase.endswith('.qualification');reference=self._fixed_pack_method==REFERENCE
@@ -306,7 +314,9 @@ def cone15_controller_class(base):
                     all_input_kv_bytes_equal_to_fixed15_reference_claim=False,
                     decode_observable_swa_rows_per_layer=min(len(self.ids),128))
                 report['index20_lastkv']=seal(info)
-            report['cone15_ffn']=dict(method=mode,worker_guards=self._cone_world,groups=self._cone_groups,
+            policy=getattr(self,'_v2_policy',None)
+            use_minimal=bool(policy is not None and policy.minimal_cone)
+            report['cone15_ffn']=dict(method=mode,minimal_cone=use_minimal,worker_guards=self._cone_world,groups=self._cone_groups,
                 qualification_cache_bytes=self._cone_qualified_cache,extra_native_collectives=0,
                 expert_statistics='physical_dispatched_rows',query_axes='absolute selected position order',
                 new_and_tail_full_ffn_each_layer=True,all_input_lastkv_physical_replay=True,
