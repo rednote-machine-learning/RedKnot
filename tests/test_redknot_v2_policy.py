@@ -578,6 +578,12 @@ class TestRepositoryContractsAndCLI(unittest.TestCase):
             self.assertIn("--keep-pct", help_proc.stdout)
             bad_proc = subprocess.run([sys.executable, str(REPO_ROOT / script), "--keep-pct", "0+3"], capture_output=True, text=True)
             self.assertNotEqual(bad_proc.returncode, 0)
+        dup_proc = subprocess.run(
+            [sys.executable, str(REPO_ROOT / "examples/redknot_v2_demo.py"), "--keep-pct", "20,20+0"],
+            capture_output=True, text=True,
+        )
+        self.assertNotEqual(dup_proc.returncode, 0)
+        self.assertIn("Duplicate --keep-pct", dup_proc.stderr)
 
     @unittest.skipIf(sys.version_info < (3, 11), "local_backend.hash_file uses hashlib.file_digest (Python 3.11+)")
     def test_bundled_runtime_prepare_native_preflight(self) -> None:

@@ -182,6 +182,11 @@ def main() -> None:
     if not raw_specs:
         parser.error("--keep-pct cannot be empty")
     configs = [v2_cls.from_cli(keep_pct=s, host_prefix_offload=args.host_prefix_offload) for s in raw_specs]
+    seen_specs: set[str] = set()
+    for cfg in configs:
+        if cfg.keep_pct in seen_specs:
+            parser.error(f"Duplicate --keep-pct value after normalization: {cfg.keep_pct!r}")
+        seen_specs.add(cfg.keep_pct)
 
     if args.model_path is None:
         parser.error("Set --model-path /path/to/DeepSeek-V4.1-Flash-1017 (or REDKNOT_MODEL_PATH).")
